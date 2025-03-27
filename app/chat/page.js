@@ -12,14 +12,14 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 overflow-x-hidden">
       {/* 顶部导航栏 */}
-      <nav className="w-full bg-black text-white fixed top-0 left-0 z-50 flex justify-between items-center px-12 py-4">
+      <nav className="w-full bg-black text-white fixed top-0 left-0 z-50 flex justify-between items-center px-4 sm:px-8 md:px-12 py-4">
         <div className="flex items-center space-x-4">
           <Image src="/curtinlogo.png.png" alt="Curtin Singapore" width={50} height={50} />
           <h1 className="text-xl font-light">Curtin Singapore</h1>
         </div>
-        <div className="space-x-8 text-lg">
+        <div className="space-x-4 sm:space-x-6 md:space-x-8 text-lg whitespace-nowrap">
           <a href="/" className="hover:text-yellow-400">Home</a>
           <a href="/community" className="hover:text-yellow-400">Community</a>
           <a href="/profile" className="hover:text-yellow-400">Profile</a>
@@ -31,7 +31,10 @@ export default function ChatPage() {
       <div className="pt-[80px] flex h-screen overflow-hidden">
         {/* 左侧聊天栏 */}
         <aside className="w-48 h-screen rounded shadow bg-black text-white flex flex-col">
-          <div className="bg-blue-500 px-4 py-4 cursor-pointer h-15 hover:text-grey px-4 py-2 rounded shadow" onClick={() => toggleSection("private")}>
+          <div
+            className="bg-blue-500 px-4 py-4 cursor-pointer hover:text-grey rounded shadow"
+            onClick={() => toggleSection("private")}
+          >
             Private chat
           </div>
           {activeSection === "private" && (
@@ -44,7 +47,10 @@ export default function ChatPage() {
               ))}
             </div>
           )}
-          <div className="bg-blue-500 px-4 py-4 cursor-pointer h-15 hover:text-grey px-4 py-2 rounded shadow" onClick={() => toggleSection("group")}>
+          <div
+            className="bg-blue-500 px-4 py-4 cursor-pointer hover:text-grey rounded shadow"
+            onClick={() => toggleSection("group")}
+          >
             Group chat
           </div>
           {activeSection === "group" && (
@@ -60,7 +66,7 @@ export default function ChatPage() {
         </aside>
 
         {/* 主聊天区域 */}
-        <main className="flex-1 flex flex-col relative">
+        <main className="flex-1 flex flex-col relative max-w-full overflow-x-hidden">
           <div className="flex-1 p-6 overflow-y-auto space-y-6">
             {/* 模拟对话气泡 */}
             <div className="flex items-start">
