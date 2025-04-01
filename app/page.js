@@ -1,3 +1,5 @@
+/*homepage*/
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,136 +8,81 @@ import Image from "next/image";
 
 export default function Home() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [hasMounted, setHasMounted] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
-        if (localStorage.getItem("token")) {
-            setIsLoggedIn(true);
+        setHasMounted(true);
+        const token = localStorage.getItem("token");
+        if (token) setIsLoggedIn(true);
+        const msg = localStorage.getItem("loginMessage");
+        if (msg) {
+            alert(msg);
+            localStorage.removeItem("loginMessage");
         }
     }, []);
 
-    const handleMenuClick = (route) => {
-        if (!isLoggedIn) {
-            router.push("/login");
-        } else {
-            router.push(route);
-        }
-    };
+    if (!hasMounted) return null;
 
     return (
-        <div className="min-h-screen bg-black text-white font-sans overflow-x-hidden relative">
+        <div className="min-h-screen w-full bg-black text-white font-sans overflow-x-hidden relative">
+
             {/* Header */}
-            <nav className="w-full bg-black fixed top-0 flex justify-between items-center px-12 py-6 z-50 border-b border-gray-700 text-lg">
+            <nav className="w-full bg-black text-white fixed top-0 left-0 z-50 flex flex-wrap justify-between items-center px-6 md:px-12 py-4">
                 <div className="flex items-center space-x-4">
-                    <Image src="/curtinlogo.png.png" alt="Curtin Singapore" width={60} height={60} />
-                    <h1 className="text-2xl font-light">Curtin Singapore</h1>
+                    <Image src="/curtinlogo.png.png" alt="Curtin Singapore" width={50} height={50} />
+                    <h1 className="text-xl font-light">Curtin Singapore</h1>
                 </div>
-
-                <div className="flex space-x-12 items-center">
-                    <button onClick={() => handleMenuClick("/")} className="hover:text-yellow-500">Home</button>
-                    <button onClick={() => handleMenuClick("/community")} className="hover:text-yellow-500">Community</button>
-                    <button onClick={() => handleMenuClick("/profile")} className="hover:text-yellow-500">Profile</button>
-                    <button onClick={() => handleMenuClick("/chat")} className="hover:text-yellow-500">Chat</button>
-                    <button onClick={() => handleMenuClick("/resources")} className="hover:text-yellow-500">Resource</button>
-
-                    
-                    {!isLoggedIn && (
-                    <button 
-                        onClick={() => router.push("/login")}
-                        className="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-500 transition"
-                    >
-                        Login
-                    </button>
+                <div className="space-x-4 md:space-x-8 text-base md:text-lg mt-2 md:mt-0">
+                    <a href="/" className="hover:text-yellow-400">Home</a>
+                    <a href="/community" className="hover:text-yellow-400">Community</a>
+                    <a href="/profile" className="hover:text-yellow-400">Profile</a>
+                    <a href="/chat" className="hover:text-yellow-400">Chat</a>
+                    <a href="/resources" className="hover:text-yellow-400">Resource</a>
+                    {!isLoggedIn ? (
+                        <button
+                            onClick={() => router.push("/login")}
+                            className="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-500 transition"
+                        >
+                            Login
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => {
+                                localStorage.removeItem("token");
+                                setIsLoggedIn(false);
+                                router.push("/login");
+                            }}
+                            className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500 transition"
+                        >
+                            Logout
+                        </button>
                     )}
                 </div>
             </nav>
 
+            {/* max-w 内容区域（包含 Hero） */}
+            <div className="max-w-[1690px] mx-auto">
 
-            {/* Hero Section */}
-            <div className="relative h-screen flex items-center bg-cover bg-center px-0" style={{ backgroundImage: "url('/Curtin1.jpg.webp')" }}>
-                <div className="bg-black/50 p-16 w-1/2 h-full flex flex-col justify-center text-left">
-                    <h2 className="text-6xl font-light ml-12">Curtin University Student</h2>
-                    <h3 className="text-3xl mt-4 ml-12 font-light">Career Assistance Platform</h3>
-                </div>
-                {/* 三角形区域 */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center space-y-6">
-                    {/* 上方 蓝色三角形 */}
-                    <div className="relative w-132 h-30">
-                        <div className="absolute w-0 h-0 border-l-[200px] border-l-transparent border-t-[200px] border-t-blue-600 border-r-[200px] border-r-transparent rotate-315"></div>
+                {/* Hero Section - 与内容居中对齐 */}
+                <div className="relative h-screen flex items-center bg-cover bg-center" style={{ backgroundImage: "url('/Curtin1.jpg.webp')" }}>
+                    <div className="bg-black/50 p-8 md:p-16 w-full md:w-1/2 h-full flex flex-col justify-center text-left">
+                        <h2 className="text-4xl md:text-6xl font-light ml-4 md:ml-12">Curtin University Student</h2>
+                        <h3 className="text-2xl md:text-3xl mt-4 ml-4 md:ml-12 font-light">Career Assistance Platform</h3>
                     </div>
-                    {/* 中央 黄色三角形 */}
-                    {!isLoggedIn && (
-                        <div className="relative w-200 h-0">
-                            <div className="absolute w-0 h-0 border-l-[300px] border-l-transparent border-b-[300px] border-b-yellow-500 border-r-[300px] border-r-transparent rotate-45"></div>
-                            <button disabled className="absolute top-16 left-20 text-black font-light text-3xl">
-                            </button>
+
+                    {/* 三角形区域 - 添加缩放 */}
+                    <div className="absolute top-1/2 left-[34%] transform -translate-y-1/2 flex flex-col items-center space-y-6 scale-90 md:scale-100">
+                        <div className="relative">
+                            <div className="absolute top-[-50px] left-[0px] w-0 h-0 border-l-[100px] md:border-l-[200px] border-l-transparent border-t-[100px] md:border-t-[200px] border-t-blue-600 border-r-[100px] md:border-r-[200px] border-r-transparent rotate-315"></div>
                         </div>
-                    )}
-                </div>
-            </div>
-
-            {/* More Section */}
-            <div className="px-12 py-24 text-center bg-gray-900 text-white">
-                <h2 className="text-5xl font-light mb-12">More</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    <div>
-                        <Image src="/Connection.jpg" alt="Connection" width={400} height={250} className="mx-auto rounded-lg" />
-                        <h3 className="text-4xl font-light mt-6 relative inline-block">
-                            Connection
-                            <span className="absolute left-0 top-full mt-2 w-16 h-4 bg-yellow-500"></span>
-                        </h3>
-                        <p className="text-lg mt-6 px-4">Develops a proper channel to link the students with the mentors, alumni and industry professional.</p>
-                    </div>
-                    <div>
-                        <Image src="/Guidance.jpg" alt="Guidance" width={400} height={250} className="mx-auto rounded-lg" />
-                        <h3 className="text-4xl font-light mt-6 relative inline-block">
-                            Guidance
-                            <span className="absolute left-0 top-full mt-2 w-16 h-4 bg-yellow-500"></span>
-                        </h3>
-                        <p className="text-lg mt-6 px-4">Through professional career counseling and skill development, provides students with clear directions and practical support.</p>
-                    </div>
-                    <div>
-                        <Image src="/Friendliness.jpg" alt="Friendliness" width={400} height={250} className="mx-auto rounded-lg" />
-                        <h3 className="text-4xl font-light mt-6 relative inline-block">
-                            Friendliness
-                            <span className="absolute left-0 top-full mt-2 w-16 h-4 bg-yellow-500"></span>
-                        </h3>
-                        <p className="text-lg mt-6 px-4">As an institution that embraces diversity and respect, create a friendly atmosphere for learners.</p>
+                        <div className="relative">
+                            <div className="absolute top-[50px] left-[-135px] w-0 h-0 border-l-[100px] md:border-l-[300px] border-l-transparent border-b-[150px] md:border-b-[300px] border-b-yellow-500 border-r-[150px] md:border-r-[300px] border-r-transparent rotate-45"></div>
+                            <button disabled className="absolute top-8 md:top-16 left-80 md:left-20 text-black font-light text-2xl md:text-3xl"></button>
+                        </div>
                     </div>
                 </div>
             </div>
-        
-            <div className="px-12 py-24 text-center bg-black text-white">
-                <h2 className="text-5xl font-light mb-12">Be part of Us in Empowering Students</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
-                    <div className="p-6 bg-gray-800 rounded-lg">
-                        <p className="text-lg">
-                            We welcome professionals, mentors, and alumni to be a part of our mission to help students in their professional endeavors. You can help the next generation to learn from your knowledge, your stories, and your advice on how to face the obstacles and embrace the opportunities. It means that your guidance and your vision can change lives, help students to succeed and to become the best that can be.
-                        </p>
-                    </div>
-                    <div className="p-6 bg-gray-800 rounded-lg">
-                        <p className="text-lg">
-                            We sincerely thank all partnering companies and academic institutions for their invaluable support and collaboration. Your dedication to fostering student growth and providing opportunities has created a bridge between education and industry. Together, we are equipping students with the skills, knowledge, and connections they need to excel in their careers. Your partnership is not only an investment in their future but also a cornerstone of a thriving, innovative community.
-                        </p>
-                    </div>
-                </div>
-            </div>{/*
-
-            {/* Collaborators Section */}
-            <div className="px-12 py-24 text-center">
-                <h2 className="text-5xl font-light mb-8">Collaborators</h2>
-                <div className="flex flex-wrap justify-center gap-12">
-                    <Image src="/MIS.jpg" alt="MIS" width={150} height={75} />
-                    <Image src="/SIMM.png" alt="SIMM" width={150} height={75} />
-                    <Image src="/DB.jpg" alt="University" width={150} height={75} />
-                    <Image src="/HF.jpg" alt="Institution" width={150} height={75} />
-                </div>
-            </div>
-
-            {/* Footer */}
-            <footer className="bg-black py-12 text-center text-gray-400 text-lg">
-                <p>&copy; 2024 Curtin Singapore. All rights reserved.</p>
-            </footer>
         </div>
     );
 }

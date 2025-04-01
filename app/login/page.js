@@ -1,3 +1,5 @@
+/*login*/
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -62,6 +64,8 @@ export default function Login() {
 
       const token = response.data.token;
 
+      localStorage.setItem("token",token);
+
       // ✅ BONUS: Fetch user info from /me
       const profileRes = await axios.get("http://localhost:5000/api/users/me", {
         headers: {
@@ -95,18 +99,18 @@ export default function Login() {
         className="bg-white p-8 rounded-lg shadow-lg w-96"
       >
         <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">
-          Login to Your Account
+          Login 
         </h2>
 
         {/* Identity Selection */}
-        <label className="block font-medium mb-2 text-gray-700">Select Identity</label>
+        <label className="block font-medium mb-2 text-black">Select Identity</label>
         <select
           value={role}
           onChange={(e) => {
             setRole(e.target.value);
             setIdentifier(""); // Clear identifier when role changes
           }}
-          className="border p-2 w-full rounded mb-4"
+          className="border p-2 w-full rounded mb-4 text-black"
         >
           <option value="">-- Choose Role --</option>
           <option value="student">Student</option>
@@ -117,7 +121,7 @@ export default function Login() {
 
 
         {/* Identifier Input Field */}
-        <label className="block font-medium mb-2 text-gray-700">
+        <label className="block font-medium mb-2 text-black">
           {role === "student" ? "Student ID" : "Email"}
         </label>
         <input
@@ -129,7 +133,7 @@ export default function Login() {
         />
 
         {/* Password Input */}
-        <label className="block font-medium mb-2 text-gray-700">Password</label>
+        <label className="block font-medium mb-2 text-black">Password</label>
         <input
           type="password"
           placeholder="Enter Password"
