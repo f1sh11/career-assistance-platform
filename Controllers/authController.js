@@ -1,84 +1,83 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+// controllers/authController.js
 
-// Register a new user and return a JWT
+const User = require('../models/user.model');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const logger = require('../middleware/logger');
+
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+};
+
 exports.register = async (req, res) => {
   try {
     const { identifier, password, role } = req.body;
 
-    // Basic input validation
-    if (!identifier || !password) {
-      return res.status(400).json({ code: 'INVALID_INPUT', message: 'Please provide both identifier and password' });
+    if (!identifier || !password || !role) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
 
-    // Check if user already exists
-    const userExists = await User.findOne({ identifier });
-    if (userExists) {
-      return res.status(400).json({ code: 'USER_EXISTS', message: 'User already exists' });
+    const existingUser = await User.findOne({ identifier });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create a new user
     const newUser = await User.create({
       identifier,
       password: hashedPassword,
-      role: role || 'user'
+      role,
     });
 
-    // Generate JWT token
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = generateToken(newUser._id);
 
-    // Respond with token and user info
-    return res.status(201).json({
-      message: 'Registration successful ✅',
+    logger.info(`New user registered: ID ${newUser._id}, identifier: ${newUser.identifier}, role: ${newUser.role}`);
+
+    res.status(201).json({
+      message: 'Registration successful',
       token,
-      user: {
-        id: newUser._id,
-        identifier: newUser.identifier,
-        role: newUser.role
-      }
+      role: newUser.role,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ code: 'SERVER_ERROR', message: 'Internal server error' });
+    logger.error(`Registration error: ${error.message}\n${error.stack}`);
+    res.status(500).json({ message: 'Registration failed', error: error.message });
   }
 };
 
-// Log in user and return a JWT
 exports.login = async (req, res) => {
   try {
     const { identifier, password } = req.body;
 
-    // Check if user exists
+    if (!identifier || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
     const user = await User.findOne({ identifier });
     if (!user) {
-      return res.status(400).json({ code: 'USER_NOT_FOUND', message: 'User not found' });
+      logger.warn(`Login failed: User not found with identifier: ${identifier}`);
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ code: 'INVALID_PASSWORD', message: 'Incorrect password' });
+      logger.warn(`Login failed: Incorrect password for identifier: ${identifier}`);
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = generateToken(user._id);
 
-    // Respond with token and user info
-    return res.json({
-      message: 'Login successful ✅',
+    logger.info(`User login successful: ID ${user._id}, identifier: ${user.identifier}`);
+
+    res.status(200).json({
+      message: 'Login successful',
       token,
-      user: {
-        id: user._id,
-        identifier: user.identifier,
-        role: user.role
-      }
+      role: user.role,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ code: 'SERVER_ERROR', message: 'Internal server error' });
+    logger.error(`Login error: ${error.message}\n${error.stack}`);
+    res.status(500).json({ message: 'Login failed', error: error.message });
   }
 };

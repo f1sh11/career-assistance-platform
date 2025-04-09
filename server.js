@@ -2,6 +2,7 @@
 require('dotenv').config();
 const app = require('./app');
 const connectDB = require('./config/db');
+const errorMiddleware = require('./middleware/errorMiddleware');
 
 const PORT = process.env.PORT || 5000;
 
@@ -10,3 +11,4 @@ connectDB().then(() => {
     console.log(`🚀 Server running on port ${PORT}`);
   });
 });
+app.use(errorMiddleware);

@@ -1,10 +1,14 @@
-// Get information about the currently logged in user
-exports.getProfile = (req, res) => {
-    // authMiddleware has authenticated the user and attached the user object to req.user
+// controllers/userController.js
+
+exports.getCurrentUser = async (req, res) => {
+  try {
     if (!req.user) {
-      return res.status(401).json({ message: 'Not authorized' });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
-    // Return user information (sensitive information such as passwords has been filtered out in the middleware)
-    res.json(req.user);
-  };
-  
+
+    res.status(200).json(req.user);
+  } catch (error) {
+    logger.error(`Get current user error: ${error.message}\n${error.stack}`);
+    res.status(500).json({ message: 'Failed to retrieve user', error: error.message });
+  }
+};
