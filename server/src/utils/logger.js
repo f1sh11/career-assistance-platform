@@ -8,7 +8,7 @@ const logger = createLogger({
   ),
   transports: [
     new transports.Console(),
-    new transports.File({ filename: 'src/logs/app.log' })
+    new transports.File({ filename: require('path').join(__dirname, '../logs/app.log') })
   ],
 });
 
