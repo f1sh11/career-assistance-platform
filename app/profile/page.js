@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
 
@@ -18,18 +18,56 @@ export default function ProfilePage() {
 
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+  // ✅ 页面加载时拉取用户资料
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      fetchProfile();
+    }
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const res = await fetch('http://localhost:5000/api/users/me', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setFormData({
+          introduction: data.user.profile.introduction || "",
+          phone: data.user.profile.phone || "",
+          email: data.user.profile.email || "",
+          address: data.user.profile.address || "",
+          major: data.user.profile.major || "",
+          interests: data.user.profile.interests || "",
+          skills: data.user.profile.skills || "",
+          dreamJob: data.user.profile.dreamJob || ""
+        });
+      } else {
+        toast.error('Failed to load profile');
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      toast.error('Error loading profile');
+    }
   };
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/user/updateProfile', {
+      if (!token) {
+        toast.error('Not logged in');
+        return;
+      }
+
+      const res = await fetch('http://localhost:5000/api/users/me', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -42,6 +80,7 @@ export default function ProfilePage() {
 
       if (res.ok) {
         toast.success('Profile updated successfully!');
+        fetchProfile();
       } else {
         toast.error(data.message || 'Failed to update profile.');
       }
@@ -53,8 +92,15 @@ export default function ProfilePage() {
     }
   };
 
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
   return (
-    <div className="relative bg-bottom w-full min-h-screen mt-10 bg-white/10 text-write font-sans">
+    <div className="relative bg-white w-full min-h-screen mt-10 text-black font-sans">
       {/* Header */}
       <nav className="w-full bg-black text-white fixed top-0 left-0 z-50 flex justify-between items-center px-12 py-4">
         <div className="flex items-center space-x-4">
@@ -71,10 +117,10 @@ export default function ProfilePage() {
       </nav>
 
       {/* Top Section */}
-      <div className="relative bg-cover bg-2/3 h-64 flex flex-col items-center justify-center" style={{ backgroundImage: "url('/profile-background.jpg')" }}>
+      <div className="relative bg-cover bg-center h-64 flex flex-col items-center justify-center" style={{ backgroundImage: "url('/profile-background.jpg')" }}>
         <div className="rounded-full w-24 h-24 bg-gray-300 border-4 border-white shadow-md mb-4" />
-        <h2 className="text-3xl font-light text-black font-bold">Name</h2>
-        <p className="text-lg font-light text-black font-bold mt-1">Identity: Student</p>
+        <h2 className="text-3xl font-bold text-black">Name</h2>
+        <p className="text-lg font-semibold text-black mt-1">Identity: Student</p>
       </div>
 
       {/* Profile Info Section */}
@@ -86,88 +132,33 @@ export default function ProfilePage() {
             name="introduction"
             value={formData.introduction}
             onChange={handleChange}
-            className="w-full h-64 p-4 border rounded-md bg-gray-100 resize-none"
+            className="w-full h-64 p-4 border rounded-md bg-gray-100 text-black resize-none"
             placeholder="Write about yourself..."
           />
         </div>
 
         {/* Right - Info sections */}
         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium">Phone number:</label>
+          {[
+            { label: "Phone number", name: "phone" },
+            { label: "Email", name: "email" },
+            { label: "Address", name: "address" },
+            { label: "Major", name: "major" },
+            { label: "Interests", name: "interests" },
+            { label: "Skills", name: "skills" },
+            { label: "Dream job", name: "dreamJob" }
+          ].map(({ label, name }) => (
+            <div key={name}>
+              <label className="block text-sm font-medium">{label}:</label>
               <input
-                name="phone"
+                name={name}
                 type="text"
-                value={formData.phone}
+                value={formData[name]}
                 onChange={handleChange}
-                className="w-full p-2 border rounded-md bg-gray-100"
+                className="w-full p-2 border rounded-md bg-gray-100 text-black"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium">Email:</label>
-              <input
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full p-2 border rounded-md bg-gray-100"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Address:</label>
-              <input
-                name="address"
-                type="text"
-                value={formData.address}
-                onChange={handleChange}
-                className="w-full p-2 border rounded-md bg-gray-100"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Major:</label>
-              <input
-                name="major"
-                type="text"
-                value={formData.major}
-                onChange={handleChange}
-                className="w-full p-2 border rounded-md bg-gray-100"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium">Interests:</label>
-              <input
-                name="interests"
-                type="text"
-                value={formData.interests}
-                onChange={handleChange}
-                className="w-full p-2 border rounded-md bg-gray-100"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Skills:</label>
-              <input
-                name="skills"
-                type="text"
-                value={formData.skills}
-                onChange={handleChange}
-                className="w-full p-2 border rounded-md bg-gray-100"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Dream job:</label>
-              <input
-                name="dreamJob"
-                type="text"
-                value={formData.dreamJob}
-                onChange={handleChange}
-                className="w-full p-2 border rounded-md bg-gray-100"
-              />
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
@@ -176,11 +167,17 @@ export default function ProfilePage() {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full md:w-1/3 bg-blue-500 text-white py-3 rounded hover:bg-blue-600 transition"
+          className={`w-full md:w-1/3 py-3 rounded transition ${
+            loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
+          } text-white`}
         >
           {loading ? "Saving..." : "Confirm"}
         </button>
-        <button className="w-full md:w-1/3 bg-yellow-400 text-black py-3 rounded hover:bg-yellow-500 transition">Start matching</button>
+        <button
+          className="w-full md:w-1/3 bg-yellow-400 text-black py-3 rounded hover:bg-yellow-500 transition"
+        >
+          Start matching
+        </button>
       </div>
     </div>
   );

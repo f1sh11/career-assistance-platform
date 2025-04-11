@@ -29,7 +29,7 @@ export default function ProfilePage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/user/updateProfile', {
+      const res = await fetch('http://localhost:5000/api/users/updateProfile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
