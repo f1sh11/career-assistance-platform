@@ -2,6 +2,17 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import { Toaster } from "react-hot-toast";
+
+export default function Layout({ children }) {
+  return (
+    <>
+      <Toaster position="top-center" />
+      {children}
+    </>
+  );
+}
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
