@@ -18,16 +18,58 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   profile: {
-    name: { type: String, default: '' },
-    phone: { type: String, default: '' },
-    email: { type: String, default: '' },
-    address: { type: String, default: '' },
-    major: { type: String, default: '' }, 
-    interests: { type: String, default: '' },
-    skills: { type: String, default: '' },
-    dreamJob: { type: String, default: '' },
-    introduction: { type: String, default: '' },
-    avatarUrl: { type: String, default: '' }
+    name: { 
+      type: String, 
+      maxlength: 50,
+      trim: true,
+      default: '' 
+    },
+    phone: { 
+      type: String, 
+      match: [/^\+?[0-9\s\-]{7,20}$/, 'Please fill a valid phone number'],
+      default: '' 
+    },
+    email: { 
+      type: String, 
+      match: [/^\S+@\S+\.\S+$/, 'Please fill a valid email address'],
+      lowercase: true, 
+      trim: true, 
+      default: '' 
+    },
+    address: { 
+      type: String, 
+      maxlength: 50, 
+      default: '' 
+    },
+    major: { 
+      type: String, 
+      maxlength: 50, 
+      default: '' 
+    },
+    interests: { 
+      type: String, 
+      maxlength: 50, 
+      default: '' 
+    },
+    skills: { 
+      type: String, 
+      maxlength: 50, 
+      default: '' 
+    },
+    dreamJob: { 
+      type: String, 
+      maxlength: 20, 
+      default: '' 
+    },
+    introduction: { 
+      type: String, 
+      maxlength: 100, 
+      default: '' 
+    },
+    avatarUrl: { 
+      type: String, 
+      default: '' 
+    }
   },
   connections: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -46,13 +88,8 @@ const userSchema = new mongoose.Schema({
 // Encrypt passwords before saving
 userSchema.pre('save', async function(next) {
   try {
-    // Re-encrypt only if the password is changed
     if (!this.isModified('password')) return next();
-    
-    // Generate salt values
     const salt = await bcrypt.genSalt(10);
-    
-    // Password encryption
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {
@@ -67,4 +104,4 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User; 
+module.exports = User;
