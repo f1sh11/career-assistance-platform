@@ -18,6 +18,10 @@ exports.getProfile = async (req, res) => {
       message: 'Get profile successfully' 
     });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      // Mongoose验证错误
+      return res.status(400).json({ message: error.message });
+    }
     // Record error to log
     fs.appendFileSync(
       path.join(logDirectory, 'error.log'),
