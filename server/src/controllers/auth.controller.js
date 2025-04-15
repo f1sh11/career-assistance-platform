@@ -1,16 +1,8 @@
 // src/controllers/auth.controller.js
 import User from '../models/user.model.js';
 import jwt from 'jsonwebtoken';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { writeLog, writeError } from '../utils/logHelper.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const logDirectory = path.join(__dirname, '../../src/logs');
-
-// Generate JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '1h'
@@ -44,27 +36,16 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const user = await User.create({
-      identifier,
-      password,
-      role,
-    });
+    const user = await User.create({ identifier, password, role });
 
-    fs.appendFileSync(
-      path.join(logDirectory, 'auth.log'),
-      `${new Date().toISOString()} - New user registered: ID ${user._id}, role ${role}, identifier ${identifier}\n`
-    );
+    writeLog('auth', `New user registered: ID ${user._id}, role ${role}, identifier ${identifier}`);
 
     res.status(201).json({
       message: 'Registration successful',
       userId: user._id
     });
   } catch (error) {
-    fs.appendFileSync(
-      path.join(logDirectory, 'error.log'),
-      `${new Date().toISOString()} - Registration error: ${error.message}\n${error.stack}\n`
-    );
-
+    writeError(`Registration error: ${error.message}`, error.stack);
     res.status(500).json({ message: 'Registration failed', error: error.message });
   }
 };
@@ -85,11 +66,7 @@ export const login = async (req, res) => {
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      fs.appendFileSync(
-        path.join(logDirectory, 'auth.log'),
-        `${new Date().toISOString()} - Login failed: identifier ${identifier}, password mismatch\n`
-      );
-
+      writeLog('auth', `Login failed: identifier ${identifier}, password mismatch`);
       return res.status(401).json({ message: '无效的登录凭证' });
     }
 
@@ -98,10 +75,7 @@ export const login = async (req, res) => {
 
     const token = generateToken(user._id);
 
-    fs.appendFileSync(
-      path.join(logDirectory, 'auth.log'),
-      `${new Date().toISOString()} - User login successful: ID ${user._id}, role ${user.role}, identifier ${identifier}\n`
-    );
+    writeLog('auth', `User login successful: ID ${user._id}, role ${user.role}, identifier ${identifier}`);
 
     res.status(200).json({
       message: 'Login successful',
@@ -109,11 +83,7 @@ export const login = async (req, res) => {
       role: user.role
     });
   } catch (error) {
-    fs.appendFileSync(
-      path.join(logDirectory, 'error.log'),
-      `${new Date().toISOString()} - Login error: ${error.message}\n${error.stack}\n`
-    );
-
+    writeError(`Login error: ${error.message}`, error.stack);
     res.status(500).json({ message: 'Login failed', error: error.message });
   }
 };
@@ -129,11 +99,7 @@ export const getCurrentUser = async (req, res) => {
 
     res.status(200).json(user);
   } catch (error) {
-    fs.appendFileSync(
-      path.join(logDirectory, 'error.log'),
-      `${new Date().toISOString()} - Get user information error: ${error.message}\n${error.stack}\n`
-    );
-
+    writeError(`Get user information error: ${error.message}`, error.stack);
     res.status(500).json({ message: 'Get user information failed', error: error.message });
   }
 };

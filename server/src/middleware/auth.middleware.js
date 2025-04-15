@@ -1,15 +1,9 @@
 // src/middleware/auth.middleware.js
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { writeLog, writeError } from '../utils/logHelper.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const logDirectory = path.join(__dirname, '../../src/logs');
-
+// Verify that the user is authenticated
 export const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -27,17 +21,10 @@ export const authenticate = async (req, res, next) => {
 
     req.user = user;
 
-    fs.appendFileSync(
-      path.join(logDirectory, 'auth.log'),
-      `${new Date().toISOString()} - user ID: ${user._id} character: ${user.role} interviews: ${req.originalUrl}\n`
-    );
-
+    writeLog('auth', `user ID: ${user._id} role: ${user.role} accessed ${req.originalUrl}`);
     next();
   } catch (error) {
-    fs.appendFileSync(
-      path.join(logDirectory, 'error.log'),
-      `${new Date().toISOString()} - authentication error: ${error.message}\n`
-    );
+    writeError(`authentication error: ${error.message}`, error.stack);
 
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ message: 'Invalid Token' });
@@ -50,6 +37,7 @@ export const authenticate = async (req, res, next) => {
   }
 };
 
+// Role Validation Middleware
 export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -57,9 +45,9 @@ export const authorize = (...roles) => {
     }
 
     if (!roles.includes(req.user.role)) {
-      fs.appendFileSync(
-        path.join(logDirectory, 'auth.log'),
-        `${new Date().toISOString()} - Unauthorized access: User ID ${req.user._id} (${req.user.role}) Trying to access ${req.originalUrl}\n`
+      writeLog(
+        'auth',
+        `Unauthorized access: User ID ${req.user._id} (${req.user.role}) tried to access ${req.originalUrl}`
       );
 
       return res.status(403).json({ message: 'Not authorized to access this resource' });

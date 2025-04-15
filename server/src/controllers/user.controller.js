@@ -1,17 +1,12 @@
 // src/controllers/user.controller.js
 import User from '../models/user.model.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { writeLog, writeError } from '../utils/logHelper.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const logDirectory = path.join(__dirname, '../../src/logs');
-
+// Get the current user's profile
 export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
+
     if (!user) {
       return res.status(404).json({ message: 'User does not exist' });
     }
@@ -25,15 +20,12 @@ export const getProfile = async (req, res) => {
       return res.status(400).json({ message: error.message });
     }
 
-    fs.appendFileSync(
-      path.join(logDirectory, 'error.log'),
-      `${new Date().toISOString()} - Get profile error: ${error.message}\n${error.stack}\n`
-    );
-
+    writeError(`Get profile error: ${error.message}`, error.stack);
     res.status(500).json({ message: 'Get profile failed', error: error.message });
   }
 };
 
+// Update user profile
 export const updateProfile = async (req, res) => {
   try {
     const {
@@ -42,6 +34,7 @@ export const updateProfile = async (req, res) => {
     } = req.body;
 
     const user = await User.findById(req.user._id);
+
     if (!user) {
       return res.status(404).json({ message: 'User does not exist' });
     }
@@ -61,25 +54,19 @@ export const updateProfile = async (req, res) => {
 
     await user.save();
 
-    fs.appendFileSync(
-      path.join(logDirectory, 'user.log'),
-      `${new Date().toISOString()} - User ${user._id} updated profile\n`
-    );
+    writeLog('user', `User ${user._id} updated profile`);
 
     res.status(200).json({
       message: 'Profile updated successfully',
       profile: user.profile
     });
   } catch (error) {
-    fs.appendFileSync(
-      path.join(logDirectory, 'error.log'),
-      `${new Date().toISOString()} - Update profile error: ${error.message}\n${error.stack}\n`
-    );
-
+    writeError(`Update profile error: ${error.message}`, error.stack);
     res.status(500).json({ message: 'Update profile failed', error: error.message });
   }
 };
 
+// Get user list (only for admins)
 export const getUsers = async (req, res) => {
   try {
     const role = req.query.role;
@@ -87,41 +74,29 @@ export const getUsers = async (req, res) => {
 
     const users = await User.find(query).select('-password');
 
-    fs.appendFileSync(
-      path.join(logDirectory, 'admin.log'),
-      `${new Date().toISOString()} - Admin ${req.user._id} queried user list, filter: ${role || 'none'}\n`
-    );
+    writeLog('admin', `Admin ${req.user._id} queried user list, filter: ${role || 'none'}`);
 
     res.status(200).json(users);
   } catch (error) {
-    fs.appendFileSync(
-      path.join(logDirectory, 'error.log'),
-      `${new Date().toISOString()} - Get user list error: ${error.message}\n${error.stack}\n`
-    );
-
+    writeError(`Get user list error: ${error.message}`, error.stack);
     res.status(500).json({ message: 'Get user list failed', error: error.message });
   }
 };
 
+// Get the profile of a specified user
 export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
+
     if (!user) {
       return res.status(404).json({ message: 'User does not exist' });
     }
 
-    fs.appendFileSync(
-      path.join(logDirectory, 'user.log'),
-      `${new Date().toISOString()} - User ${req.user._id} viewed user ${req.params.id} profile\n`
-    );
+    writeLog('user', `User ${req.user._id} viewed user ${req.params.id} profile`);
 
     res.status(200).json(user);
   } catch (error) {
-    fs.appendFileSync(
-      path.join(logDirectory, 'error.log'),
-      `${new Date().toISOString()} - Get specified user error: ${error.message}\n${error.stack}\n`
-    );
-
+    writeError(`Get specified user error: ${error.message}`, error.stack);
     res.status(500).json({ message: 'Get specified user error', error: error.message });
   }
 };
