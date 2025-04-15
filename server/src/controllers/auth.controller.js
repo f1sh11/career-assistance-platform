@@ -38,7 +38,11 @@ export const register = async (req, res) => {
 
     const user = await User.create({ identifier, password, role });
 
-    writeLog('auth', `New user registered: ID ${user._id}, role ${role}, identifier ${identifier}`);
+    writeLog('auth', `New user registered`, {
+      userId: user._id.toString(),
+      url: req.originalUrl,
+      role
+    });
 
     res.status(201).json({
       message: 'Registration successful',
@@ -66,7 +70,11 @@ export const login = async (req, res) => {
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      writeLog('auth', `Login failed: identifier ${identifier}, password mismatch`);
+      writeLog('auth', `Login failed: password mismatch`, {
+        identifier,
+        url: req.originalUrl
+      });
+
       return res.status(401).json({ message: '无效的登录凭证' });
     }
 
@@ -75,7 +83,11 @@ export const login = async (req, res) => {
 
     const token = generateToken(user._id);
 
-    writeLog('auth', `User login successful: ID ${user._id}, role ${user.role}, identifier ${identifier}`);
+    writeLog('auth', `User login successful`, {
+      userId: user._id.toString(),
+      url: req.originalUrl,
+      role: user.role
+    });
 
     res.status(200).json({
       message: 'Login successful',

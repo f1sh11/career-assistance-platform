@@ -54,7 +54,10 @@ export const updateProfile = async (req, res) => {
 
     await user.save();
 
-    writeLog('user', `User ${user._id} updated profile`);
+    writeLog('user', 'User updated profile', {
+      userId: user._id.toString(),
+      url: req.originalUrl
+    });
 
     res.status(200).json({
       message: 'Profile updated successfully',
@@ -74,7 +77,11 @@ export const getUsers = async (req, res) => {
 
     const users = await User.find(query).select('-password');
 
-    writeLog('admin', `Admin ${req.user._id} queried user list, filter: ${role || 'none'}`);
+    writeLog('admin', 'Admin queried user list', {
+      userId: req.user._id.toString(),
+      url: req.originalUrl,
+      filter: role || 'none'
+    });
 
     res.status(200).json(users);
   } catch (error) {
@@ -92,7 +99,11 @@ export const getUserById = async (req, res) => {
       return res.status(404).json({ message: 'User does not exist' });
     }
 
-    writeLog('user', `User ${req.user._id} viewed user ${req.params.id} profile`);
+    writeLog('user', 'Viewed another user profile', {
+      userId: req.user._id.toString(),
+      targetUserId: req.params.id,
+      url: req.originalUrl
+    });
 
     res.status(200).json(user);
   } catch (error) {

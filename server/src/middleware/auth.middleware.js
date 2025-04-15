@@ -21,7 +21,13 @@ export const authenticate = async (req, res, next) => {
 
     req.user = user;
 
-    writeLog('auth', `user ID: ${user._id} role: ${user.role} accessed ${req.originalUrl}`);
+    // ✅ 日志改为写入 access.log，结构化写法
+    writeLog('access', `Accessed protected route`, {
+      userId: user._id.toString(),
+      role: user.role,
+      url: req.originalUrl
+    });
+
     next();
   } catch (error) {
     writeError(`authentication error: ${error.message}`, error.stack);
@@ -45,10 +51,11 @@ export const authorize = (...roles) => {
     }
 
     if (!roles.includes(req.user.role)) {
-      writeLog(
-        'auth',
-        `Unauthorized access: User ID ${req.user._id} (${req.user.role}) tried to access ${req.originalUrl}`
-      );
+      writeLog('auth', `Unauthorized access`, {
+        userId: req.user._id.toString(),
+        role: req.user.role,
+        url: req.originalUrl
+      });
 
       return res.status(403).json({ message: 'Not authorized to access this resource' });
     }

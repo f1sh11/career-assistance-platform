@@ -4,28 +4,37 @@ import { writeLog, writeError } from '../utils/logHelper.js';
 
 export const getRecommendations = async (req, res) => {
   try {
+    const meta = {
+      userId: req.user._id.toString(),
+      role: req.user.role,
+      url: req.originalUrl
+    };
+
     if (req.user.role === 'student') {
       const mentors = await User.find({ role: 'mentor' }).select('_id role profile').limit(4);
       const alumni = await User.find({ role: 'student', _id: { $ne: req.user._id } }).select('_id role profile').limit(4);
       const professionals = await User.find({ role: 'industry' }).select('_id role profile').limit(4);
 
-      writeLog('matching', `User ${req.user._id} (student) requested recommendation list`);
+      writeLog('matching', 'Student requested recommendations', meta);
       res.status(200).json({ mentors, alumni, professionals });
+
     } else if (req.user.role === 'mentor') {
       const students = await User.find({ role: 'student' }).select('_id role profile').limit(8);
 
-      writeLog('matching', `User ${req.user._id} (mentor) requested recommendation list`);
+      writeLog('matching', 'Mentor requested recommendations', meta);
       res.status(200).json({ students });
+
     } else if (req.user.role === 'industry') {
       const students = await User.find({ role: 'student' }).select('_id role profile').limit(6);
       const mentors = await User.find({ role: 'mentor' }).select('_id role profile').limit(3);
 
-      writeLog('matching', `User ${req.user._id} (industry professional) requested recommendation list`);
+      writeLog('matching', 'Industry professional requested recommendations', meta);
       res.status(200).json({ students, mentors });
+
     } else {
       const users = await User.find({ _id: { $ne: req.user._id } }).select('_id role profile').limit(10);
 
-      writeLog('matching', `User ${req.user._id} (admin) requested recommendation list`);
+      writeLog('matching', 'Admin requested recommendations', meta);
       res.status(200).json({ users });
     }
   } catch (error) {
@@ -62,7 +71,13 @@ export const createConnection = async (req, res) => {
     targetUser.connections.push(req.user._id);
     await targetUser.save();
 
-    writeLog('matching', `User ${req.user._id} (${req.user.role}) connected with user ${userId} (${targetUser.role})`);
+    writeLog('matching', 'User created connection', {
+      userId: req.user._id.toString(),
+      url: req.originalUrl,
+      role: req.user.role,
+      targetUserId: targetUser._id.toString(),
+      targetUserRole: targetUser.role
+    });
 
     res.status(200).json({
       message: 'Connection successfully created',
@@ -86,7 +101,12 @@ export const getConnections = async (req, res) => {
       return res.status(404).json({ message: 'User does not exist' });
     }
 
-    writeLog('user', `User ${req.user._id} retrieved connection list`);
+    writeLog('user', 'User fetched connection list', {
+      userId: req.user._id.toString(),
+      url: req.originalUrl,
+      role: req.user.role
+    });
+
     res.status(200).json({ connections: user.connections });
   } catch (error) {
     writeError(`Get connection error: ${error.message}`, error.stack);
