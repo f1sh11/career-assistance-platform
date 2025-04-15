@@ -1,15 +1,21 @@
-const express = require('express');
-const router = express.Router();
-const matchingController = require('../controllers/matching.controller');
-const { authenticate } = require('../middleware/auth.middleware');
+// src/routes/matching.routes.js
+import express from 'express';
+import {
+  getRecommendations,
+  createConnection,
+  getConnections
+} from '../controllers/matching.controller.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 
-// Get Recommended Users (requires authentication)
-router.get('/recommendations', authenticate, matchingController.getRecommendations);
+const router = express.Router();
+
+// Get recommended users (requires authentication)
+router.get('/recommendations', authenticate, getRecommendations);
 
 // Establish connection (requires authentication)
-router.post('/connect', authenticate, matchingController.createConnection);
+router.post('/connect', authenticate, createConnection);
 
 // Get all connections for the current user (requires authentication)
-router.get('/connections', authenticate, matchingController.getConnections);
+router.get('/connections', authenticate, getConnections);
 
-module.exports = router; 
+export default router;

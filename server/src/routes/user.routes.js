@@ -1,18 +1,28 @@
-const express = require('express');
-const userController = require('../controllers/user.controller');
-const { authenticate, authorize } = require('../middleware/auth.middleware');
+// src/routes/user.routes.js
+import express from 'express';
+import {
+  getProfile,
+  updateProfile,
+  getUsers,
+  getUserById
+} from '../controllers/user.controller.js';
+import {
+  authenticate,
+  authorize
+} from '../middleware/auth.middleware.js';
+
 const router = express.Router();
 
 // Get the current user's profile (requires authentication)
-router.get('/me', authenticate, userController.getProfile);
+router.get('/me', authenticate, getProfile);
 
 // Update the current user's profile (requires authentication)
-router.put('/me', authenticate, userController.updateProfile);
+router.put('/me', authenticate, updateProfile);
 
 // Get all users (only for admins)
-router.get('/', authenticate, authorize('admin'), userController.getUsers);
+router.get('/', authenticate, authorize('admin'), getUsers);
 
 // Get the specified user's profile (requires authentication)
-router.get('/:id', authenticate, userController.getUserById);
+router.get('/:id', authenticate, getUserById);
 
-module.exports = router;
+export default router;
