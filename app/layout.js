@@ -12,11 +12,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// 页面的metadata
 export const metadata = {
   title: "Curtin Singapore Platform",
   description: "Student career support and community engagement platform.",
 };
 
+// 正确的唯一默认导出
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
