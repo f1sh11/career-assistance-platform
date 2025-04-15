@@ -1,4 +1,4 @@
-// server.js (ESM + 安全增强 + 结构化日志)
+// server.js (安全增强修正 - 移除 express-mongo-sanitize，使用自定义清理工具)
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -8,7 +8,6 @@ import path from 'path';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import mongoSanitize from 'express-mongo-sanitize';
 
 import authRoutes from './src/routes/auth.routes.js';
 import userRoutes from './src/routes/user.routes.js';
@@ -41,7 +40,7 @@ const accessLogStream = fs.createWriteStream(path.join(logDirectory, 'morgan-acc
 
 // 🛡️ 安全中间件
 app.use(helmet());
-app.use(mongoSanitize());
+
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -73,9 +72,7 @@ app.get('/api/status', (req, res) => {
 // ❗错误处理中间件（日志写入 error.log）
 app.use((err, req, res, next) => {
   logger.error(err.stack);
-
   writeError(`Unhandled error: ${err.message}`, err.stack);
-
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal server error';
   res.status(statusCode).json({ error: message });
@@ -91,7 +88,6 @@ const server = app.listen(PORT, () => {
 const gracefulShutdown = () => {
   console.log('🛑 Shutting down gracefully...');
   logger.info('🛑 Server shutting down');
-
   server.close(() => {
     console.log('✅ HTTP server closed.');
     mongoose.connection.close(false, () => {
