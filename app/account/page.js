@@ -22,10 +22,10 @@ export default function AccountPage() {
     };
 
     const menuItems = [
-        { label: "Settings", route: "/settings" },
-        { label: "Activity", route: "/activity" },
-        { label: "Notifications", route: "/notifications" },
-        { label: "Security", route: "/security" },
+        { label: "Settings", route: "/account/settings" },
+        { label: "Activity", route: "/account/activity" },
+        { label: "Notifications", route: "/account/notifications" },
+        { label: "Security", route: "/account/security" },
     ];
 
     return (
