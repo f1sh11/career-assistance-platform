@@ -14,14 +14,12 @@ function ResourceCard({ resource, scrollTop, index, lastIndex }) {
       const rect = ref.current.getBoundingClientRect();
       const distanceFromTop = rect.top;
 
-      const disappearThreshold = 150; // 统一消失高度
-      const bottomPreserveBuffer = 4; // 最后保留的卡片数量，4张
+      const disappearThreshold = 150;
+      const bottomPreserveBuffer = 4;
 
       if (index >= lastIndex - bottomPreserveBuffer) {
-        // 保持底部卡片始终显示，不消失
         setVisible(true);
       } else {
-        // 只看当前卡片离顶部的距离
         if (distanceFromTop < disappearThreshold) {
           setVisible(false);
         } else {
@@ -30,10 +28,9 @@ function ResourceCard({ resource, scrollTop, index, lastIndex }) {
       }
     };
 
-    handleVisibility(); // 初始化时也执行一次
-
+    handleVisibility();
     window.addEventListener("scroll", handleVisibility);
-    window.addEventListener("resize", handleVisibility); // 防止窗口尺寸变化影响
+    window.addEventListener("resize", handleVisibility);
     return () => {
       window.removeEventListener("scroll", handleVisibility);
       window.removeEventListener("resize", handleVisibility);
@@ -118,27 +115,12 @@ export default function ResourcePage() {
     const handleScroll = () => {
       setScrollTop(window.scrollY);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <div className="min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin3.jpg')" }}>
-      <nav className="w-full bg-black text-white fixed top-0 left-0 z-50 flex justify-between items-center px-12 py-4">
-        <div className="flex items-center space-x-4">
-          <Image src="/curtinlogo.png.png" alt="Curtin Singapore" width={50} height={50} />
-          <h1 className="text-xl font-light">Curtin Singapore</h1>
-        </div>
-        <div className="space-x-8 text-lg">
-          <a href="/" className="hover:text-yellow-400">Home</a>
-          <a href="/community" className="hover:text-yellow-400">Community</a>
-          <a href="/profile" className="hover:text-yellow-400">Profile</a>
-          <a href="/chat" className="hover:text-yellow-400">Chat</a>
-          <a href="/resources" className="hover:text-yellow-400">Resource</a>
-        </div>
-      </nav>
-
       <div className="pt-[80px] flex">
         {/* 左侧栏 */}
         <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col cursor-pointer pt-24 space-y-2">
