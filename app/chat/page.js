@@ -13,21 +13,6 @@ export default function ChatPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* 顶部导航栏 */}
-      <nav className="w-full bg-black text-white fixed top-0 left-0 z-50 flex justify-between items-center px-12 py-4">
-        <div className="flex items-center space-x-4">
-          <Image src="/curtinlogo.png.png" alt="Curtin Singapore" width={50} height={50} />
-          <h1 className="text-xl font-light">Curtin Singapore</h1>
-        </div>
-        <div className="space-x-8 text-lg">
-          <a href="/" className="hover:text-yellow-400">Home</a>
-          <a href="/community" className="hover:text-yellow-400">Community</a>
-          <a href="/profile" className="hover:text-yellow-400">Profile</a>
-          <a href="/chat" className="hover:text-yellow-400">Chat</a>
-          <a href="/resources" className="hover:text-yellow-400">Resource</a>
-        </div>
-      </nav>
-
       <div className="pt-[80px] flex h-screen overflow-hidden">
         {/* 左侧聊天栏 */}
         <aside className="w-48 h-screen rounded shadow bg-black text-white flex flex-col">
