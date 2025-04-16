@@ -72,6 +72,16 @@ export default function Home() {
           ))}
         </div>
       </section>
+ {/* Collaborators Section */}
+            <div className="px-12 py-24 text-center">
+                <h2 className="text-5xl font-light mb-8">Collaborators</h2>
+                <div className="flex flex-wrap justify-center gap-12">
+                    <Image src="/MIS.jpg" alt="MIS" width={150} height={75} />
+                    <Image src="/SIMM.png" alt="SIMM" width={150} height={75} />
+                    <Image src="/DB.jpg" alt="University" width={150} height={75} />
+                    <Image src="/HF.jpg" alt="Institution" width={150} height={75} />
+                </div>
+            </div>
 
       {/* Footer */}
       <footer className="bg-black py-12 text-center text-gray-400 text-base sm:text-lg">
@@ -88,3 +98,5 @@ export default function Home() {
     </div>
   );
 }
+
+           
