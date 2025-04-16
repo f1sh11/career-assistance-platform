@@ -18,7 +18,6 @@ export default function ProfilePage() {
 
   const [loading, setLoading] = useState(false);
 
-  // ✅ 页面加载时拉取用户资料
   useEffect(() => {
     if (typeof window !== 'undefined') {
       fetchProfile();
@@ -100,21 +99,8 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="relative bg-white w-full min-h-screen mt-10 text-black font-sans">
-      {/* Header */}
-      <nav className="w-full bg-black text-white fixed top-0 left-0 z-50 flex justify-between items-center px-12 py-4">
-        <div className="flex items-center space-x-4">
-          <Image src="/curtinlogo.png.png" alt="Curtin Singapore" width={50} height={50} />
-          <h1 className="text-xl font-light">Curtin Singapore</h1>
-        </div>
-        <div className="space-x-8 text-lg">
-          <a href="/" className="hover:text-yellow-400">Home</a>
-          <a href="/community" className="hover:text-yellow-400">Community</a>
-          <a href="/profile" className="hover:text-yellow-400">Profile</a>
-          <a href="/chat" className="hover:text-yellow-400">Chat</a>
-          <a href="/resources" className="hover:text-yellow-400">Resource</a>
-        </div>
-      </nav>
+    <div className="relative bg-white w-full min-h-screen pt-[80px] text-black font-sans">
+      {/* Header 已全局引入，无需重复 */}
 
       {/* Top Section */}
       <div className="relative bg-cover bg-center h-64 flex flex-col items-center justify-center" style={{ backgroundImage: "url('/profile-background.jpg')" }}>
@@ -125,7 +111,6 @@ export default function ProfilePage() {
 
       {/* Profile Info Section */}
       <div className="max-w-5xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8">
-        {/* Left - Self-intro */}
         <div className="md:col-span-1">
           <label className="block text-lg font-medium mb-2">Self-introduction:</label>
           <textarea
@@ -137,19 +122,10 @@ export default function ProfilePage() {
           />
         </div>
 
-        {/* Right - Info sections */}
         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[
-            { label: "Phone number", name: "phone" },
-            { label: "Email", name: "email" },
-            { label: "Address", name: "address" },
-            { label: "Major", name: "major" },
-            { label: "Interests", name: "interests" },
-            { label: "Skills", name: "skills" },
-            { label: "Dream job", name: "dreamJob" }
-          ].map(({ label, name }) => (
+          {["phone", "email", "address", "major", "interests", "skills", "dreamJob"].map((name) => (
             <div key={name}>
-              <label className="block text-sm font-medium">{label}:</label>
+              <label className="block text-sm font-medium capitalize">{name.replace(/([A-Z])/g, ' $1')}:</label>
               <input
                 name={name}
                 type="text"

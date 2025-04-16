@@ -6,20 +6,7 @@ import Link from "next/link";
 export default function CommunityPage() {
   return (
     <div className="min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
-      {/* 顶部导航栏 */}
-      <nav className="w-full bg-black text-white fixed top-0 left-0 z-50 flex justify-between items-center px-12 py-4">
-        <div className="flex items-center space-x-4">
-          <Image src="/curtinlogo.png.png" alt="Curtin Singapore" width={50} height={50} />
-          <h1 className="text-xl font-light">Curtin Singapore</h1>
-        </div>
-        <div className="space-x-8 text-lg">
-          <a href="/" className="hover:text-yellow-400">Home</a>
-          <a href="/community" className="hover:text-yellow-400">Community</a>
-          <a href="/profile" className="hover:text-yellow-400">Profile</a>
-          <a href="/chat" className="hover:text-yellow-400">Chat</a>
-          <a href="/resources" className="hover:text-yellow-400">Resource</a>
-        </div>
-      </nav>
+      {/* 顶部导航栏已全局引入，无需重复 */}
 
       <div className="pt-[80px] flex">
         {/* 左侧固定导航栏 */}
@@ -71,9 +58,7 @@ export default function CommunityPage() {
           <aside className="w-80 flex flex-col space-y-8">
             {/* 个人信息卡片 */}
             <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center">
-              <div className="rounded-full w-24 h-24 bg-gray-300 border-4 border-white shadow-md mb-4 overflow-hidden">
-
-              </div>
+              <div className="rounded-full w-24 h-24 bg-gray-300 border-4 border-white shadow-md mb-4 overflow-hidden"></div>
               <h2 className="text-2xl font-light mb-2 text-black">Name</h2>
               <p className="text-gray-700 text-center">This is your self-introduction syncing from Profile page...</p>
             </div>
@@ -95,4 +80,3 @@ export default function CommunityPage() {
     </div>
   );
 }
-
