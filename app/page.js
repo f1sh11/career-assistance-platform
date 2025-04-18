@@ -43,12 +43,14 @@ export default function Home() {
             <p className="text-lg sm:text-xl mt-4 font-light">
               Career Assistance Platform
             </p>
-            <button
-              onClick={() => handleMenuClick("/resources")}
-              className="mt-8 px-6 py-2 bg-yellow-400 text-black font-medium rounded shadow hover:bg-yellow-500 transition"
-            >
-              Get Started
-            </button>
+            {!isLoggedIn && (
+              <button
+                onClick={() => handleMenuClick("/resources")}
+                className="mt-8 px-6 py-2 bg-yellow-400 text-black font-medium rounded shadow hover:bg-yellow-500 transition"
+              >
+                Get Started
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -57,31 +59,32 @@ export default function Home() {
       <section className="px-6 md:px-12 py-24 bg-gray-900 text-white">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-center mb-16">More</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          {["Connection", "Guidance", "Friendliness"].map((title, idx) => (
+          {['Connection', 'Guidance', 'Friendliness'].map((title, idx) => (
             <div key={idx} className="bg-white text-black rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition">
               <Image src={`/${title}.jpg`} alt={title} width={600} height={300} className="w-full h-60 object-cover transition-transform duration-300 hover:scale-105 hover:brightness-90" />
               <div className="p-6">
                 <h3 className="text-2xl font-semibold mb-4">{title}</h3>
                 <p className="text-base">
-                  {title === "Connection" && "Develops a proper channel to link the students with the mentors, alumni and industry professional."}
-                  {title === "Guidance" && "Through professional career counseling and skill development, provides students with clear directions and practical support."}
-                  {title === "Friendliness" && "As an institution that embraces diversity and respect, create a friendly atmosphere for learners."}
+                  {title === 'Connection' && 'Develops a proper channel to link the students with the mentors, alumni and industry professional.'}
+                  {title === 'Guidance' && 'Through professional career counseling and skill development, provides students with clear directions and practical support.'}
+                  {title === 'Friendliness' && 'As an institution that embraces diversity and respect, create a friendly atmosphere for learners.'}
                 </p>
               </div>
             </div>
           ))}
         </div>
       </section>
- {/* Collaborators Section */}
-            <div className="px-12 py-24 text-center">
-                <h2 className="text-5xl font-light mb-8">Collaborators</h2>
-                <div className="flex flex-wrap justify-center gap-12">
-                    <Image src="/MIS.jpg" alt="MIS" width={150} height={75} />
-                    <Image src="/SIMM.png" alt="SIMM" width={150} height={75} />
-                    <Image src="/DB.jpg" alt="University" width={150} height={75} />
-                    <Image src="/HF.jpg" alt="Institution" width={150} height={75} />
-                </div>
-            </div>
+
+      {/* Collaborators Section */}
+      <div className="px-12 py-24 text-center">
+        <h2 className="text-5xl font-light mb-8">Collaborators</h2>
+        <div className="flex flex-wrap justify-center gap-12">
+          <Image src="/MIS.jpg" alt="MIS" width={150} height={75} />
+          <Image src="/SIMM.png" alt="SIMM" width={150} height={75} />
+          <Image src="/DB.jpg" alt="University" width={150} height={75} />
+          <Image src="/HF.jpg" alt="Institution" width={150} height={75} />
+        </div>
+      </div>
 
       {/* Footer */}
       <footer className="bg-black py-12 text-center text-gray-400 text-base sm:text-lg">
@@ -98,5 +101,3 @@ export default function Home() {
     </div>
   );
 }
-
-           
