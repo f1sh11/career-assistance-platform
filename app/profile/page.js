@@ -12,13 +12,16 @@ export default function ProfilePage() {
     major: "",
     interests: "",
     skills: "",
-    dreamJob: ""
+    dreamJob: "",
+    avatarUrl: ""
   });
 
   const [avatarUrl, setAvatarUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [userInfo, setUserInfo] = useState({ username: "", role: "" });
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -31,7 +34,7 @@ export default function ProfilePage() {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const res = await fetch("http://localhost:5000/api/users/me", {
+      const res = await fetch(`${API_URL}/api/users/me`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -49,18 +52,46 @@ export default function ProfilePage() {
           interests: data.user.profile.interests || "",
           skills: data.user.profile.skills || "",
           dreamJob: data.user.profile.dreamJob || "",
+          avatarUrl: data.user.profile.avatarUrl || ""
         });
         setAvatarUrl(data.user.profile.avatarUrl || "");
         setUserInfo({
           username: data.user.identifier || "User",
           role: data.user.role || "Student",
         });
+        console.log("✅ 加载成功: avatarUrl =", data.user.profile.avatarUrl);
       } else {
         toast.error("Failed to load profile");
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
       toast.error("Error loading profile");
+    }
+  };
+
+  const updateAvatarOnly = async (newAvatarUrl) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ avatarUrl: newAvatarUrl })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        console.log("✅ avatarUrl 已写入数据库:", newAvatarUrl);
+      } else {
+        toast.error("写入头像失败: " + (data.message || ""));
+      }
+    } catch (error) {
+      console.error("写入 avatar 出错:", error);
+      toast.error("头像写入失败");
     }
   };
 
@@ -74,27 +105,33 @@ export default function ProfilePage() {
       return;
     }
 
-    // 设置本地预览
     setPreviewUrl(URL.createObjectURL(file));
 
-    const formData = new FormData();
-    formData.append("avatar", file);
+    const formDataUpload = new FormData();
+    formDataUpload.append("avatar", file);
 
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/upload/upload-avatar", {
+      const response = await fetch(`${API_URL}/api/upload/upload-avatar`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        body: formData,
+        body: formDataUpload,
       });
 
       const data = await response.json();
       if (data.avatarUrl) {
-        setAvatarUrl(data.avatarUrl);
-        toast.success("头像上传成功，已保存到资料中！");
-        await handleSubmit(true); // 自动保存
+        const fullUrl = `${API_URL}${data.avatarUrl}`;
+        setAvatarUrl(fullUrl);
+        setFormData(prev => ({
+          ...prev,
+          avatarUrl: data.avatarUrl
+        }));
+        toast.success("头像上传成功！");
+
+        await updateAvatarOnly(data.avatarUrl); // ✅ 显式更新数据库字段
+        await fetchProfile();
       } else {
         toast.error("头像上传失败");
       }
@@ -115,13 +152,13 @@ export default function ProfilePage() {
         return;
       }
 
-      const res = await fetch("http://localhost:5000/api/users/me", {
+      const res = await fetch(`${API_URL}/api/users/me`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ ...formData, avatarUrl }),
+        body: JSON.stringify(formData),
       });
 
       const data = await res.json();
@@ -149,16 +186,16 @@ export default function ProfilePage() {
 
   return (
     <div className="relative bg-white w-full min-h-screen pt-[80px] text-black font-sans">
-      {/* Top Section */}
       <div
         className="relative bg-cover bg-center h-64 flex flex-col items-center justify-center"
         style={{ backgroundImage: "url('/profile-background.jpg')" }}
       >
         <div className="relative">
           <img
-            src={previewUrl || avatarUrl || "/default-avatar.png"}
+            src={previewUrl || `${API_URL}${avatarUrl}` || "/default-avatar.png"}
             alt="头像"
             className="rounded-full w-24 h-24 border-4 border-white shadow-md mb-4"
+            onError={(e) => (e.target.src = "/default-avatar.png")}
           />
           <label className="absolute bottom-0 right-0 bg-white rounded-full p-1 cursor-pointer border border-gray-300 shadow">
             📷
@@ -174,7 +211,6 @@ export default function ProfilePage() {
         <p className="text-lg font-semibold text-black mt-1">Identity: {userInfo.role}</p>
       </div>
 
-      {/* Profile Info Section */}
       <div className="max-w-5xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8">
         <div className="md:col-span-1">
           <label className="block text-lg font-medium mb-2">Self-introduction:</label>
@@ -205,7 +241,6 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Buttons & Loading */}
       <div className="max-w-3xl mx-auto px-6 pb-16 flex flex-col md:flex-row gap-6 justify-center">
         <button
           onClick={() => handleSubmit(false)}

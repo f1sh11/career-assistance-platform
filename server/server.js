@@ -1,4 +1,4 @@
-// server.js (安全增强修正 - 移除 express-mongo-sanitize，使用自定义清理工具)
+// server.js (完整增强版 - 启用头像上传读取 + 安全与日志配置)
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -12,6 +12,8 @@ import rateLimit from 'express-rate-limit';
 import authRoutes from './src/routes/auth.routes.js';
 import userRoutes from './src/routes/user.routes.js';
 import matchingRoutes from './src/routes/matching.routes.js';
+import uploadRoutes from './src/routes/upload.routes.js';
+
 import connectDB from './src/config/db.js';
 import logger from './src/utils/logger.js';
 import { writeLog, writeError } from './src/utils/logHelper.js';
@@ -19,34 +21,33 @@ import { writeLog, writeError } from './src/utils/logHelper.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
-// Resolve __dirname in ESM
+// ✅ 解决 __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Load environment variables
+// ✅ 加载环境变量
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Create log directory if it doesn't exist
+// ✅ 确保日志目录存在
 const logDirectory = path.join(__dirname, 'src/logs');
 if (!fs.existsSync(logDirectory)) {
   fs.mkdirSync(logDirectory, { recursive: true });
 }
 
-// Create uploads directory if it doesn't exist
-const uploadDir = path.join(__dirname, 'uploads');
+// ✅ 确保 uploads 目录存在
+const uploadDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Access log via morgan
+// ✅ 访问日志记录
 const accessLogStream = fs.createWriteStream(path.join(logDirectory, 'morgan-access.log'), { flags: 'a' });
 
 // 🛡️ 安全中间件
 app.use(helmet());
-
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -54,31 +55,44 @@ app.use(rateLimit({
 }));
 
 // 🌐 通用中间件
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 📁 静态托管 uploads 文件夹
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// ✅ 静态托管 uploads 文件夹（头像访问核心）
+app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
+  setHeaders: (res, path) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  }
+}));
 
-// Morgan access logging
+// 📝 日志中间件
 app.use(morgan('combined', { stream: accessLogStream }));
 app.use(morgan('dev'));
 
 // 🌱 连接数据库
 connectDB();
 
-// 路由注册
+// 📦 注册 API 路由
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/matching', matchingRoutes);
+app.use('/api/upload', uploadRoutes);
 
-// 健康检查
+// ❤️ 健康检查
 app.get('/api/status', (req, res) => {
   res.json({ message: 'The server is running fine.', timestamp: new Date() });
 });
 
-// ❗错误处理中间件（日志写入 error.log）
+// ✅ 根路径防止 CORS GET 404
+app.get('/', (req, res) => {
+  res.send('Backend root OK');
+});
+
+// ❗全局错误处理
 app.use((err, req, res, next) => {
   logger.error(err.stack);
   writeError(`Unhandled error: ${err.message}`, err.stack);

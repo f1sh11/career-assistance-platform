@@ -30,10 +30,12 @@ export const updateProfile = async (req, res) => {
   try {
     const {
       name, phone, email, address, major,
-      interests, skills, dreamJob, introduction
+      interests, skills, dreamJob, introduction, avatarUrl // ✅ 添加 avatarUrl 解构
     } = req.body;
 
     const user = await User.findById(req.user._id);
+
+    console.log('💾 即将写入 avatarUrl:', avatarUrl);
 
     if (!user) {
       return res.status(404).json({ message: 'User does not exist' });
@@ -49,7 +51,8 @@ export const updateProfile = async (req, res) => {
       interests: interests || user.profile.interests,
       skills: skills || user.profile.skills,
       dreamJob: dreamJob || user.profile.dreamJob,
-      introduction: introduction || user.profile.introduction
+      introduction: introduction || user.profile.introduction,
+      avatarUrl: avatarUrl || user.profile.avatarUrl // ✅ 保存头像路径
     };
 
     await user.save();
