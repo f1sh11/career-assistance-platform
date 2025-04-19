@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import Image from "next/image";
 
 export default function ProfilePage() {
   const [formData, setFormData] = useState({
@@ -16,24 +15,27 @@ export default function ProfilePage() {
     dreamJob: ""
   });
 
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [userInfo, setUserInfo] = useState({ username: "", role: "" });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       fetchProfile();
     }
   }, []);
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) return;
 
-      const res = await fetch('http://localhost:5000/api/users/me', {
-        method: 'GET',
+      const res = await fetch("http://localhost:5000/api/users/me", {
+        method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const data = await res.json();
@@ -46,46 +48,93 @@ export default function ProfilePage() {
           major: data.user.profile.major || "",
           interests: data.user.profile.interests || "",
           skills: data.user.profile.skills || "",
-          dreamJob: data.user.profile.dreamJob || ""
+          dreamJob: data.user.profile.dreamJob || "",
+        });
+        setAvatarUrl(data.user.profile.avatarUrl || "");
+        setUserInfo({
+          username: data.user.identifier || "User",
+          role: data.user.role || "Student",
         });
       } else {
-        toast.error('Failed to load profile');
+        toast.error("Failed to load profile");
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
-      toast.error('Error loading profile');
+      console.error("Error fetching profile:", error);
+      toast.error("Error loading profile");
     }
   };
 
-  const handleSubmit = async () => {
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("请先登录");
+      return;
+    }
+
+    // 设置本地预览
+    setPreviewUrl(URL.createObjectURL(file));
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const response = await fetch("http://localhost:5000/api/upload/upload-avatar", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.avatarUrl) {
+        setAvatarUrl(data.avatarUrl);
+        toast.success("头像上传成功，已保存到资料中！");
+        await handleSubmit(true); // 自动保存
+      } else {
+        toast.error("头像上传失败");
+      }
+    } catch (error) {
+      console.error("上传错误:", error);
+      toast.error("上传失败");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (silent = false) => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
       if (!token) {
-        toast.error('Not logged in');
+        toast.error("Not logged in");
         return;
       }
 
-      const res = await fetch('http://localhost:5000/api/users/me', {
-        method: 'PUT',
+      const res = await fetch("http://localhost:5000/api/users/me", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ ...formData, avatarUrl }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        toast.success('Profile updated successfully!');
+        if (!silent) toast.success("Profile updated successfully!");
         fetchProfile();
       } else {
-        toast.error(data.message || 'Failed to update profile.');
+        toast.error(data.message || "Failed to update profile.");
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('An error occurred. Please try again later.');
+      console.error("Error updating profile:", error);
+      toast.error("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -94,19 +143,35 @@ export default function ProfilePage() {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   return (
     <div className="relative bg-white w-full min-h-screen pt-[80px] text-black font-sans">
-      {/* Header 已全局引入，无需重复 */}
-
       {/* Top Section */}
-      <div className="relative bg-cover bg-center h-64 flex flex-col items-center justify-center" style={{ backgroundImage: "url('/profile-background.jpg')" }}>
-        <div className="rounded-full w-24 h-24 bg-gray-300 border-4 border-white shadow-md mb-4" />
-        <h2 className="text-3xl font-bold text-black">Name</h2>
-        <p className="text-lg font-semibold text-black mt-1">Identity: Student</p>
+      <div
+        className="relative bg-cover bg-center h-64 flex flex-col items-center justify-center"
+        style={{ backgroundImage: "url('/profile-background.jpg')" }}
+      >
+        <div className="relative">
+          <img
+            src={previewUrl || avatarUrl || "/default-avatar.png"}
+            alt="头像"
+            className="rounded-full w-24 h-24 border-4 border-white shadow-md mb-4"
+          />
+          <label className="absolute bottom-0 right-0 bg-white rounded-full p-1 cursor-pointer border border-gray-300 shadow">
+            📷
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              className="hidden"
+            />
+          </label>
+        </div>
+        <h2 className="text-3xl font-bold text-black">{userInfo.username}</h2>
+        <p className="text-lg font-semibold text-black mt-1">Identity: {userInfo.role}</p>
       </div>
 
       {/* Profile Info Section */}
@@ -125,7 +190,9 @@ export default function ProfilePage() {
         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
           {["phone", "email", "address", "major", "interests", "skills", "dreamJob"].map((name) => (
             <div key={name}>
-              <label className="block text-sm font-medium capitalize">{name.replace(/([A-Z])/g, ' $1')}:</label>
+              <label className="block text-sm font-medium capitalize">
+                {name.replace(/([A-Z])/g, " $1")}:
+              </label>
               <input
                 name={name}
                 type="text"
@@ -138,10 +205,10 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Buttons */}
+      {/* Buttons & Loading */}
       <div className="max-w-3xl mx-auto px-6 pb-16 flex flex-col md:flex-row gap-6 justify-center">
         <button
-          onClick={handleSubmit}
+          onClick={() => handleSubmit(false)}
           disabled={loading}
           className={`w-full md:w-1/3 py-3 rounded transition ${
             loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
@@ -149,12 +216,16 @@ export default function ProfilePage() {
         >
           {loading ? "Saving..." : "Confirm"}
         </button>
-        <button
-          className="w-full md:w-1/3 bg-yellow-400 text-black py-3 rounded hover:bg-yellow-500 transition"
-        >
+        <button className="w-full md:w-1/3 bg-yellow-400 text-black py-3 rounded hover:bg-yellow-500 transition">
           Start matching
         </button>
       </div>
+
+      {loading && (
+        <div className="text-center text-gray-500 mb-10">
+          正在加载，请稍候...
+        </div>
+      )}
     </div>
   );
 }

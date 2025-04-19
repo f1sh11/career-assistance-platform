@@ -35,6 +35,12 @@ if (!fs.existsSync(logDirectory)) {
   fs.mkdirSync(logDirectory, { recursive: true });
 }
 
+// Create uploads directory if it doesn't exist
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 // Access log via morgan
 const accessLogStream = fs.createWriteStream(path.join(logDirectory, 'morgan-access.log'), { flags: 'a' });
 
@@ -51,6 +57,9 @@ app.use(rateLimit({
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// 📁 静态托管 uploads 文件夹
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Morgan access logging
 app.use(morgan('combined', { stream: accessLogStream }));
