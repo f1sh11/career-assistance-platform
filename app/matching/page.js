@@ -1,16 +1,11 @@
-/*matching*/
 "use client";
 
-import Image from "next/image";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { useEffect } from "react";
 import { toast } from "react-hot-toast";
-import axios from "axios";
 
 export default function MatchingPage() {
-  const [mentors, setMentors] = useState([]);
-  const [alumni, setAlumni] = useState([]);
-  const [professionals, setProfessionals] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -18,99 +13,66 @@ export default function MatchingPage() {
     if (!token) {
       toast.error("Session expired. Please login again.");
       router.push("/login");
-    } else {
-      // Simulated fetch - Replace with real API calls
-      setMentors([
-        { name: "John Mentor", id: 1 },
-        { name: "Jane Mentor", id: 2 },
-      ]);
-      setAlumni([
-        { name: "Tom Alumni", id: 3 },
-        { name: "Linda Alumni", id: 4 },
-      ]);
-      setProfessionals([
-        { name: "Alex Pro", id: 5 },
-        { name: "Sam Pro", id: 6 },
-      ]);
     }
   }, []);
 
-  const connectHandler = (name) => {
-    toast.success(`You are now connected with ${name}`);
-  };
-
-  const renderList = (list) => (
-    <div className="bg-white rounded shadow p-4 space-y-4">
-      {list.map((item) => (
-        <div key={item.id} className="flex justify-between items-center border p-3 rounded-md">
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 rounded-full bg-gray-300" />
-            <p>{item.name}</p>
-          </div>
-          <button
-            onClick={() => connectHandler(item.name)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Connect
-          </button>
-        </div>
-      ))}
-    </div>
-  );
+  const roles = [
+    {
+      label: "Mentors",
+      route: "/matching/mentors",
+      icon: "🧑‍🏫",
+    },
+    {
+      label: "Alumni",
+      route: "/matching/alumni",
+      icon: "🎓",
+    },
+    {
+      label: "Professionals",
+      route: "/matching/professionals",
+      icon: "💼",
+    },
+    {
+      label: "Browsing History",
+      route: "/matching/history",
+      icon: "🕒",
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-fixed bg-black/80 text-white">
-      {/* Header */}
-      <nav className=" bg-fixed w-full bg-black text-white flex justify-between items-center px-8 py-4">
-        <div className="flex items-center space-x-4">
-          <Image src="/curtinlogo.png.png" alt="Curtin Singapore" width={50} height={50} />
-          <span className="text-lg font-light">Curtin Singapore</span>
-        </div>
-        <div className="space-x-6">
-          <a href="/" className="hover:text-yellow-400">Home</a>
-          <a href="/community" className="hover:text-yellow-400">Community</a>
-          <a href="/profile" className="hover:text-yellow-400">Profile</a>
-          <a href="/chat" className="hover:text-yellow-400">Chat</a>
-          <a href="/resources" className="hover:text-yellow-400">Resource</a>
-        </div>
-      </nav>
-
-      {/* Background Section */}
-      <div className="relative bg-cover bg-center h-64 flex items-center justify-center" style={{ backgroundImage: "url('/Curtin4.jpg')" }}>
-        <div className="text-center">
-          <h2 className="text-2xl md:text-3xl font-semibold">Recommended Mentors/Alumni/Industry Professionals:</h2>
-          <p className="text-lg font-light mt-2">Identity: Student</p>
+    <div className="min-h-screen bg-gray-100 pt-[70px]">
+      {/* 顶部背景图横幅 */}
+      <div className="relative w-full h-[400px]">
+        <Image
+          src="/Curtin4.jpg"
+          alt="Matching Banner"
+          layout="fill"
+          objectFit="cover"
+          quality={100}
+          className="z-0"
+        />
+        <div className="absolute inset-0 flex flex-col justify-center items-center text-white bg-black/40 backdrop-blur-sm z-10">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Who would you like to connect with?
+          </h1>
+          <p className="text-lg font-light">Choose an identity below to explore</p>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-12 space-y-12">
-        {/* Mentors */}
-        <div>
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-5 h-5 bg-yellow-400"></div>
-            <h3 className="text-xl font-semibold">Mentors</h3>
-          </div>
-          {renderList(mentors)}
-        </div>
-
-        {/* Alumni */}
-        <div>
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-5 h-5 bg-yellow-400"></div>
-            <h3 className="text-xl font-semibold">Alumni</h3>
-          </div>
-          {renderList(alumni)}
-        </div>
-
-        {/* Professionals */}
-        <div>
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-5 h-5 bg-yellow-400"></div>
-            <h3 className="text-xl font-semibold">Industry Professionals</h3>
-          </div>
-          {renderList(professionals)}
-        </div>
+      {/* 卡片区域 */}
+      <div className="max-w-6xl mx-auto py-16 px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
+        {roles.map((item, index) => (
+          <button
+            key={index}
+            onClick={() => router.push(item.route)}
+            className="w-full h-48 bg-white bg-opacity-90 rounded-xl shadow-lg flex flex-col justify-center items-center hover:bg-yellow-400 hover:text-black transition text-xl font-light text-black"
+          >
+            <div className="text-4xl mb-2">{item.icon}</div>
+            {item.label}
+          </button>
+        ))}
       </div>
     </div>
   );
 }
+
