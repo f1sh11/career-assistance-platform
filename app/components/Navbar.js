@@ -11,18 +11,16 @@ export default function Navbar() {
   const router = useRouter();
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
-      setIsLoggedIn(!!token);
-    }
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
   }, []);
 
   useEffect(() => {
-    function handleClickOutside(event) {
+    const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
-    }
+    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -39,11 +37,11 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="w-full bg-black/80 backdrop-blur-md text-white fixed top-0 left-0 z-50 px-4 py-4 shadow-md">
-        <div className="flex flex-wrap items-center justify-between max-w-screen-xl mx-auto">
-          {/* Logo */}
+      <nav className="w-full bg-black/80 backdrop-blur-md text-white fixed top-0 left-0 z-50 shadow-md">
+        <div className="flex items-center justify-between w-full px-6 py-4">
+          {/* 左侧：Logo + 学校名 */}
           <div
-            className="flex items-center space-x-2 mb-2 sm:mb-0 cursor-pointer"
+            className="flex items-center space-x-2 cursor-pointer"
             onClick={() => router.push("/")}
           >
             <Image
@@ -57,8 +55,8 @@ export default function Navbar() {
             </h1>
           </div>
 
-          {/* Menu */}
-          <div className="flex flex-wrap justify-end gap-3 sm:gap-4 text-sm sm:text-base items-center relative">
+          {/* 右侧：导航菜单 */}
+          <div className="flex items-center space-x-4 text-sm sm:text-base relative">
             {["Home", "Community", "Profile", "Chat", "Resource"].map((item) => (
               <button
                 key={item}
@@ -127,10 +125,14 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
-      <div className="h-[0px]"></div>
+      <div className="h-[0px]" />
     </>
   );
 }
+
+
+
+
 
 
 
