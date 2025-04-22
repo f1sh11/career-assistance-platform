@@ -9,23 +9,32 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 export default function CommunityPage() {
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
+  const [showAll, setShowAll] = useState(false);
   const [newPost, setNewPost] = useState("");
 
-  const fetchPosts = async () => {
-    if (loading || !hasMore) return;
-    setLoading(true);
+  const fetchPosts = async (pageToFetch = 1, limit = 3) => {
     try {
-      const res = await axios.get(`${API}/api/posts?page=${page}`);
-      if (res.data.length < 15) setHasMore(false);
-      setPosts((prev) => [...prev, ...res.data]);
-      setPage((prev) => prev + 1);
+      const res = await axios.get(`${API}/api/posts?page=${pageToFetch}&limit=${limit}`);
+      setPosts(res.data.posts);
+      setTotalPages(res.data.totalPages);
+      setPage(pageToFetch);
     } catch (err) {
-      console.error("Failed to load posts", err);
-    } finally {
-      setLoading(false);
+      console.error("Failed to fetch posts", err);
     }
+  };
+
+  useEffect(() => {
+    fetchPosts(1, 3);
+  }, []);
+
+  const handleMoreClick = () => {
+    setShowAll(true);
+    fetchPosts(1, 15);
+  };
+
+  const goToPage = (pageNum) => {
+    fetchPosts(pageNum, 15);
   };
 
   const handlePost = async () => {
@@ -37,25 +46,12 @@ export default function CommunityPage() {
         { title: newPost.slice(0, 50), content: newPost },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setPosts([res.data, ...posts]);
+      setPosts((prev) => [res.data, ...prev]);
       setNewPost("");
     } catch (err) {
       console.error("Failed to create post", err);
     }
   };
-
-  useEffect(() => {
-    fetchPosts();
-    const onScroll = () => {
-      if (
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - 100
-      ) {
-        fetchPosts();
-      }
-    };
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   return (
     <div className="min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
@@ -67,10 +63,9 @@ export default function CommunityPage() {
         </aside>
 
         <div className="ml-48 flex flex-1 px-8 py-10 space-x-8">
-          {/* Posts */}
           <main className="flex-1 overflow-y-auto">
-            {posts.map((post, idx) => (
-              <Link href={`/community/article/${post._id}`} key={idx}>
+            {posts.map((post) => (
+              <Link href={`/community/article/${post._id}`} key={post._id}>
                 <div className="bg-white/90 rounded-lg shadow-md p-6 mb-6 hover:shadow-xl transition cursor-pointer">
                   <h2 className="text-2xl font-semibold mb-2 text-black">{post.title}</h2>
                   <p className="text-gray-700 text-sm">{post.content.slice(0, 100)}...</p>
@@ -78,11 +73,30 @@ export default function CommunityPage() {
                 </div>
               </Link>
             ))}
-            {loading && <p className="text-white text-center">Loading...</p>}
-            {!hasMore && <p className="text-white text-center">No more posts</p>}
+
+            {!showAll && posts.length > 3 && (
+              <button onClick={handleMoreClick} className="text-white underline mt-4">More</button>
+            )}
+
+            {showAll && totalPages > 1 && (
+              <div className="flex flex-wrap gap-2 mt-6 text-white">
+                <button onClick={() => goToPage(1)}>First</button>
+                <button disabled={page === 1} onClick={() => goToPage(page - 1)}>Prev</button>
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => goToPage(i + 1)}
+                    className={page === i + 1 ? "underline font-bold" : ""}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button disabled={page === totalPages} onClick={() => goToPage(page + 1)}>Next</button>
+                <button onClick={() => goToPage(totalPages)}>Last</button>
+              </div>
+            )}
           </main>
 
-          {/* Sidebar */}
           <aside className="w-80 flex flex-col space-y-8">
             <div className="bg-white rounded-lg shadow-md p-6 text-black">
               <h2 className="text-xl font-semibold mb-4">Post Something</h2>
@@ -92,7 +106,10 @@ export default function CommunityPage() {
                 value={newPost}
                 onChange={(e) => setNewPost(e.target.value)}
               />
-              <button onClick={handlePost} className="w-full bg-blue-500 text-white py-3 rounded hover:bg-blue-600">
+              <button
+                onClick={handlePost}
+                className="w-full bg-blue-500 text-white py-3 rounded hover:bg-blue-600"
+              >
                 Post
               </button>
             </div>
@@ -102,6 +119,8 @@ export default function CommunityPage() {
     </div>
   );
 }
+
+
 
 
 

@@ -19,15 +19,22 @@ export const createPost = async (req, res) => {
 
 export const getPosts = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = 15;
+  const limit = parseInt(req.query.limit) || 15;
   const skip = (page - 1) * limit;
 
   try {
+    const total = await Post.countDocuments({ status: 'approved' });
+
     const posts = await Post.find({ status: 'approved' })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
-    res.json(posts);
+
+    res.json({
+      posts,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -76,4 +83,5 @@ export const toggleCollect = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
