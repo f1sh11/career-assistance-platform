@@ -6,8 +6,6 @@ import Link from "next/link";
 export default function CommunityPage() {
   return (
     <div className="min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
-      {/* 顶部导航栏已全局引入，无需重复 */}
-
       <div className="pt-[80px] flex">
         {/* 左侧固定导航栏 */}
         <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col cursor-pointer pt-24 space-y-6">
@@ -23,7 +21,7 @@ export default function CommunityPage() {
         </aside>
 
         {/* 中间文章和右侧栏整体 */}
-        <div className="ml-48 flex flex-1 px-8 py-24 space-x-8">
+        <div className="ml-48 flex flex-1 px-8 py-10 space-x-8">
           {/* 中间滚动文章列表 */}
           <main className="flex-1 overflow-y-auto">
             <Link href="/community/article/1">
@@ -80,3 +78,5 @@ export default function CommunityPage() {
     </div>
   );
 }
+
+

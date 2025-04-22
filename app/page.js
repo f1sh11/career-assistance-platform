@@ -34,7 +34,7 @@ export default function Home() {
   return (
     <div className="max-w-screen overflow-x-hidden bg-black text-white font-sans relative">
       {/* Hero Section */}
-      <section className="relative min-h-screen pt-28 bg-cover bg-center flex items-center justify-center" style={{ backgroundImage: "url('/Curtin1.jpg.webp')" }}>
+      <section className="relative min-h-screen pt-28 bg-cover bg-center flex items-center justify-center" style={{ backgroundImage: "url('/Curtin1.jpg')" }}>
         <div className="bg-gradient-to-r from-black/80 to-transparent w-full max-w-screen-xl px-6 py-16 rounded text-white">
           <div className="text-left max-w-xl">
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">

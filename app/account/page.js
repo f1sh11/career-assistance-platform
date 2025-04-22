@@ -1,12 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
 export default function AccountPage() {
-  const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState("User");
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
@@ -15,64 +13,46 @@ export default function AccountPage() {
     }
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    router.push("/login");
-  };
-
-  const menuItems = [
-    { label: "Settings", route: "/settings" },
-    { label: "Activity", route: "/activity" },
-    { label: "Notifications", route: "/notifications" },
-    { label: "Security", route: "/security" },
-  ];
-
   return (
-    <div className="min-h-screen flex flex-col pt-[80px]">
-      {/* 顶部导航栏已全局引入，无需重复 */}
-
-      {/* 图片背景区域 */}
+    <div className="min-h-screen bg-gray-100 pt-[15px]">
+      {/* 顶部欢迎横幅区域 */}
       <div className="relative w-full h-[500px]">
         <Image
           src="/Curtin5.jpg"
-          alt="Curtin Background"
+          alt="Dashboard Banner"
           layout="fill"
           objectFit="cover"
           quality={100}
           className="z-0"
         />
-        <div className="absolute inset-0 top-2/3 flex flex-col items-center justify-center z-10">
-          <h1 className="text-white text-5xl font-bold mb-16">MY ACCOUNT</h1>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-20">
-            {menuItems.map((item, index) => (
-              <button
-                key={index}
-                onClick={() => router.push(item.route)}
-                className="w-60 h-48 bg-white bg-opacity-90 rounded-lg shadow-lg flex flex-col justify-center items-center hover:bg-yellow-400 hover:text-black transition text-2xl font-light text-black"
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+        <div className="absolute inset-0 flex flex-col justify-center items-center text-white bg-black/40 backdrop-blur-sm z-10">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Welcome back, {username}!
+          </h1>
+          <p className="text-lg font-light">
+            This is your personal dashboard overview.
+          </p>
         </div>
       </div>
 
-      {/* 灰色背景按钮区域 */}
-      <div className="bg-gray-200 flex flex-col items-center py-16">
-        <div className="flex flex-col items-center mt-24 space-y-8">
-          <button
-            onClick={() => router.push("/profile")}
-            className="bg-gray-400 text-white w-300 py-4 rounded-lg text-2xl hover:bg-yellow-500 transition"
-          >
-            Go to Profile
-          </button>
-          <button
-            onClick={handleLogout}
-            className="bg-black text-white w-300 py-4 rounded-lg text-2xl hover:bg-red-600 transition"
-          >
-            Logout
-          </button>
+      {/* 信息卡片区域 */}
+      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 py-16 px-6">
+        {/* Notifications */}
+        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+          <h2 className="text-black font-semibold mb-2">🔔 Notifications</h2>
+          <p className="text-gray-600">You have 2 unread notifications.</p>
+        </div>
+
+        {/* Security */}
+        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+          <h2 className="text-black font-semibold mb-2">🛡️ Security</h2>
+          <p className="text-gray-600">Your account is secured with 2FA.</p>
+        </div>
+
+        {/* Last login */}
+        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+          <h2 className="text-black font-semibold mb-2">📅 Last Login</h2>
+          <p className="text-gray-600">April 20, 2025, 21:34</p>
         </div>
       </div>
     </div>

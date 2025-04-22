@@ -23,23 +23,7 @@ export default function CommentPage() {
       </aside>
 
       {/* 主内容区 */}
-      <div className="ml-48 flex-1 pt-32 flex flex-col items-center">
-        {/* 顶部菜单栏 */}
-        <nav className="w-full bg-black text-white fixed top-0 left-0 z-50 flex justify-between items-center px-12 py-4">
-          <div className="flex items-center space-x-4">
-            <Image src="/curtinlogo.png.png" alt="Curtin Singapore" width={50} height={50} />
-            <h1 className="text-xl font-light">Curtin Singapore</h1>
-          </div>
-          <div className="space-x-8 text-lg">
-            <a href="/" className="hover:text-yellow-400">Home</a>
-            <a href="/community" className="hover:text-yellow-400">Community</a>
-            <a href="/profile" className="hover:text-yellow-400">Profile</a>
-            <a href="/chat" className="hover:text-yellow-400">Chat</a>
-            <a href="/resources" className="hover:text-yellow-400">Resource</a>
-          </div>
-        </nav>
-
-        {/* 内容 */}
+      <div className="ml-48 flex-1 pt-[100px] flex flex-col items-center">
         <h1 className="text-5xl font-bold mb-12 text-black">My Comments</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-8 max-w-4xl">
@@ -56,4 +40,3 @@ export default function CommentPage() {
     </div>
   );
 }
-

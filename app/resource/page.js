@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 
+// 资源卡片组件
 function ResourceCard({ resource, scrollTop, index, lastIndex }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(true);
@@ -12,7 +13,6 @@ function ResourceCard({ resource, scrollTop, index, lastIndex }) {
       if (!ref.current) return;
       const rect = ref.current.getBoundingClientRect();
       const distanceFromTop = rect.top;
-
       const disappearThreshold = 150;
       const bottomPreserveBuffer = 4;
 
@@ -49,6 +49,8 @@ export default function ResourcePage() {
   const [selectedCategory, setSelectedCategory] = useState("Career Guides");
   const [currentPage, setCurrentPage] = useState(1);
   const [scrollTop, setScrollTop] = useState(0);
+  const [showAll, setShowAll] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   const categories = [
     "Career Guides",
@@ -57,7 +59,7 @@ export default function ResourcePage() {
     "Interview Preparation",
     "Company Profiles",
     "Skill Development Courses",
-    "Psychological Tests"
+    "Psychological Tests",
   ];
 
   const resourcesData = {
@@ -103,6 +105,7 @@ export default function ResourcePage() {
   const goToPage = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
+      setShowAll(false);
     }
   };
 
@@ -116,17 +119,16 @@ export default function ResourcePage() {
 
   return (
     <div className="min-h-screen bg-fixed bg-cover bg-center pt-[80px]" style={{ backgroundImage: "url('/Curtin3.jpg')" }}>
-      {/* 顶部导航栏已全局引入，无需重复 */}
-
       <div className="flex">
-        {/* 左侧栏 */}
-        <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col cursor-pointer pt-24 space-y-2">
+        {/* 左边分类栏 */}
+        <aside className="w-48 bg-gray-800 text-white fixed top-[0px] left-0 h-screen z-40 flex flex-col pt-24 space-y-2">
           {categories.map((category) => (
             <div
               key={category}
               onClick={() => {
                 setSelectedCategory(category);
                 setCurrentPage(1);
+                setShowAll(false);
               }}
               className={`text-lg font-light px-4 py-3 rounded-md transition cursor-pointer ${
                 selectedCategory === category
@@ -139,20 +141,30 @@ export default function ResourcePage() {
           ))}
         </aside>
 
-        {/* 右侧内容区 */}
+        {/* 右侧内容区域 */}
         <div className="ml-64 flex-1 pr-8 py-20 relative">
+          {/* 搜索框 */}
           <div className="fixed top-30 right-8 left-64 max-w-[calc(100%-320px)] z-20">
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white rounded-lg shadow-md p-6 flex space-x-4">
               <input
                 type="text"
-                placeholder="Click here to search for resources"
-                className="w-full p-4 border rounded bg-gray-100 placeholder-gray-400 focus:placeholder-black text-black"
+                placeholder="Search for resources..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                className="flex-1 p-4 border rounded bg-gray-100 placeholder-gray-400 focus:placeholder-black text-black"
               />
+              <button
+                onClick={() => console.log("Searching for:", searchText)}
+                className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded shadow"
+              >
+                Search
+              </button>
             </div>
           </div>
 
+          {/* 卡片内容 */}
           <main className="pt-25 space-y-2 w-full">
-            {paginatedResources.map((resource, index) => (
+            {(showAll ? paginatedResources : paginatedResources.slice(0, 3)).map((resource, index) => (
               <ResourceCard
                 key={index}
                 resource={resource}
@@ -163,6 +175,19 @@ export default function ResourcePage() {
             ))}
           </main>
 
+          {/* Show More 按钮 */}
+          {!showAll && paginatedResources.length > 3 && (
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={() => setShowAll(true)}
+                className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded shadow"
+              >
+                Show More
+              </button>
+            </div>
+          )}
+
+          {/* 页码翻页器 */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center space-x-2 mt-8">
               <button
@@ -197,3 +222,5 @@ export default function ResourcePage() {
     </div>
   );
 }
+
+
