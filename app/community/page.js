@@ -12,10 +12,11 @@ export default function CommunityPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [showAll, setShowAll] = useState(false);
   const [newPost, setNewPost] = useState("");
+  const [search, setSearch] = useState("");
 
-  const fetchPosts = async (pageToFetch = 1, limit = 3) => {
+  const fetchPosts = async (pageToFetch = 1, limit = 3, keyword = "") => {
     try {
-      const res = await axios.get(`${API}/api/posts?page=${pageToFetch}&limit=${limit}`);
+      const res = await axios.get(`${API}/api/posts?page=${pageToFetch}&limit=${limit}&search=${keyword}`);
       setPosts(res.data.posts);
       setTotalPages(res.data.totalPages);
       setPage(pageToFetch);
@@ -30,11 +31,11 @@ export default function CommunityPage() {
 
   const handleMoreClick = () => {
     setShowAll(true);
-    fetchPosts(1, 15);
+    fetchPosts(1, 15, search);
   };
 
   const goToPage = (pageNum) => {
-    fetchPosts(pageNum, 15);
+    fetchPosts(pageNum, 15, search);
   };
 
   const handlePost = async () => {
@@ -53,9 +54,33 @@ export default function CommunityPage() {
     }
   };
 
+  const handleSearch = () => {
+    setShowAll(true);
+    fetchPosts(1, 15, search);
+  };
+
   return (
     <div className="min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
-      <div className="pt-[80px] flex">
+      {/* 搜索栏 */}
+      <div className="pt-[100px] flex justify-center">
+        <div className="bg-white p-4 rounded shadow-md w-full max-w-7xl flex space-x-4 ml-13">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search for posts..."
+            className="flex-1 px-4 py-2 border rounded text-black"
+          />
+          <button
+            onClick={handleSearch}
+            className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded"
+          >
+            Search
+          </button>
+        </div>
+      </div>
+
+      <div className="flex">
         <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col cursor-pointer pt-24 space-y-6">
           <Link href="/community/collect"><div className="hover:text-yellow-400 px-4 py-2 rounded">Collect</div></Link>
           <Link href="/community/comment"><div className="hover:text-yellow-400 px-4 py-2 rounded">Comment</div></Link>
@@ -119,6 +144,11 @@ export default function CommunityPage() {
     </div>
   );
 }
+
+
+
+
+
 
 
 
