@@ -61,9 +61,9 @@ export default function CommunityPage() {
 
   return (
     <div className="min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
-      {/* 搜索栏 */}
+      {/* ✅ 固定搜索栏，但保留原来的位置和样式不变 */}
       <div className="pt-[100px] flex justify-center">
-        <div className="bg-white p-4 rounded shadow-md w-full max-w-7xl flex space-x-4 ml-13">
+        <div className="fixed z-50 bg-white p-4 rounded shadow-md w-full max-w-7xl flex space-x-4 ml-13">
           <input
             type="text"
             value={search}
@@ -81,6 +81,7 @@ export default function CommunityPage() {
       </div>
 
       <div className="flex">
+        {/* 左侧栏不动 */}
         <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col cursor-pointer pt-24 space-y-6">
           <Link href="/community/collect"><div className="hover:text-yellow-400 px-4 py-2 rounded">Collect</div></Link>
           <Link href="/community/comment"><div className="hover:text-yellow-400 px-4 py-2 rounded">Comment</div></Link>
@@ -88,7 +89,7 @@ export default function CommunityPage() {
         </aside>
 
         <div className="ml-48 flex flex-1 px-8 py-10 space-x-8">
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 overflow-y-auto pt-[80px] pb-[160px]">
             {posts.map((post) => (
               <Link href={`/community/article/${post._id}`} key={post._id}>
                 <div className="bg-white/90 rounded-lg shadow-md p-6 mb-6 hover:shadow-xl transition cursor-pointer">
@@ -99,41 +100,55 @@ export default function CommunityPage() {
               </Link>
             ))}
 
+            {/* 美化 More */}
             {!showAll && posts.length > 3 && (
-              <button onClick={handleMoreClick} className="text-white underline mt-4">More</button>
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={handleMoreClick}
+                  className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded"
+                >
+                  Show More
+                </button>
+              </div>
             )}
 
-            {showAll && totalPages > 1 && (
-              <div className="flex flex-wrap gap-2 mt-6 text-white">
-                <button onClick={() => goToPage(1)}>First</button>
-                <button disabled={page === 1} onClick={() => goToPage(page - 1)}>Prev</button>
-                {[...Array(totalPages)].map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => goToPage(i + 1)}
-                    className={page === i + 1 ? "underline font-bold" : ""}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                <button disabled={page === totalPages} onClick={() => goToPage(page + 1)}>Next</button>
-                <button onClick={() => goToPage(totalPages)}>Last</button>
+            {/* 分页按钮 */}
+            {showAll && posts.length > 0 && (
+              <div className="flex justify-center mt-8">
+                <div className="flex gap-2">
+                  <button onClick={() => goToPage(1)} className="px-3 py-1 bg-gray-200 rounded">First</button>
+                  <button disabled={page === 1} onClick={() => goToPage(page - 1)} className="px-3 py-1 bg-gray-200 rounded">Prev</button>
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => goToPage(i + 1)}
+                      className={`px-3 py-1 rounded ${
+                        page === i + 1 ? "bg-yellow-400 text-black" : "bg-gray-200"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button disabled={page === totalPages} onClick={() => goToPage(page + 1)} className="px-3 py-1 bg-gray-200 rounded">Next</button>
+                  <button onClick={() => goToPage(totalPages)} className="px-3 py-1 bg-gray-200 rounded">Last</button>
+                </div>
               </div>
             )}
           </main>
 
+          {/* ✅ 发帖栏固定，但仍在右侧 aside 里 */}
           <aside className="w-80 flex flex-col space-y-8">
-            <div className="bg-white rounded-lg shadow-md p-6 text-black">
+            <div className="fixed up-20 bottom-118 right-5 w-80 bg-white shadow-md p-6 text-black z-50 rounded">
               <h2 className="text-xl font-semibold mb-4">Post Something</h2>
               <textarea
-                className="w-full h-32 p-4 border rounded-md bg-gray-100 resize-none mb-4"
+                className="w-full h-24 p-3 border rounded bg-gray-100 resize-none mb-2"
                 placeholder="What's on your mind?"
                 value={newPost}
                 onChange={(e) => setNewPost(e.target.value)}
               />
               <button
                 onClick={handlePost}
-                className="w-full bg-blue-500 text-white py-3 rounded hover:bg-blue-600"
+                className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
               >
                 Post
               </button>
@@ -144,6 +159,9 @@ export default function CommunityPage() {
     </div>
   );
 }
+
+
+
 
 
 
