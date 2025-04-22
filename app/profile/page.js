@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import Image from "next/image";
 
 export default function ProfilePage() {
   const [formData, setFormData] = useState({
@@ -13,28 +12,33 @@ export default function ProfilePage() {
     major: "",
     interests: "",
     skills: "",
-    dreamJob: ""
+    dreamJob: "",
+    avatarUrl: ""
   });
 
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [userInfo, setUserInfo] = useState({ username: "", role: "" });
 
-  // ✅ 页面加载时拉取用户资料
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       fetchProfile();
     }
   }, []);
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) return;
 
-      const res = await fetch('http://localhost:5000/api/users/me', {
-        method: 'GET',
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const data = await res.json();
@@ -47,46 +51,127 @@ export default function ProfilePage() {
           major: data.user.profile.major || "",
           interests: data.user.profile.interests || "",
           skills: data.user.profile.skills || "",
-          dreamJob: data.user.profile.dreamJob || ""
+          dreamJob: data.user.profile.dreamJob || "",
+          avatarUrl: data.user.profile.avatarUrl || ""
         });
+        setAvatarUrl(data.user.profile.avatarUrl || "");
+        setUserInfo({
+          username: data.user.identifier || "User",
+          role: data.user.role || "Student",
+        });
+        console.log("✅ 加载成功: avatarUrl =", data.user.profile.avatarUrl);
       } else {
-        toast.error('Failed to load profile');
+        toast.error("Failed to load profile");
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
-      toast.error('Error loading profile');
+      console.error("Error fetching profile:", error);
+      toast.error("Error loading profile");
     }
   };
 
-  const handleSubmit = async () => {
+  const updateAvatarOnly = async (newAvatarUrl) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ avatarUrl: newAvatarUrl })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        console.log("✅ avatarUrl 已写入数据库:", newAvatarUrl);
+      } else {
+        toast.error("写入头像失败: " + (data.message || ""));
+      }
+    } catch (error) {
+      console.error("写入 avatar 出错:", error);
+      toast.error("头像写入失败");
+    }
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("请先登录");
+      return;
+    }
+
+    setPreviewUrl(URL.createObjectURL(file));
+
+    const formDataUpload = new FormData();
+    formDataUpload.append("avatar", file);
+
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/api/upload/upload-avatar`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formDataUpload,
+      });
+
+      const data = await response.json();
+      if (data.avatarUrl) {
+        const fullUrl = `${API_URL}${data.avatarUrl}`;
+        setAvatarUrl(fullUrl);
+        setFormData(prev => ({
+          ...prev,
+          avatarUrl: data.avatarUrl
+        }));
+        toast.success("头像上传成功！");
+
+        await updateAvatarOnly(data.avatarUrl); // ✅ 显式更新数据库字段
+        await fetchProfile();
+      } else {
+        toast.error("头像上传失败");
+      }
+    } catch (error) {
+      console.error("上传错误:", error);
+      toast.error("上传失败");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (silent = false) => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
       if (!token) {
-        toast.error('Not logged in');
+        toast.error("Not logged in");
         return;
       }
 
-      const res = await fetch('http://localhost:5000/api/users/me', {
-        method: 'PUT',
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        toast.success('Profile updated successfully!');
+        if (!silent) toast.success("Profile updated successfully!");
         fetchProfile();
       } else {
-        toast.error(data.message || 'Failed to update profile.');
+        toast.error(data.message || "Failed to update profile.");
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('An error occurred. Please try again later.');
+      console.error("Error updating profile:", error);
+      toast.error("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -95,37 +180,38 @@ export default function ProfilePage() {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   return (
-    <div className="relative bg-white w-full min-h-screen mt-10 text-black font-sans">
-      {/* Header */}
-      <nav className="w-full bg-black text-white fixed top-0 left-0 z-50 flex justify-between items-center px-12 py-4">
-        <div className="flex items-center space-x-4">
-          <Image src="/curtinlogo.png.png" alt="Curtin Singapore" width={50} height={50} />
-          <h1 className="text-xl font-light">Curtin Singapore</h1>
+    <div className="relative bg-white w-full min-h-screen pt-[80px] text-black font-sans">
+      <div
+        className="relative bg-cover bg-center h-64 flex flex-col items-center justify-center"
+        style={{ backgroundImage: "url('/profile-background.jpg')" }}
+      >
+        <div className="relative">
+          <img
+            src={previewUrl || `${API_URL}${avatarUrl}` || "/default-avatar.png"}
+            alt="头像"
+            className="rounded-full w-24 h-24 border-4 border-white shadow-md mb-4"
+            onError={(e) => (e.target.src = "/default-avatar.png")}
+          />
+          <label className="absolute bottom-0 right-0 bg-white rounded-full p-1 cursor-pointer border border-gray-300 shadow">
+            📷
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              className="hidden"
+            />
+          </label>
         </div>
-        <div className="space-x-8 text-lg">
-          <a href="/" className="hover:text-yellow-400">Home</a>
-          <a href="/community" className="hover:text-yellow-400">Community</a>
-          <a href="/profile" className="hover:text-yellow-400">Profile</a>
-          <a href="/chat" className="hover:text-yellow-400">Chat</a>
-          <a href="/resources" className="hover:text-yellow-400">Resource</a>
-        </div>
-      </nav>
-
-      {/* Top Section */}
-      <div className="relative bg-cover bg-center h-64 flex flex-col items-center justify-center" style={{ backgroundImage: "url('/profile-background.jpg')" }}>
-        <div className="rounded-full w-24 h-24 bg-gray-300 border-4 border-white shadow-md mb-4" />
-        <h2 className="text-3xl font-bold text-black">Name</h2>
-        <p className="text-lg font-semibold text-black mt-1">Identity: Student</p>
+        <h2 className="text-3xl font-bold text-black">{userInfo.username}</h2>
+        <p className="text-lg font-semibold text-black mt-1">Identity: {userInfo.role}</p>
       </div>
 
-      {/* Profile Info Section */}
       <div className="max-w-5xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8">
-        {/* Left - Self-intro */}
         <div className="md:col-span-1">
           <label className="block text-lg font-medium mb-2">Self-introduction:</label>
           <textarea
@@ -137,19 +223,12 @@ export default function ProfilePage() {
           />
         </div>
 
-        {/* Right - Info sections */}
         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[
-            { label: "Phone number", name: "phone" },
-            { label: "Email", name: "email" },
-            { label: "Address", name: "address" },
-            { label: "Major", name: "major" },
-            { label: "Interests", name: "interests" },
-            { label: "Skills", name: "skills" },
-            { label: "Dream job", name: "dreamJob" }
-          ].map(({ label, name }) => (
+          {["phone", "email", "address", "major", "interests", "skills", "dreamJob"].map((name) => (
             <div key={name}>
-              <label className="block text-sm font-medium">{label}:</label>
+              <label className="block text-sm font-medium capitalize">
+                {name.replace(/([A-Z])/g, " $1")}:
+              </label>
               <input
                 name={name}
                 type="text"
@@ -162,10 +241,9 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Buttons */}
       <div className="max-w-3xl mx-auto px-6 pb-16 flex flex-col md:flex-row gap-6 justify-center">
         <button
-          onClick={handleSubmit}
+          onClick={() => handleSubmit(false)}
           disabled={loading}
           className={`w-full md:w-1/3 py-3 rounded transition ${
             loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
@@ -173,12 +251,16 @@ export default function ProfilePage() {
         >
           {loading ? "Saving..." : "Confirm"}
         </button>
-        <button
-          className="w-full md:w-1/3 bg-yellow-400 text-black py-3 rounded hover:bg-yellow-500 transition"
-        >
+        <button className="w-full md:w-1/3 bg-yellow-400 text-black py-3 rounded hover:bg-yellow-500 transition">
           Start matching
         </button>
       </div>
+
+      {loading && (
+        <div className="text-center text-gray-500 mb-10">
+          正在加载，请稍候...
+        </div>
+      )}
     </div>
   );
 }

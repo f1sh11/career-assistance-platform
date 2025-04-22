@@ -61,7 +61,7 @@ export default function Navbar() {
               { label: "Home", route: "/" },
               { label: "Community", route: "/community" },
               { label: "Resource", route: "/resource" },
-              { label: "Matching", route: "/matching" },
+              { label: "Matching", route: "/matching/intro" },
             ].map((item) => (
               <button
                 key={item.label}
@@ -93,7 +93,6 @@ export default function Navbar() {
                       { label: "Account Overview", route: "/account" },
                       { label: "Settings", route: "/account/settings" },
                       { label: "Profile", route: "/profile" },
-                      { label: "Chat", route: "/chat" },
                       { label: "Activity", route: "/account/activity" },
                       { label: "Notifications", route: "/account/notifications" },
                       { label: "Security", route: "/account/security" },
