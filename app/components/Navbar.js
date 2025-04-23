@@ -59,15 +59,18 @@ export default function Navbar() {
 
           {/* 右侧：导航菜单 */}
           <div className="flex items-center space-x-4 text-sm sm:text-base relative">
-            {["Home", "Community", "Profile", "Chat", "Resource"].map((item) => (
+            {[
+              { label: "Home", route: "/" },
+              { label: "Community", route: "/community" },
+              { label: "Resource", route: "/resource" },
+              { label: "Matching", route: "/matching/intro" },
+            ].map((item) => (
               <button
-                key={item}
-                onClick={() =>
-                  handleMenuClick(item === "Home" ? "/" : `/${item.toLowerCase()}`)
-                }
+                key={item.label}
+                onClick={() => handleMenuClick(item.route)}
                 className="hover:text-yellow-400 hover:underline underline-offset-4 transition"
               >
-                {item}
+                {item.label}
               </button>
             ))}
 
@@ -91,6 +94,7 @@ export default function Navbar() {
                     {[
                       { label: "Account Overview", route: "/account" },
                       { label: "Settings", route: "/account/settings" },
+                      { label: "Profile", route: "/profile" },
                       { label: "Activity", route: "/account/activity" },
                       { label: "Notifications", route: "/account/notifications" },
                       { label: "Security", route: "/account/security" },
@@ -131,6 +135,7 @@ export default function Navbar() {
     </>
   );
 }
+
 
 
 

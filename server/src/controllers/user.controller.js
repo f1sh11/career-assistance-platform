@@ -1,5 +1,7 @@
 // src/controllers/user.controller.js
 import User from '../models/user.model.js';
+import Post from '../models/Post.js';
+import Comment from '../models/Comment.js';
 import { writeLog, writeError } from '../utils/logHelper.js';
 
 // Get the current user's profile
@@ -114,3 +116,32 @@ export const getUserById = async (req, res) => {
     res.status(500).json({ message: 'Get specified user error', error: error.message });
   }
 };
+
+// 🔹 Get current user's collected posts
+export const getUserCollections = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const posts = await Post.find({ collectedBy: userId }).sort({ createdAt: -1 });
+
+    res.status(200).json(posts);
+  } catch (error) {
+    writeError(`Get collections error: ${error.message}`, error.stack);
+    res.status(500).json({ message: 'Failed to get collections' });
+  }
+};
+
+// 🔹 Get current user's comments (with post title)
+export const getUserComments = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const comments = await Comment.find({ userId })
+      .populate('postId', 'title')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(comments);
+  } catch (error) {
+    writeError(`Get user comments error: ${error.message}`, error.stack);
+    res.status(500).json({ message: 'Failed to get comments' });
+  }
+};
+

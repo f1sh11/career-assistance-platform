@@ -1,0 +1,23 @@
+[33m0425c72[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfrontend[m[33m, [m[1;31morigin/frontend[m[33m)[m HEAD@{0}: pull origin frontend: Fast-forward
+[33m5e30773[m HEAD@{1}: commit: update menu
+[33m1fad879[m HEAD@{2}: commit: update Curtin1.jpg
+[33mb4efed6[m HEAD@{3}: commit: update resourcepage
+[33mcf73cbe[m[33m ([m[1;32mbugfix[m[33m)[m HEAD@{4}: pull origin frontend: Fast-forward
+[33m585795e[m HEAD@{5}: checkout: moving from bugfix to frontend
+[33mcf73cbe[m[33m ([m[1;32mbugfix[m[33m)[m HEAD@{6}: checkout: moving from frontend to bugfix
+[33m585795e[m HEAD@{7}: checkout: moving from bugfix to frontend
+[33mcf73cbe[m[33m ([m[1;32mbugfix[m[33m)[m HEAD@{8}: checkout: moving from frontend to bugfix
+[33m585795e[m HEAD@{9}: checkout: moving from bugfix to frontend
+[33mcf73cbe[m[33m ([m[1;32mbugfix[m[33m)[m HEAD@{10}: checkout: moving from frontend to bugfix
+[33m585795e[m HEAD@{11}: pull origin frontend --rebase (finish): returning to refs/heads/frontend
+[33m585795e[m HEAD@{12}: pull origin frontend --rebase (start): checkout 585795e4b4bbcd1db0f3f38944579ff0f7bc331c
+[33m2eea9e3[m HEAD@{13}: checkout: moving from bugfix to frontend
+[33mcf73cbe[m[33m ([m[1;32mbugfix[m[33m)[m HEAD@{14}: commit: update all frontend pages
+[33m2b7cd9b[m HEAD@{15}: commit: update all the frontend page
+[33m585795e[m HEAD@{16}: checkout: moving from frontend to bugfix
+[33m2eea9e3[m HEAD@{17}: commit: update navbar-client.jsx
+[33me65058b[m HEAD@{18}: pull --tags origin frontend: Fast-forward
+[33me923307[m HEAD@{19}: checkout: moving from bugfix to frontend
+[33m9e7fc91[m HEAD@{20}: checkout: moving from frontend to bugfix
+[33me923307[m HEAD@{21}: checkout: moving from main to frontend
+[33mf74e43b[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{22}: clone: from https://github.com/f1sh11/career-assistance-platform.git
