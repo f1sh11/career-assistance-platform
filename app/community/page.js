@@ -146,7 +146,7 @@ export default function CommunityPage() {
   return (
     <>
       {/* 🔧 Floating Search Bar */}
-      <div className="fixed top-[120px] left-0 right-0 z-[9999] flex justify-center">
+      <div className="fixed top-[100px] left-0 right-0 z-[9999] flex justify-center">
         <div className="bg-white p-4 rounded shadow-md w-full max-w-7xl flex space-x-4">
           <input
             type="text"
@@ -166,7 +166,7 @@ export default function CommunityPage() {
       </div>
 
       {/* 🔧 Floating Toggle Card */}
-      <div className="fixed bottom-40 right-10 w-80 bg-white shadow-md rounded p-4 z-[9999] ">
+      <div className="fixed bottom-[160px] right-10 w-80 bg-white shadow-md rounded p-4 z-[9999] ">
         <h2 className="text-md font-medium mb-2 text-center">Search Mode</h2>
         <div className="flex justify-between items-center text-sm font-medium mb-2 px-2 ">
           <span className={`${searchMode === "keyword" ? "text-yellow-500" : "text-gray-400"}`}>Keyword</span>
@@ -218,7 +218,7 @@ export default function CommunityPage() {
             </aside>
 
             <div className="ml-48 flex flex-1 px-8 py-10 space-x-8">
-              <main className="flex-1 overflow-y-auto pt-[80px] pb-[160px]">
+              <main className="flex-1 overflow-y-auto pt-[160px] pb-[160px]">
                 {posts.map((post, index) => (
                   <PostCard
                     key={post._id}
