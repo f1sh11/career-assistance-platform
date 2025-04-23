@@ -1,10 +1,56 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Link from "next/link";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+function PostCard({ post, index, lastIndex }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (!ref.current) return;
+      const rect = ref.current.getBoundingClientRect();
+      const distanceFromTop = rect.top;
+      const disappearThreshold = 150;
+      const bottomPreserveBuffer = 3;
+
+      if (index >= lastIndex - bottomPreserveBuffer) {
+        setVisible(true);
+      } else {
+        setVisible(distanceFromTop >= disappearThreshold);
+      }
+    };
+
+    handleVisibility();
+    window.addEventListener("scroll", handleVisibility);
+    window.addEventListener("resize", handleVisibility);
+    return () => {
+      window.removeEventListener("scroll", handleVisibility);
+      window.removeEventListener("resize", handleVisibility);
+    };
+  }, [index, lastIndex]);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"}`}
+    >
+      <Link href={`/community/article/${post._id}`}>
+        <div className="bg-white/90 rounded-lg shadow-md p-6 mb-6 hover:shadow-xl transition cursor-pointer">
+          <h2 className="text-2xl font-semibold mb-2 text-black">{post.title}</h2>
+          <p className="text-gray-700 text-sm">{post.content.slice(0, 100)}...</p>
+          {post.status === "pending" && (
+            <p className="text-red-500 text-xs mt-2">Pending Review</p>
+          )}
+        </div>
+      </Link>
+    </div>
+  );
+}
 
 export default function CommunityPage() {
   const [posts, setPosts] = useState([]);
@@ -95,14 +141,8 @@ export default function CommunityPage() {
 
           <div className="ml-48 flex flex-1 px-8 py-10 space-x-8">
             <main className="flex-1 overflow-y-auto pt-[80px] pb-[160px]">
-              {posts.map((post) => (
-                <Link href={`/community/article/${post._id}`} key={post._id}>
-                  <div className="bg-white/90 rounded-lg shadow-md p-6 mb-6 hover:shadow-xl transition cursor-pointer">
-                    <h2 className="text-2xl font-semibold mb-2 text-black">{post.title}</h2>
-                    <p className="text-gray-700 text-sm">{post.content.slice(0, 100)}...</p>
-                    {post.status === "pending" && <p className="text-red-500 text-xs mt-2">Pending Review</p>}
-                  </div>
-                </Link>
+              {posts.map((post, index) => (
+                <PostCard key={post._id} post={post} index={index} lastIndex={posts.length - 1} />
               ))}
 
               {!showAll && totalPages > 1 && (
@@ -167,21 +207,19 @@ export default function CommunityPage() {
             </main>
 
             <aside className="w-80 flex flex-col space-y-8">
-  <div
-    className="fixed bottom-10 right-10 w-80 bg-white shadow-md p-6 text-black z-50 rounded"
-  >
-    <h2 className="text-xl font-semibold mb-4">Post Something</h2>
-    <textarea
-      className="w-full h-24 p-3 border rounded bg-gray-100 resize-none mb-2"
-      placeholder="What's on your mind?"
-      value={newPost}
-      onChange={(e) => setNewPost(e.target.value)}
-    />
-    <button
-      onClick={handlePost}
-      className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-    >
-      Post
+              <div className="fixed bottom-10 right-10 w-80 bg-white shadow-md p-6 text-black z-50 rounded">
+                <h2 className="text-xl font-semibold mb-4">Post Something</h2>
+                <textarea
+                  className="w-full h-24 p-3 border rounded bg-gray-100 resize-none mb-2"
+                  placeholder="What's on your mind?"
+                  value={newPost}
+                  onChange={(e) => setNewPost(e.target.value)}
+                />
+                <button
+                  onClick={handlePost}
+                  className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+                >
+                  Post
                 </button>
               </div>
             </aside>
@@ -191,6 +229,7 @@ export default function CommunityPage() {
     </div>
   );
 }
+
 
 
 
