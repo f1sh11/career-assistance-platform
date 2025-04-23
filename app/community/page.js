@@ -42,13 +42,18 @@ export default function CommunityPage() {
     if (!newPost.trim()) return;
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.post(
+      await axios.post(
         `${API}/api/posts`,
         { title: newPost.slice(0, 50), content: newPost },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setPosts((prev) => [res.data, ...prev]);
       setNewPost("");
+      // ✅ 新增逻辑：重新获取列表，控制在显示范围
+      if (showAll) {
+        fetchPosts(1, 15, search);
+      } else {
+        fetchPosts(1, 3, search);
+      }
     } catch (err) {
       console.error("Failed to create post", err);
     }
@@ -58,6 +63,8 @@ export default function CommunityPage() {
     setShowAll(true);
     fetchPosts(1, 15, search);
   };
+
+  const shouldShowPagination = showAll && totalPages > 1 && posts.length >= 15;
 
   return (
     <div className="min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
@@ -81,7 +88,6 @@ export default function CommunityPage() {
       </div>
 
       <div className="flex">
-        {/* 左侧栏 */}
         <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col cursor-pointer pt-24 space-y-6">
           <Link href="/community/collect"><div className="hover:text-yellow-400 px-4 py-2 rounded">Collect</div></Link>
           <Link href="/community/comment"><div className="hover:text-yellow-400 px-4 py-2 rounded">Comment</div></Link>
@@ -100,8 +106,7 @@ export default function CommunityPage() {
               </Link>
             ))}
 
-            {/* 美化 More */}
-            {!showAll && posts.length > 3 && (
+            {!showAll && totalPages > 1 && (
               <div className="flex justify-center mt-6">
                 <button
                   onClick={handleMoreClick}
@@ -112,8 +117,7 @@ export default function CommunityPage() {
               </div>
             )}
 
-            {/* 分页按钮 */}
-            {showAll && posts.length > 0 && (
+            {shouldShowPagination && (
               <div className="flex justify-center mt-8">
                 <div className="flex gap-2">
                   <button onClick={() => goToPage(1)} className="px-3 py-1 bg-gray-200 rounded">First</button>
@@ -136,7 +140,6 @@ export default function CommunityPage() {
             )}
           </main>
 
-          {/* ✅ 发帖栏固定，但仍在右侧 aside 里 */}
           <aside className="w-80 flex flex-col space-y-8">
             <div className="fixed up-20 bottom-118 right-5 w-80 bg-white shadow-md p-6 text-black z-50 rounded">
               <h2 className="text-xl font-semibold mb-4">Post Something</h2>
@@ -159,6 +162,9 @@ export default function CommunityPage() {
     </div>
   );
 }
+
+
+
 
 
 
