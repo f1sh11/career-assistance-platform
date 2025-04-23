@@ -1,4 +1,4 @@
-// src/routes/user.routes.js
+// src/routes/user.routes.js 
 import express from 'express';
 import {
   getProfile,
@@ -6,7 +6,8 @@ import {
   getUsers,
   getUserById,
   getUserCollections,
-  getUserComments
+  getUserComments,
+  getUserReplies 
 } from '../controllers/user.controller.js';
 import {
   authenticate,
@@ -27,6 +28,9 @@ router.get('/me/collections', authenticate, getUserCollections);
 // Get user's comments with post titles
 router.get('/me/comments', authenticate, getUserComments);
 
+// ✅ Get replies received by the user
+router.get('/me/replies', authenticate, getUserReplies);
+
 // Get all users (only for admins)
 router.get('/', authenticate, authorize('admin'), getUsers);
 
@@ -34,4 +38,5 @@ router.get('/', authenticate, authorize('admin'), getUsers);
 router.get('/:id', authenticate, getUserById);
 
 export default router;
+
 

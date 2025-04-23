@@ -142,3 +142,19 @@ export const getUserComments = async (req, res) => {
   }
 };
 
+// 🔹 Get current user's replies (replies targeting this user)
+export const getUserReplies = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const replies = await Comment.find({ targetUserId: userId })
+      .populate('postId', 'title')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(replies);
+  } catch (error) {
+    writeError(`Get user replies error: ${error.message}`, error.stack);
+    res.status(500).json({ message: 'Failed to get replies', error: error.message });
+  }
+};
+
+

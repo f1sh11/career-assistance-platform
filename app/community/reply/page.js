@@ -13,7 +13,7 @@ export default function ReplyPage() {
     const fetchReplies = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${API}/api/users/me/comments`, {
+        const res = await axios.get(`${API}/api/users/me/replies`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setReplies(res.data);
@@ -35,17 +35,17 @@ export default function ReplyPage() {
       </aside>
 
       <div className="ml-48 flex-1 pt-[100px] px-8">
-        <h1 className="text-5xl font-bold mb-12 text-black">My Replies</h1>
+        <h1 className="text-5xl font-bold mb-12 text-black">My Replies Received</h1>
 
         {replies.length === 0 ? (
-          <p className="text-gray-600">No replies yet.</p>
+          <p className="text-gray-600">No replies received yet.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
             {replies.map((reply) => (
               <Link href={`/community/article/${reply.postId?._id}`} key={reply._id}>
                 <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition cursor-pointer">
                   <h2 className="text-xl font-semibold mb-2 text-black">
-                    Replied to: {reply.postId?.title || "Deleted Post"}
+                    Replied on: {reply.postId?.title || "Deleted Post"}
                   </h2>
                   <p className="text-gray-700">"{reply.text}"</p>
                   <p className="text-xs text-right text-gray-500 mt-2">

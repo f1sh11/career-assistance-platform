@@ -76,7 +76,10 @@ export default function ArticlePage() {
   const handleCommentSubmit = async () => {
     if (!input.trim()) return;
     try {
-      await axios.post(`${API}/api/comments/${articleId}`, { text: input }, {
+      await axios.post(`${API}/api/comments/${articleId}`, {
+        text: input,
+        targetUserId: post?.authorId?._id // 👈 加入 targetUserId
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInput("");
@@ -114,7 +117,6 @@ export default function ArticlePage() {
               <p>{post.content}</p>
             </article>
 
-            {/* 操作区 */}
             <div className="flex items-center space-x-6 mb-6">
               <button onClick={handleLike} className="text-blue-600 hover:underline">
                 👍 Like ({likes})
@@ -124,7 +126,6 @@ export default function ArticlePage() {
               </button>
             </div>
 
-            {/* 评论区 */}
             <div className="mt-8">
               <h2 className="text-xl font-semibold mb-4">Comments</h2>
               {loadingComments ? (
@@ -163,6 +164,7 @@ export default function ArticlePage() {
     </div>
   );
 }
+
 
 
 
