@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -78,7 +79,7 @@ export default function ArticlePage() {
     try {
       await axios.post(`${API}/api/comments/${articleId}`, {
         text: input,
-        targetUserId: post?.authorId?._id // 👈 加入 targetUserId
+        targetUserId: post?.authorId?._id
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -100,11 +101,12 @@ export default function ArticlePage() {
 
   return (
     <div className="min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
-      <div className="pt-[80px] flex">
-        <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col pt-24 space-y-6">
-          <div className="text-lg hover:text-yellow-400 px-4 py-2 rounded shadow cursor-pointer">Collect</div>
-          <div className="text-lg hover:text-yellow-400 px-4 py-2 rounded shadow cursor-pointer">Comment</div>
-          <div className="text-lg hover:text-yellow-400 px-4 py-2 rounded shadow cursor-pointer">Reply</div>
+      <div className="flex">
+       
+        <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col cursor-pointer pt-24 space-y-6">
+          <Link href="/community/collect"><div className="hover:text-yellow-400 px-4 py-2 rounded">Collect</div></Link>
+          <Link href="/community/comment"><div className="hover:text-yellow-400 px-4 py-2 rounded">Comment</div></Link>
+          <Link href="/community/reply"><div className="hover:text-yellow-400 px-4 py-2 rounded">Reply</div></Link>
         </aside>
 
         <main className="ml-48 w-full max-w-4xl px-8 py-24 overflow-y-auto text-black">
@@ -164,6 +166,8 @@ export default function ArticlePage() {
     </div>
   );
 }
+
+
 
 
 

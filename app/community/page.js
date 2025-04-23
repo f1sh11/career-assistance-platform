@@ -61,7 +61,7 @@ export default function CommunityPage() {
 
   return (
     <div className="min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
-      {/* ✅ 固定搜索栏，但保留原来的位置和样式不变 */}
+    
       <div className="pt-[100px] flex justify-center">
         <div className="fixed z-50 bg-white p-4 rounded shadow-md w-full max-w-7xl flex space-x-4 ml-13">
           <input
@@ -81,7 +81,7 @@ export default function CommunityPage() {
       </div>
 
       <div className="flex">
-        {/* 左侧栏不动 */}
+        {/* 左侧栏 */}
         <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col cursor-pointer pt-24 space-y-6">
           <Link href="/community/collect"><div className="hover:text-yellow-400 px-4 py-2 rounded">Collect</div></Link>
           <Link href="/community/comment"><div className="hover:text-yellow-400 px-4 py-2 rounded">Comment</div></Link>
