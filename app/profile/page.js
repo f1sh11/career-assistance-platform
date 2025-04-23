@@ -183,9 +183,9 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="relative bg-white w-full min-h-screen pt-[80px] text-black font-sans">
+    <div className="relative bg-white w-full min-h-screen pt-[70px] text-black font-sans">
       <div
-        className="relative bg-cover bg-center h-64 flex flex-col items-center justify-center"
+        className="relative bg-cover bg-center h-70 flex flex-col items-center justify-center"
         style={{ backgroundImage: "url('/profile-background.jpg')" }}
       >
         <div className="relative">
