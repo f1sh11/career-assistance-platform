@@ -1,14 +1,24 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import debounce from "lodash.debounce";
 import axios from "axios";
 import Link from "next/link";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-function PostCard({ post, index, lastIndex }) {
+function PostCard({ post, index, lastIndex, keyword }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(true);
+
+  const highlight = (text, keyword) =>
+    keyword
+      ? text.replace(
+          new RegExp(`(${keyword})`, "gi"),
+          '<mark class="bg-yellow-200">$1</mark>'
+        )
+      : text;
 
   useEffect(() => {
     const handleVisibility = () => {
@@ -37,12 +47,17 @@ function PostCard({ post, index, lastIndex }) {
   return (
     <div
       ref={ref}
-      className={`transition-all duration-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"}`}
+      className={`transition-all duration-300 ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+      }`}
     >
       <Link href={`/community/article/${post._id}`}>
         <div className="bg-white/90 rounded-lg shadow-md p-6 mb-6 hover:shadow-xl transition cursor-pointer">
           <h2 className="text-2xl font-semibold mb-2 text-black">{post.title}</h2>
-          <p className="text-gray-700 text-sm">{post.content.slice(0, 100)}...</p>
+          <p
+            className="text-gray-700 text-sm"
+            dangerouslySetInnerHTML={{ __html: highlight(post.content.slice(0, 100), keyword) }}
+          />
           {post.status === "pending" && (
             <p className="text-red-500 text-xs mt-2">Pending Review</p>
           )}
@@ -59,10 +74,15 @@ export default function CommunityPage() {
   const [showAll, setShowAll] = useState(false);
   const [newPost, setNewPost] = useState("");
   const [search, setSearch] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const hotKeywords = ["career", "internship", "resume", "mentor", "event"];
 
   const fetchPosts = async (pageToFetch = 1, limit = 3, keyword = "") => {
     try {
-      const res = await axios.get(`${API}/api/posts?page=${pageToFetch}&limit=${limit}&search=${keyword}`);
+      const res = await axios.get(
+        `${API}/api/posts?page=${pageToFetch}&limit=${limit}&search=${keyword}`
+      );
       setPosts(res.data.posts);
       setTotalPages(res.data.totalPages);
       setPage(pageToFetch);
@@ -72,8 +92,35 @@ export default function CommunityPage() {
   };
 
   useEffect(() => {
-    fetchPosts(1, 3);
+    const keywordFromURL = searchParams.get("search") || "";
+    setSearch(keywordFromURL);
+    fetchPosts(1, showAll ? 15 : 3, keywordFromURL);
   }, []);
+
+  const debouncedSearch = useRef(
+    debounce((value) => {
+      setShowAll(true);
+      router.push(`?search=${encodeURIComponent(value)}`);
+      fetchPosts(1, 15, value);
+    }, 600)
+  ).current;
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearch(value);
+    debouncedSearch(value);
+  };
+
+  const handleSearch = () => {
+    debouncedSearch.cancel();
+    setShowAll(true);
+    router.push(`?search=${encodeURIComponent(search)}`);
+    fetchPosts(1, 15, search);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") handleSearch();
+  };
 
   const handleMoreClick = () => {
     setShowAll(true);
@@ -94,32 +141,27 @@ export default function CommunityPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNewPost("");
-      if (showAll) {
-        fetchPosts(1, 15, search);
-      } else {
-        fetchPosts(1, 3, search);
-      }
+      fetchPosts(1, showAll ? 15 : 3, search);
     } catch (err) {
       console.error("Failed to create post", err);
     }
-  };
-
-  const handleSearch = () => {
-    setShowAll(true);
-    fetchPosts(1, 15, search);
   };
 
   const shouldShowPagination = showAll && totalPages > 1;
 
   return (
     <div className="overflow-x-auto">
-      <div className="w-[1600px] min-w-[1600px] mx-auto min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
-        <div className="pt-[100px] flex justify-center">
+      <div
+        className="w-[1600px] min-w-[1600px] mx-auto min-h-screen bg-fixed bg-cover bg-center"
+        style={{ backgroundImage: "url('/Curtin2.jpg')" }}
+      >
+        <div className="pt-[100px] flex justify-center relative">
           <div className="fixed z-50 bg-white p-4 rounded shadow-md w-full max-w-7xl flex space-x-4 ml-13">
             <input
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
               placeholder="Search for posts..."
               className="flex-1 px-4 py-2 border rounded text-black"
             />
@@ -130,6 +172,24 @@ export default function CommunityPage() {
               Search
             </button>
           </div>
+          {search && (
+            <div className="absolute top-[175px] right-[135px] bg-white shadow-md rounded p-2 w-full max-w-7xl z-40">
+              {hotKeywords
+                .filter((kw) => kw.toLowerCase().includes(search.toLowerCase()))
+                .map((kw, i) => (
+                  <div
+                    key={i}
+                    className="text-sm text-gray-800 hover:text-yellow-500 cursor-pointer"
+                    onClick={() => {
+                      setSearch(kw);
+                      handleSearch();
+                    }}
+                  >
+                     {kw}
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
 
         <div className="flex">
@@ -142,7 +202,13 @@ export default function CommunityPage() {
           <div className="ml-48 flex flex-1 px-8 py-10 space-x-8">
             <main className="flex-1 overflow-y-auto pt-[80px] pb-[160px]">
               {posts.map((post, index) => (
-                <PostCard key={post._id} post={post} index={index} lastIndex={posts.length - 1} />
+                <PostCard
+                  key={post._id}
+                  post={post}
+                  index={index}
+                  lastIndex={posts.length - 1}
+                  keyword={search}
+                />
               ))}
 
               {!showAll && totalPages > 1 && (
@@ -159,48 +225,55 @@ export default function CommunityPage() {
               {shouldShowPagination && (
                 <div className="flex justify-center mt-8">
                   <div className="flex gap-2">
-                    {["First", "Prev"].map((label) => {
-                      const isDisabled = page === 1;
-                      const onClick = () => goToPage(label === "First" ? 1 : page - 1);
-                      return (
-                        <button
-                          key={label}
-                          onClick={onClick}
-                          disabled={isDisabled}
-                          className={`px-3 py-1 rounded ${isDisabled ? "bg-blue-500 text-white opacity-50 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"}`}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
+                    {[
+                      ["First", 1],
+                      ["Prev", page - 1],
+                    ].map(([label, p]) => (
+                      <button
+                        key={label}
+                        onClick={() => goToPage(p)}
+                        disabled={page === 1}
+                        className={`px-3 py-1 rounded ${
+                          page === 1
+                            ? "bg-blue-500 text-white opacity-50 cursor-not-allowed"
+                            : "bg-blue-500 text-white hover:bg-blue-600"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
 
-                    {[...Array(totalPages)].map((_, i) => {
-                      const isActive = page === i + 1;
-                      return (
-                        <button
-                          key={i}
-                          onClick={() => goToPage(i + 1)}
-                          className={`px-3 py-1 rounded font-medium ${isActive ? "bg-yellow-400 text-black" : "bg-gray-200 text-black hover:bg-gray-300"}`}
-                        >
-                          {i + 1}
-                        </button>
-                      );
-                    })}
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => goToPage(i + 1)}
+                        className={`px-3 py-1 rounded font-medium ${
+                          page === i + 1
+                            ? "bg-yellow-400 text-black"
+                            : "bg-gray-200 text-black hover:bg-gray-300"
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
 
-                    {["Next", "Last"].map((label) => {
-                      const isDisabled = page === totalPages;
-                      const onClick = () => goToPage(label === "Last" ? totalPages : page + 1);
-                      return (
-                        <button
-                          key={label}
-                          onClick={onClick}
-                          disabled={isDisabled}
-                          className={`px-3 py-1 rounded ${isDisabled ? "bg-blue-500 text-white opacity-50 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"}`}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
+                    {[
+                      ["Next", page + 1],
+                      ["Last", totalPages],
+                    ].map(([label, p]) => (
+                      <button
+                        key={label}
+                        onClick={() => goToPage(p)}
+                        disabled={page === totalPages}
+                        className={`px-3 py-1 rounded ${
+                          page === totalPages
+                            ? "bg-blue-500 text-white opacity-50 cursor-not-allowed"
+                            : "bg-blue-500 text-white hover:bg-blue-600"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
@@ -229,28 +302,3 @@ export default function CommunityPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

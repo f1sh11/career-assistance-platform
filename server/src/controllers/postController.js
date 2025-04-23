@@ -21,11 +21,22 @@ export const getPosts = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 15;
   const skip = (page - 1) * limit;
+  const search = req.query.search || "";
 
   try {
-    const total = await Post.countDocuments({ status: 'approved' });
+    const filter = {
+      status: 'approved',
+      ...(search && {
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { content: { $regex: search, $options: 'i' } }
+        ]
+      })
+    };
 
-    const posts = await Post.find({ status: 'approved' })
+    const total = await Post.countDocuments(filter);
+
+    const posts = await Post.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -33,6 +44,7 @@ export const getPosts = async (req, res) => {
     res.json({
       posts,
       totalPages: Math.ceil(total / limit),
+      totalPosts: total,
       currentPage: page
     });
   } catch (err) {
@@ -83,5 +95,6 @@ export const toggleCollect = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
