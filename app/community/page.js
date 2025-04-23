@@ -48,7 +48,6 @@ export default function CommunityPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNewPost("");
-      // ✅ 新增逻辑：重新获取列表，控制在显示范围
       if (showAll) {
         fetchPosts(1, 15, search);
       } else {
@@ -64,104 +63,139 @@ export default function CommunityPage() {
     fetchPosts(1, 15, search);
   };
 
-  const shouldShowPagination = showAll && totalPages > 1 && posts.length >= 15;
+  const shouldShowPagination = showAll && totalPages > 1;
 
   return (
-    <div className="min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
-    
-      <div className="pt-[100px] flex justify-center">
-        <div className="fixed z-50 bg-white p-4 rounded shadow-md w-full max-w-7xl flex space-x-4 ml-13">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search for posts..."
-            className="flex-1 px-4 py-2 border rounded text-black"
-          />
-          <button
-            onClick={handleSearch}
-            className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded"
-          >
-            Search
-          </button>
+    <div className="overflow-x-auto">
+      <div className="w-[1600px] min-w-[1600px] mx-auto min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
+        <div className="pt-[100px] flex justify-center">
+          <div className="fixed z-50 bg-white p-4 rounded shadow-md w-full max-w-7xl flex space-x-4 ml-13">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search for posts..."
+              className="flex-1 px-4 py-2 border rounded text-black"
+            />
+            <button
+              onClick={handleSearch}
+              className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded"
+            >
+              Search
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div className="flex">
-        <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col cursor-pointer pt-24 space-y-6">
-          <Link href="/community/collect"><div className="hover:text-yellow-400 px-4 py-2 rounded">Collect</div></Link>
-          <Link href="/community/comment"><div className="hover:text-yellow-400 px-4 py-2 rounded">Comment</div></Link>
-          <Link href="/community/reply"><div className="hover:text-yellow-400 px-4 py-2 rounded">Reply</div></Link>
-        </aside>
+        <div className="flex">
+          <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col cursor-pointer pt-24 space-y-6">
+            <Link href="/community/collect"><div className="hover:text-yellow-400 px-4 py-2 rounded">Collect</div></Link>
+            <Link href="/community/comment"><div className="hover:text-yellow-400 px-4 py-2 rounded">Comment</div></Link>
+            <Link href="/community/reply"><div className="hover:text-yellow-400 px-4 py-2 rounded">Reply</div></Link>
+          </aside>
 
-        <div className="ml-48 flex flex-1 px-8 py-10 space-x-8">
-          <main className="flex-1 overflow-y-auto pt-[80px] pb-[160px]">
-            {posts.map((post) => (
-              <Link href={`/community/article/${post._id}`} key={post._id}>
-                <div className="bg-white/90 rounded-lg shadow-md p-6 mb-6 hover:shadow-xl transition cursor-pointer">
-                  <h2 className="text-2xl font-semibold mb-2 text-black">{post.title}</h2>
-                  <p className="text-gray-700 text-sm">{post.content.slice(0, 100)}...</p>
-                  {post.status === "pending" && <p className="text-red-500 text-xs mt-2">Pending Review</p>}
+          <div className="ml-48 flex flex-1 px-8 py-10 space-x-8">
+            <main className="flex-1 overflow-y-auto pt-[80px] pb-[160px]">
+              {posts.map((post) => (
+                <Link href={`/community/article/${post._id}`} key={post._id}>
+                  <div className="bg-white/90 rounded-lg shadow-md p-6 mb-6 hover:shadow-xl transition cursor-pointer">
+                    <h2 className="text-2xl font-semibold mb-2 text-black">{post.title}</h2>
+                    <p className="text-gray-700 text-sm">{post.content.slice(0, 100)}...</p>
+                    {post.status === "pending" && <p className="text-red-500 text-xs mt-2">Pending Review</p>}
+                  </div>
+                </Link>
+              ))}
+
+              {!showAll && totalPages > 1 && (
+                <div className="flex justify-center mt-6">
+                  <button
+                    onClick={handleMoreClick}
+                    className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded"
+                  >
+                    Show More
+                  </button>
                 </div>
-              </Link>
-            ))}
+              )}
 
-            {!showAll && totalPages > 1 && (
-              <div className="flex justify-center mt-6">
-                <button
-                  onClick={handleMoreClick}
-                  className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded"
-                >
-                  Show More
+              {shouldShowPagination && (
+                <div className="flex justify-center mt-8">
+                  <div className="flex gap-2">
+                    {["First", "Prev"].map((label) => {
+                      const isDisabled = page === 1;
+                      const onClick = () => goToPage(label === "First" ? 1 : page - 1);
+                      return (
+                        <button
+                          key={label}
+                          onClick={onClick}
+                          disabled={isDisabled}
+                          className={`px-3 py-1 rounded ${isDisabled ? "bg-blue-500 text-white opacity-50 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"}`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+
+                    {[...Array(totalPages)].map((_, i) => {
+                      const isActive = page === i + 1;
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => goToPage(i + 1)}
+                          className={`px-3 py-1 rounded font-medium ${isActive ? "bg-yellow-400 text-black" : "bg-gray-200 text-black hover:bg-gray-300"}`}
+                        >
+                          {i + 1}
+                        </button>
+                      );
+                    })}
+
+                    {["Next", "Last"].map((label) => {
+                      const isDisabled = page === totalPages;
+                      const onClick = () => goToPage(label === "Last" ? totalPages : page + 1);
+                      return (
+                        <button
+                          key={label}
+                          onClick={onClick}
+                          disabled={isDisabled}
+                          className={`px-3 py-1 rounded ${isDisabled ? "bg-blue-500 text-white opacity-50 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"}`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </main>
+
+            <aside className="w-80 flex flex-col space-y-8">
+  <div
+    className="fixed bottom-10 right-10 w-80 bg-white shadow-md p-6 text-black z-50 rounded"
+  >
+    <h2 className="text-xl font-semibold mb-4">Post Something</h2>
+    <textarea
+      className="w-full h-24 p-3 border rounded bg-gray-100 resize-none mb-2"
+      placeholder="What's on your mind?"
+      value={newPost}
+      onChange={(e) => setNewPost(e.target.value)}
+    />
+    <button
+      onClick={handlePost}
+      className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+    >
+      Post
                 </button>
               </div>
-            )}
-
-            {shouldShowPagination && (
-              <div className="flex justify-center mt-8">
-                <div className="flex gap-2">
-                  <button onClick={() => goToPage(1)} className="px-3 py-1 bg-gray-200 rounded">First</button>
-                  <button disabled={page === 1} onClick={() => goToPage(page - 1)} className="px-3 py-1 bg-gray-200 rounded">Prev</button>
-                  {[...Array(totalPages)].map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => goToPage(i + 1)}
-                      className={`px-3 py-1 rounded ${
-                        page === i + 1 ? "bg-yellow-400 text-black" : "bg-gray-200"
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-                  <button disabled={page === totalPages} onClick={() => goToPage(page + 1)} className="px-3 py-1 bg-gray-200 rounded">Next</button>
-                  <button onClick={() => goToPage(totalPages)} className="px-3 py-1 bg-gray-200 rounded">Last</button>
-                </div>
-              </div>
-            )}
-          </main>
-
-          <aside className="w-80 flex flex-col space-y-8">
-            <div className="fixed up-20 bottom-118 right-5 w-80 bg-white shadow-md p-6 text-black z-50 rounded">
-              <h2 className="text-xl font-semibold mb-4">Post Something</h2>
-              <textarea
-                className="w-full h-24 p-3 border rounded bg-gray-100 resize-none mb-2"
-                placeholder="What's on your mind?"
-                value={newPost}
-                onChange={(e) => setNewPost(e.target.value)}
-              />
-              <button
-                onClick={handlePost}
-                className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-              >
-                Post
-              </button>
-            </div>
-          </aside>
+            </aside>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
+
+
+
+
 
 
 
