@@ -1,8 +1,14 @@
 {
   "name": "2hours",
-  "version": "0.1.0",
-  "private": true,
+  "private": true,             
   "type": "module",
+  "workspaces": [
+    "mbti-personality-test-app-main"
+  ],
+  "resolutions": {
+  "react": "^18.3.1",
+  "react-dom": "^18.3.1"
+},
   "scripts": {
     "dev": "next dev",
     "server": "nodemon --watch server server/server.js",
