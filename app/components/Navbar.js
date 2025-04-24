@@ -1,3 +1,4 @@
+// ✅ Navbar.js - 最终修复版（使用 absolute + relative 渲染 dropdown，确保正常下拉，无需 portal）
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -37,7 +38,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="w-full bg-black/80 backdrop-blur-md text-white fixed top-0 left-0 z-50 shadow-md">
+      <nav className="w-full bg-black/80 backdrop-blur-md text-white fixed top-0 left-0 z-10000 shadow-md">
         <div className="flex items-center justify-between w-full px-6 py-4">
           {/* 左侧：Logo + 学校名 */}
           <div
@@ -57,12 +58,7 @@ export default function Navbar() {
 
           {/* 右侧：导航菜单 */}
           <div className="flex items-center space-x-4 text-sm sm:text-base relative">
-            {[
-              { label: "Home", route: "/" },
-              { label: "Community", route: "/community" },
-              { label: "Resource", route: "/resource" },
-              { label: "Matching", route: "/matching/intro" },
-            ].map((item) => (
+            {[{ label: "Home", route: "/" }, { label: "Community", route: "/community" }, { label: "Resource", route: "/resource" }, { label: "Matching", route: "/matching/intro" }].map((item) => (
               <button
                 key={item.label}
                 onClick={() => handleMenuClick(item.route)}
@@ -88,16 +84,8 @@ export default function Navbar() {
                   Account
                 </button>
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-52 bg-black/80 rounded-lg shadow-lg z-[9999] overflow-hidden backdrop-blur-md">
-                    {[
-                      { label: "Account Overview", route: "/account" },
-                      { label: "Settings", route: "/account/settings" },
-                      { label: "Profile", route: "/profile" },
-                      { label: "Activity", route: "/account/activity" },
-                      { label: "Notifications", route: "/account/notifications" },
-                      { label: "Security", route: "/account/security" },
-                      { label: "Logout", route: "/login", isLogout: true },
-                    ].map((item, index) => {
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-black/80 rounded-lg shadow-lg z-[10000] overflow-hidden backdrop-blur-md">
+                    {[{ label: "Account Overview", route: "/account" }, { label: "Settings", route: "/account/settings" }, { label: "Profile", route: "/profile" }, { label: "Activity", route: "/account/activity" }, { label: "Notifications", route: "/account/notifications" }, { label: "Security", route: "/account/security" }, { label: "Logout", route: "/login", isLogout: true }].map((item, index) => {
                       const isLogout = item.isLogout;
                       return (
                         <button
@@ -133,11 +121,3 @@ export default function Navbar() {
     </>
   );
 }
-
-
-
-
-
-
-
-

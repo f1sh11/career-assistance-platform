@@ -1,4 +1,4 @@
-// app/layout.js
+// layout.js - 保留原始结构，仅在 body 末尾添加 dropdown-root 容器
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
@@ -26,6 +26,9 @@ export default function RootLayout({ children }) {
         <Toaster position="top-center" reverseOrder={false} />
         <Navbar />
         {children}
+
+        {/* ✅ 挂载 dropdown 的容器（供 portal 使用） */}
+        <div id="dropdown-root" className="z-[99999] absolute top-0 left-0 w-screen h-screen pointer-events-none" />
       </body>
     </html>
   );
