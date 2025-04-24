@@ -88,13 +88,19 @@ export default function CommunityPage() {
         const res = await axios.get(`${API}/api/users/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUserInfo(res.data);
+        const user = res.data.user;
+        setUserInfo({
+          username: user.identifier || "User",
+          avatarUrl: `${API}${user.profile.avatarUrl}` || "/default-avatar.png",
+          anonymous: false,
+        });
       } catch (err) {
         console.error("Failed to fetch profile", err);
       }
     };
     fetchProfile();
   }, []);
+  
 
   const fetchPosts = async (pageToFetch = 1, limit = 3, keyword = "") => {
     try {
@@ -202,7 +208,7 @@ export default function CommunityPage() {
       <div className="fixed top-[320px] right-10 w-80 bg-white shadow-md rounded p-4 z-[9998]">
         <div className="flex items-center space-x-4 mb-2">
           <img
-            src={userInfo.anonymous ? "/anon-avatar.png" : userInfo.avatarUrl || "/default-avatar.png"}
+            src={userInfo.anonymous ? "/default-avatar.png" : userInfo.avatarUrl || "/default-avatar.png"}
             alt="avatar"
             className="w-12 h-12 rounded-full object-cover"
           />
@@ -313,10 +319,10 @@ export default function CommunityPage() {
               </main>
 
               <aside className="w-80 flex flex-col space-y-8">
-                <div className="fixed bottom-10 right-10 w-80 bg-white shadow-md p-6 text-black z-50 rounded">
+                <div className="fixed bottom-5 right-10 w-80 bg-white shadow-md p-6 text-black z-50 rounded">
                   <h2 className="text-xl font-semibold mb-4">Post Something</h2>
                   <textarea
-                    className="w-full h-24 p-3 border rounded bg-gray-100 resize-none mb-2"
+                    className="w-full h-64 p-3 border rounded bg-gray-100 resize-none mb-2"
                     placeholder="What's on your mind?"
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
