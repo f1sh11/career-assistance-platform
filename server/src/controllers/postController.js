@@ -1,13 +1,14 @@
 import Post from '../models/Post.js';
 
 export const createPost = async (req, res) => {
-  const { title, content } = req.body;
+  const { title, content, isAnonymous } = req.body; 
   const userId = req.user.id;
 
   try {
     const post = await Post.create({
       title,
       content,
+      isAnonymous: !!isAnonymous, 
       authorId: userId,
       status: 'approved'
     });
@@ -95,6 +96,7 @@ export const toggleCollect = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 

@@ -75,9 +75,26 @@ export default function CommunityPage() {
   const [newPost, setNewPost] = useState("");
   const [search, setSearch] = useState("");
   const [searchMode, setSearchMode] = useState("keyword");
+  const [userInfo, setUserInfo] = useState({ username: "", avatarUrl: "", anonymous: false });
   const router = useRouter();
   const searchParams = useSearchParams();
   const hotKeywords = ["career", "internship", "resume", "mentor", "event"];
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const res = await axios.get(`${API}/api/users/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUserInfo(res.data);
+      } catch (err) {
+        console.error("Failed to fetch profile", err);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const fetchPosts = async (pageToFetch = 1, limit = 3, keyword = "") => {
     try {
@@ -131,7 +148,7 @@ export default function CommunityPage() {
     try {
       await axios.post(
         `${API}/api/posts`,
-        { title: newPost.slice(0, 50), content: newPost },
+        { title: newPost.slice(0, 50), content: newPost, isAnonymous: userInfo.anonymous },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNewPost("");
@@ -145,7 +162,7 @@ export default function CommunityPage() {
 
   return (
     <>
-      <div className="fixed top-[100px] left-0 right-0 z-[9999] flex justify-center">
+      <div className="fixed top-[100px] left-0 right-0 z-[9998] flex justify-center">
         <div className="bg-white p-4 rounded shadow-md w-full max-w-7xl flex space-x-4">
           <input
             type="text"
@@ -164,7 +181,7 @@ export default function CommunityPage() {
         </div>
       </div>
 
-      <div className="fixed top-[200px] right-10 w-80 bg-white shadow-md rounded p-4 z-[9999]">
+      <div className="fixed top-[200px] right-10 w-80 bg-white shadow-md rounded p-4 z-[9998]">
         <h2 className="text-md font-medium mb-2 text-center">Search Mode</h2>
         <div className="flex justify-between items-center text-sm font-medium mb-2 px-2">
           <span className={`${searchMode === "keyword" ? "text-yellow-500" : "text-gray-400"}`}>Keyword</span>
@@ -182,25 +199,32 @@ export default function CommunityPage() {
         </div>
       </div>
 
-      {search && searchMode === "keyword" && (
-        <div className="absolute top-[175px] left-[213px] bg-white shadow-md rounded p-2 w-full max-w-5xl z-[9990]">
-          {hotKeywords
-            .filter((kw) => kw.toLowerCase().includes(search.toLowerCase()))
-            .map((kw, i) => (
-              <div
-                key={i}
-                className="text-sm text-gray-800 hover:text-yellow-500 cursor-pointer"
-                onClick={() => {
-                  setSearch(kw);
-                  handleSearch();
-                }}
-              >
-                {kw}
-              </div>
-            ))}
+      <div className="fixed top-[320px] right-10 w-80 bg-white shadow-md rounded p-4 z-[9998]">
+        <div className="flex items-center space-x-4 mb-2">
+          <img
+            src={userInfo.anonymous ? "/anon-avatar.png" : userInfo.avatarUrl || "/default-avatar.png"}
+            alt="avatar"
+            className="w-12 h-12 rounded-full object-cover"
+          />
+          <div className="text-black font-medium text-sm">
+            {userInfo.anonymous ? "Anonymous User" : userInfo.username || "Unnamed"}
+          </div>
         </div>
-      )}
-
+        <div className="flex justify-between items-center text-sm font-medium mb-2">
+          <span className="text-gray-600">Anonymous Mode</span>
+          <div
+            className="relative w-12 h-6 bg-gray-300 rounded-full cursor-pointer"
+            onClick={() => setUserInfo((prev) => ({ ...prev, anonymous: !prev.anonymous }))}
+          >
+            <div
+              className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
+                userInfo.anonymous ? "left-6 -translate-x-full" : "left-1"
+              }`}
+            ></div>
+          </div>
+        </div>
+        <p className="text-xs text-gray-500">When anonymous is enabled, others will not see your name or avatar when you post.</p>
+      </div>
       <div className="overflow-x-auto">
         <div
           className="w-[1690px] min-w-[1600px] mx-auto min-h-screen bg-fixed bg-cover bg-center"
@@ -312,3 +336,4 @@ export default function CommunityPage() {
     </>
   );
 }
+

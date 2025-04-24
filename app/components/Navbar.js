@@ -88,7 +88,7 @@ export default function Navbar() {
                   Account
                 </button>
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-52 bg-black/80 rounded-lg shadow-lg z-50 overflow-hidden backdrop-blur-md">
+                  <div className="absolute right-0 mt-2 w-52 bg-black/80 rounded-lg shadow-lg z-[9999] overflow-hidden backdrop-blur-md">
                     {[
                       { label: "Account Overview", route: "/account" },
                       { label: "Settings", route: "/account/settings" },
