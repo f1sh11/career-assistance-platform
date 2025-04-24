@@ -145,7 +145,6 @@ export default function CommunityPage() {
 
   return (
     <>
-      {/* 🔧 Floating Search Bar */}
       <div className="fixed top-[100px] left-0 right-0 z-[9999] flex justify-center">
         <div className="bg-white p-4 rounded shadow-md w-full max-w-7xl flex space-x-4">
           <input
@@ -165,10 +164,9 @@ export default function CommunityPage() {
         </div>
       </div>
 
-      {/* 🔧 Floating Toggle Card */}
-      <div className="fixed bottom-[160px] right-10 w-80 bg-white shadow-md rounded p-4 z-[9999] ">
+      <div className="fixed top-[200px] right-10 w-80 bg-white shadow-md rounded p-4 z-[9999]">
         <h2 className="text-md font-medium mb-2 text-center">Search Mode</h2>
-        <div className="flex justify-between items-center text-sm font-medium mb-2 px-2 ">
+        <div className="flex justify-between items-center text-sm font-medium mb-2 px-2">
           <span className={`${searchMode === "keyword" ? "text-yellow-500" : "text-gray-400"}`}>Keyword</span>
           <span className={`${searchMode === "direct" ? "text-yellow-500" : "text-gray-400"}`}>Direct</span>
         </div>
@@ -184,9 +182,8 @@ export default function CommunityPage() {
         </div>
       </div>
 
-      {/* 🔧 Hot Keyword List */}
       {search && searchMode === "keyword" && (
-        <div className="absolute top-[175px] right-[213px] bg-white shadow-md rounded p-2 w-full max-w-7xl z-[9990]">
+        <div className="absolute top-[175px] left-[213px] bg-white shadow-md rounded p-2 w-full max-w-5xl z-[9990]">
           {hotKeywords
             .filter((kw) => kw.toLowerCase().includes(search.toLowerCase()))
             .map((kw, i) => (
@@ -204,10 +201,9 @@ export default function CommunityPage() {
         </div>
       )}
 
-    
       <div className="overflow-x-auto">
         <div
-          className="w-[1600px] min-w-[1600px] mx-auto min-h-screen bg-fixed bg-cover bg-center"
+          className="w-[1690px] min-w-[1600px] mx-auto min-h-screen bg-fixed bg-cover bg-center"
           style={{ backgroundImage: "url('/Curtin2.jpg')" }}
         >
           <div className="flex">
@@ -218,7 +214,7 @@ export default function CommunityPage() {
             </aside>
 
             <div className="ml-48 flex flex-1 px-8 py-10 space-x-8">
-              <main className="flex-1 overflow-y-auto pt-[160px] pb-[160px]">
+              <main className="flex-1 overflow-y-auto pt-[160px] pb-[150px]">
                 {posts.map((post, index) => (
                   <PostCard
                     key={post._id}
@@ -246,7 +242,7 @@ export default function CommunityPage() {
                 {shouldShowPagination && (
                   <div className="flex justify-center mt-8">
                     <div className="flex gap-2">
-                      {["First", "Prev"].map((label, i) => (
+                      {["First", "Prev"].map((label) => (
                         <button
                           key={label}
                           onClick={() => goToPage(label === "First" ? 1 : page - 1)}
@@ -273,7 +269,7 @@ export default function CommunityPage() {
                           {i + 1}
                         </button>
                       ))}
-                      {["Next", "Last"].map((label, i) => (
+                      {["Next", "Last"].map((label) => (
                         <button
                           key={label}
                           onClick={() => goToPage(label === "Last" ? totalPages : page + 1)}
@@ -316,4 +312,3 @@ export default function CommunityPage() {
     </>
   );
 }
-
