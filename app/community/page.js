@@ -188,7 +188,7 @@ export default function CommunityPage() {
       </div>
 
       <div className="fixed top-[200px] right-10 w-80 bg-white shadow-md rounded p-4 z-[9998]">
-        <h2 className="text-md font-medium mb-2 text-center">Search Mode</h2>
+        <h2 className="text-md font-medium mb-2 text-center text-black">Search Mode</h2>
         <div className="flex justify-between items-center text-sm font-medium mb-2 px-2">
           <span className={`${searchMode === "keyword" ? "text-yellow-500" : "text-gray-400"}`}>Keyword</span>
           <span className={`${searchMode === "direct" ? "text-yellow-500" : "text-gray-400"}`}>Direct</span>
