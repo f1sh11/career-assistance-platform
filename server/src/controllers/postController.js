@@ -1,14 +1,17 @@
 import Post from '../models/Post.js';
 
+const API = process.env.API_URL || "http://localhost:5000"; // 添加全局前缀变量
+
+// 创建帖子
 export const createPost = async (req, res) => {
-  const { title, content, isAnonymous } = req.body; 
+  const { title, content, isAnonymous } = req.body;
   const userId = req.user.id;
 
   try {
     const post = await Post.create({
       title,
       content,
-      isAnonymous: !!isAnonymous, 
+      isAnonymous: !!isAnonymous,
       authorId: userId,
       status: 'approved'
     });
@@ -18,6 +21,7 @@ export const createPost = async (req, res) => {
   }
 };
 
+// 获取分页帖子列表
 export const getPosts = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 15;
@@ -46,7 +50,7 @@ export const getPosts = async (req, res) => {
     const enrichedPosts = posts.map(post => ({
       ...post.toObject(),
       authorName: post.isAnonymous ? null : post.authorId?.identifier,
-      authorAvatarUrl: post.isAnonymous ? null : post.authorId?.profile?.avatarUrl
+      authorAvatarUrl: post.isAnonymous ? null : `${API}${post.authorId?.profile?.avatarUrl || ""}`
     }));
 
     res.json({
@@ -60,16 +64,25 @@ export const getPosts = async (req, res) => {
   }
 };
 
+// 获取单篇帖子详情
 export const getPostById = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.id).populate("authorId", "identifier profile.avatarUrl");
     if (!post || post.status !== 'approved') return res.status(404).json({ error: 'Not found' });
-    res.json(post);
+
+    const enrichedPost = {
+      ...post.toObject(),
+      authorName: post.isAnonymous ? null : post.authorId?.identifier,
+      authorAvatarUrl: post.isAnonymous ? null : `${API}${post.authorId?.profile?.avatarUrl || ""}`
+    };
+
+    res.json(enrichedPost);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
+// 点赞功能
 export const likePost = async (req, res) => {
   const userId = req.user.id;
   try {
@@ -87,6 +100,7 @@ export const likePost = async (req, res) => {
   }
 };
 
+// 收藏功能
 export const toggleCollect = async (req, res) => {
   const userId = req.user.id;
   try {
@@ -103,6 +117,7 @@ export const toggleCollect = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 
