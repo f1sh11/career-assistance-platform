@@ -40,10 +40,17 @@ export const getPosts = async (req, res) => {
     const posts = await Post.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .populate("authorId", "identifier profile.avatarUrl");
+
+    const enrichedPosts = posts.map(post => ({
+      ...post.toObject(),
+      authorName: post.isAnonymous ? null : post.authorId?.identifier,
+      authorAvatarUrl: post.isAnonymous ? null : post.authorId?.profile?.avatarUrl
+    }));
 
     res.json({
-      posts,
+      posts: enrichedPosts,
       totalPages: Math.ceil(total / limit),
       totalPosts: total,
       currentPage: page

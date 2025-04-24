@@ -8,7 +8,7 @@ import Link from "next/link";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-function PostCard({ post, index, lastIndex, keyword }) {
+export function PostCard({ post, index, lastIndex, keyword }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(true);
 
@@ -53,6 +53,16 @@ function PostCard({ post, index, lastIndex, keyword }) {
     >
       <Link href={`/community/article/${post._id}`}>
         <div className="bg-white/90 rounded-lg shadow-md p-6 mb-6 hover:shadow-xl transition cursor-pointer">
+          <div className="flex items-center gap-2 mb-2">
+            <img
+              src={post.isAnonymous ? "/default-avatar.png" : post.authorAvatarUrl || "/default-avatar.png"}
+              alt="avatar"
+              className="w-8 h-8 rounded-full"
+            />
+            <span className="text-sm text-gray-700">
+              {post.isAnonymous ? "Anonymous User" : post.authorName || "Unnamed"}
+            </span>
+          </div>
           <h2 className="text-2xl font-semibold mb-2 text-black">{post.title}</h2>
           <p
             className="text-gray-700 text-sm"
@@ -66,6 +76,7 @@ function PostCard({ post, index, lastIndex, keyword }) {
     </div>
   );
 }
+
 
 export default function CommunityPage() {
   const [posts, setPosts] = useState([]);
