@@ -161,3 +161,36 @@ export const getUserReplies = async (req, res) => {
 };
 
 
+// 🔹 Save current user's MBTI type
+export const saveMbtiResult = async (req, res) => {
+  try {
+    const { mbtiType } = req.body;
+
+    // 基本校验
+    if (!mbtiType || typeof mbtiType !== 'string' || mbtiType.length !== 4) {
+      return res.status(400).json({ message: 'Invalid MBTI type.' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User does not exist' });
+    }
+
+    user.mbtiType = mbtiType.toUpperCase();
+    await user.save();
+
+    writeLog('user', 'Saved MBTI type', {
+      userId: user._id.toString(),
+      mbtiType: user.mbtiType,
+      url: req.originalUrl
+    });
+
+    res.status(200).json({
+      message: 'MBTI type saved successfully',
+      mbtiType: user.mbtiType
+    });
+  } catch (error) {
+    writeError(`Save MBTI type error: ${error.message}`, error.stack);
+    res.status(500).json({ message: 'Save MBTI type failed', error: error.message });
+  }
+};

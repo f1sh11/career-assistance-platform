@@ -30,6 +30,12 @@ const userSchema = new mongoose.Schema({
     introduction: { type: String, maxlength: 100, default: '' },
     avatarUrl: { type: String, default: '' }
   },
+  // ✅ 新增 MBTI 类型字段
+  mbtiType: {
+    type: String,
+    maxlength: 4,
+    default: ''
+  },
   connections: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
