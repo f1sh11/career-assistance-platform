@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 export default function ProfilePage() {
+  const router = useRouter();
+
   const [formData, setFormData] = useState({
     introduction: "",
     phone: "",
@@ -59,13 +62,12 @@ export default function ProfilePage() {
           username: data.user.identifier || "User",
           role: data.user.role || "Student",
         });
-        console.log("✅ 加载成功: avatarUrl =", data.user.profile.avatarUrl);
       } else {
-        toast.error("Failed to load profile");
+        toast.error("Failed to load profile.");
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
-      toast.error("Error loading profile");
+      toast.error("Error loading profile.");
     }
   };
 
@@ -84,14 +86,12 @@ export default function ProfilePage() {
       });
 
       const data = await res.json();
-      if (res.ok) {
-        console.log("✅ avatarUrl 已写入数据库:", newAvatarUrl);
-      } else {
-        toast.error("写入头像失败: " + (data.message || ""));
+      if (!res.ok) {
+        toast.error("Failed to update avatar: " + (data.message || ""));
       }
     } catch (error) {
-      console.error("写入 avatar 出错:", error);
-      toast.error("头像写入失败");
+      console.error("Avatar update error:", error);
+      toast.error("Avatar update failed.");
     }
   };
 
@@ -101,7 +101,7 @@ export default function ProfilePage() {
 
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("请先登录");
+      toast.error("Please log in first.");
       return;
     }
 
@@ -128,16 +128,15 @@ export default function ProfilePage() {
           ...prev,
           avatarUrl: data.avatarUrl
         }));
-        toast.success("头像上传成功！");
-
-        await updateAvatarOnly(data.avatarUrl); // ✅ 显式更新数据库字段
+        toast.success("Avatar uploaded successfully!");
+        await updateAvatarOnly(data.avatarUrl);
         await fetchProfile();
       } else {
-        toast.error("头像上传失败");
+        toast.error("Avatar upload failed.");
       }
     } catch (error) {
-      console.error("上传错误:", error);
-      toast.error("上传失败");
+      console.error("Upload error:", error);
+      toast.error("Upload failed.");
     } finally {
       setLoading(false);
     }
@@ -148,7 +147,7 @@ export default function ProfilePage() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.error("Not logged in");
+        toast.error("Not logged in.");
         return;
       }
 
@@ -170,7 +169,7 @@ export default function ProfilePage() {
         toast.error(data.message || "Failed to update profile.");
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
+      console.error("Profile update error:", error);
       toast.error("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
@@ -185,15 +184,15 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="relative bg-white w-full min-h-screen pt-[80px] text-black font-sans">
+    <div className="relative bg-white w-full min-h-screen pt-[70px] text-black font-sans">
       <div
-        className="relative bg-cover bg-center h-64 flex flex-col items-center justify-center"
+        className="relative bg-cover bg-center h-90 flex flex-col items-center justify-center"
         style={{ backgroundImage: "url('/profile-background.jpg')" }}
       >
         <div className="relative">
           <img
             src={previewUrl || `${API_URL}${avatarUrl}` || "/default-avatar.png"}
-            alt="头像"
+            alt="avatar"
             className="rounded-full w-24 h-24 border-4 border-white shadow-md mb-4"
             onError={(e) => (e.target.src = "/default-avatar.png")}
           />
@@ -251,14 +250,17 @@ export default function ProfilePage() {
         >
           {loading ? "Saving..." : "Confirm"}
         </button>
-        <button className="w-full md:w-1/3 bg-yellow-400 text-black py-3 rounded hover:bg-yellow-500 transition">
+        <button
+          onClick={() => router.push("/matching")}
+          className="w-full md:w-1/3 bg-yellow-400 text-black py-3 rounded hover:bg-yellow-500 transition"
+        >
           Start matching
         </button>
       </div>
 
       {loading && (
         <div className="text-center text-gray-500 mb-10">
-          正在加载，请稍候...
+          Loading, please wait...
         </div>
       )}
     </div>
