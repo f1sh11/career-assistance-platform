@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -76,7 +77,10 @@ export default function ArticlePage() {
   const handleCommentSubmit = async () => {
     if (!input.trim()) return;
     try {
-      await axios.post(`${API}/api/comments/${articleId}`, { text: input }, {
+      await axios.post(`${API}/api/comments/${articleId}`, {
+        text: input,
+        targetUserId: post?.authorId?._id
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInput("");
@@ -97,24 +101,31 @@ export default function ArticlePage() {
 
   return (
     <div className="min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
-      <div className="pt-[80px] flex">
-        <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col pt-24 space-y-6">
-          <div className="text-lg hover:text-yellow-400 px-4 py-2 rounded shadow cursor-pointer">Collect</div>
-          <div className="text-lg hover:text-yellow-400 px-4 py-2 rounded shadow cursor-pointer">Comment</div>
-          <div className="text-lg hover:text-yellow-400 px-4 py-2 rounded shadow cursor-pointer">Reply</div>
+      <div className="flex">
+        <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col cursor-pointer pt-24 space-y-6">
+          <Link href="/community/collect"><div className="hover:text-yellow-400 px-4 py-2 rounded">Collect</div></Link>
+          <Link href="/community/comment"><div className="hover:text-yellow-400 px-4 py-2 rounded">Comment</div></Link>
+          <Link href="/community/reply"><div className="hover:text-yellow-400 px-4 py-2 rounded">Reply</div></Link>
         </aside>
 
         <main className="ml-48 w-full max-w-4xl px-8 py-24 overflow-y-auto text-black">
           <div className="bg-white/90 rounded-lg mx-auto p-8 shadow-md">
             <h1 className="text-3xl font-bold mb-2">{post.title}</h1>
-            <p className="text-sm text-gray-600 mb-6">
-              Author: {post.authorId?.username || "Unknown"} | Posted: {new Date(post.createdAt).toLocaleString()}
-            </p>
+            <div className="flex items-center gap-3 text-sm text-gray-600 mb-6">
+              <img
+                src={post.isAnonymous ? "/default-avatar.png" : post.authorAvatarUrl || "/default-avatar.png"}
+                alt="avatar"
+                className="w-10 h-10 rounded-full"
+              />
+              <span>
+                {post.isAnonymous ? "Anonymous User" : post.authorName || "Unknown"} | Posted: {new Date(post.createdAt).toLocaleString()}
+              </span>
+            </div>
+
             <article className="mb-6 text-base leading-relaxed">
               <p>{post.content}</p>
             </article>
 
-            {/* 操作区 */}
             <div className="flex items-center space-x-6 mb-6">
               <button onClick={handleLike} className="text-blue-600 hover:underline">
                 👍 Like ({likes})
@@ -124,7 +135,6 @@ export default function ArticlePage() {
               </button>
             </div>
 
-            {/* 评论区 */}
             <div className="mt-8">
               <h2 className="text-xl font-semibold mb-4">Comments</h2>
               {loadingComments ? (
@@ -163,7 +173,3 @@ export default function ArticlePage() {
     </div>
   );
 }
-
-
-
-
