@@ -1,20 +1,21 @@
 {
   "name": "2hours",
-  "private": true,             
+  "private": true,
   "type": "module",
   "workspaces": [
     "mbti-personality-test-app-main"
   ],
   "resolutions": {
-  "react": "^18.3.1",
-  "react-dom": "^18.3.1"
-},
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
   "scripts": {
-    "dev": "next dev",
-    "server": "nodemon --watch server server/server.js",
-    "dev-all": "concurrently --kill-others-on-fail --names \"FRONT,API\" --prefix-colors \"cyan,magenta\" --raw \"npm run dev\" \"npm run server\"",
-    "build": "next build",
-    "start": "next start",
+    "dev": "next dev", 
+    "server": "nodemon --watch server server/server.js", 
+    "dev:mbti": "yarn workspace mbti-personality-test-app-main dev -p 3001", 
+    "dev-all": "concurrently --kill-others-on-fail --names \"FRONT,API,MBTI\" --prefix-colors \"cyan,magenta,green\" --raw \"yarn dev\" \"yarn server\" \"yarn dev:mbti\"", 
+    "build": "next build", 
+    "start": "next start", 
     "clean-logs": "node clean-logs.js"
   },
   "dependencies": {

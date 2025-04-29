@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 export default function ProfilePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnedMbtiType = searchParams.get("mbti");
 
   const [formData, setFormData] = useState({
     introduction: "",
@@ -237,6 +239,16 @@ export default function ProfilePage() {
               />
             </div>
           ))}
+
+          {/* ✅ 插入 MBTI 展示框 */}
+          {returnedMbtiType && (
+            <div className="flex flex-col justify-end">
+              <label className="block text-sm font-medium">MBTI Type:</label>
+              <div className="p-2 border rounded-md bg-green-100 text-black text-center">
+                {returnedMbtiType}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -244,9 +256,7 @@ export default function ProfilePage() {
         <button
           onClick={() => handleSubmit(false)}
           disabled={loading}
-          className={`w-full md:w-1/3 py-3 rounded transition ${
-            loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
-          } text-white`}
+          className={`w-full md:w-1/3 py-3 rounded transition ${loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"} text-white`}
         >
           {loading ? "Saving..." : "Confirm"}
         </button>
@@ -254,7 +264,13 @@ export default function ProfilePage() {
           onClick={() => router.push("/matching")}
           className="w-full md:w-1/3 bg-yellow-400 text-black py-3 rounded hover:bg-yellow-500 transition"
         >
-          Start matching
+          Start Matching
+        </button>
+        <button
+          onClick={() => window.open("http://localhost:3001/test", "_blank")}
+          className="w-full md:w-1/3 bg-green-400 text-black py-3 rounded hover:bg-green-500 transition"
+        >
+          Start MBTI Test
         </button>
       </div>
 
