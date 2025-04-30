@@ -127,7 +127,7 @@ export default function Login() {
         <input
           type={role === "student" ? "text" : "email"}
           placeholder={role === "student" ? "Enter Student ID" : "Enter Email"}
-          className="border p-2 w-full rounded mb-4 focus:ring-2 focus:ring-blue-500"
+          className="border p-2 w-full rounded mb-4 focus:ring-2 focus:ring-blue-500 text-black"
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
         />
@@ -137,7 +137,7 @@ export default function Login() {
         <input
           type="password"
           placeholder="Enter Password"
-          className="border p-2 w-full rounded mb-4 focus:ring-2 focus:ring-blue-500"
+          className="border p-2 w-full rounded mb-4 focus:ring-2 focus:ring-blue-500 text-black"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleLogin(e)} // Support Enter key to login
