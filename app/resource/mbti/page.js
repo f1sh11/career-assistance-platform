@@ -36,7 +36,7 @@ export default function MatchingIntroPage() {
             </h1>
             <div className="text-right">
               <button
-                className="text-xl px-10 py-4 bg-black text-yellow-400 font-semibold rounded hover:opacity-90 transition"
+                className="text-xl px-10 py-4 bg-black text-yellow-400 font-semibold rounded hover:opacity-90 active:scale-95 active:shadow-inner transition transform duration-100"
                 onClick={() => {
                   console.log("clicked");
                   window.open("http://localhost:3001/test", "_blank");
