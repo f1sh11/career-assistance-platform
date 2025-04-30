@@ -11,6 +11,7 @@ import TestResultStats from "../../../components/test/test-result-stats";
 import {
   TestResult as ITestResult,
   getSavedTestResult,
+  getPersonalityClassGroupByTestScores
 } from "../../../lib/personality-test";
 
 export default function TestResultPage() {
@@ -78,9 +79,17 @@ export default function TestResultPage() {
       if (result.isOk()) {
         const value = result.value;
         if (value.isSome()) {
-          const data = value.value as ITestResult & { personalityType: string }; // 类型断言确保存在字段
-          if (data?.personalityType) {
-            saveMbtiType(data.personalityType);
+          const data = value.value;
+
+          const personalityClassGroup = getPersonalityClassGroupByTestScores(
+            data.testScores
+          );
+          const mbtiType = personalityClassGroup.type;
+
+          console.log("✅ Calculated MBTI Type:", mbtiType);
+
+          if (mbtiType?.length === 4) {
+            saveMbtiType(mbtiType);
           }
         }
       }

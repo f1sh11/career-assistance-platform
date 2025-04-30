@@ -25,6 +25,7 @@ router.put('/me', authenticate, updateProfile);
 // Save MBTI type for current user (requires authentication) ✅ 新增路由
 router.post('/me/mbti', authenticate, saveMbtiResult);
 
+
 // Get user's collected posts
 router.get('/me/collections', authenticate, getUserCollections);
 

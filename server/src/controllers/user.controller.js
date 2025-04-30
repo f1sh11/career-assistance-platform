@@ -32,12 +32,10 @@ export const updateProfile = async (req, res) => {
   try {
     const {
       name, phone, email, address, major,
-      interests, skills, dreamJob, introduction, avatarUrl // ✅ 添加 avatarUrl 解构
+      interests, skills, dreamJob, introduction, avatarUrl
     } = req.body;
 
     const user = await User.findById(req.user._id);
-
-    console.log('💾 即将写入 avatarUrl:', avatarUrl);
 
     if (!user) {
       return res.status(404).json({ message: 'User does not exist' });
@@ -54,7 +52,7 @@ export const updateProfile = async (req, res) => {
       skills: skills || user.profile.skills,
       dreamJob: dreamJob || user.profile.dreamJob,
       introduction: introduction || user.profile.introduction,
-      avatarUrl: avatarUrl || user.profile.avatarUrl // ✅ 保存头像路径
+      avatarUrl: avatarUrl || user.profile.avatarUrl
     };
 
     await user.save();
@@ -117,7 +115,7 @@ export const getUserById = async (req, res) => {
   }
 };
 
-// 🔹 Get current user's collected posts
+// Get current user's collected posts
 export const getUserCollections = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -130,7 +128,7 @@ export const getUserCollections = async (req, res) => {
   }
 };
 
-// 🔹 Get current user's comments (with post title)
+// Get current user's comments (with post title)
 export const getUserComments = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -145,7 +143,7 @@ export const getUserComments = async (req, res) => {
   }
 };
 
-// 🔹 Get current user's replies (replies targeting this user)
+// Get current user's replies (replies targeting this user)
 export const getUserReplies = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -160,13 +158,11 @@ export const getUserReplies = async (req, res) => {
   }
 };
 
-
-// 🔹 Save current user's MBTI type
+// Save current user's MBTI type
 export const saveMbtiResult = async (req, res) => {
   try {
     const { mbtiType } = req.body;
 
-    // 基本校验
     if (!mbtiType || typeof mbtiType !== 'string' || mbtiType.length !== 4) {
       return res.status(400).json({ message: 'Invalid MBTI type.' });
     }
@@ -176,18 +172,18 @@ export const saveMbtiResult = async (req, res) => {
       return res.status(404).json({ message: 'User does not exist' });
     }
 
-    user.mbtiType = mbtiType.toUpperCase();
+    user.profile.mbtiType = mbtiType.toUpperCase();
     await user.save();
 
     writeLog('user', 'Saved MBTI type', {
       userId: user._id.toString(),
-      mbtiType: user.mbtiType,
+      mbtiType: user.profile.mbtiType,
       url: req.originalUrl
     });
 
     res.status(200).json({
       message: 'MBTI type saved successfully',
-      mbtiType: user.mbtiType
+      mbtiType: user.profile.mbtiType
     });
   } catch (error) {
     writeError(`Save MBTI type error: ${error.message}`, error.stack);

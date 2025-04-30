@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const returnedMbtiType = searchParams.get("mbti");
 
   const [formData, setFormData] = useState({
     introduction: "",
@@ -18,7 +16,8 @@ export default function ProfilePage() {
     interests: "",
     skills: "",
     dreamJob: "",
-    avatarUrl: ""
+    avatarUrl: "",
+    mbtiType: ""
   });
 
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -57,7 +56,8 @@ export default function ProfilePage() {
           interests: data.user.profile.interests || "",
           skills: data.user.profile.skills || "",
           dreamJob: data.user.profile.dreamJob || "",
-          avatarUrl: data.user.profile.avatarUrl || ""
+          avatarUrl: data.user.profile.avatarUrl || "",
+          mbtiType: data.user.profile.mbtiType || ""
         });
         setAvatarUrl(data.user.profile.avatarUrl || "");
         setUserInfo({
@@ -244,7 +244,7 @@ export default function ProfilePage() {
             <label className="block text-sm font-medium">MBTI Type:</label>
             <input
               type="text"
-              value={returnedMbtiType || "Not tested yet"}
+              value={formData.mbtiType || "Not tested yet"}
               readOnly
               className="w-full p-2 border rounded-md bg-gray-100 text-black"
             />
