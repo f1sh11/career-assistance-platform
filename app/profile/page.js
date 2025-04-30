@@ -16,7 +16,8 @@ export default function ProfilePage() {
     interests: "",
     skills: "",
     dreamJob: "",
-    avatarUrl: ""
+    avatarUrl: "",
+    mbtiType: ""
   });
 
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -55,7 +56,8 @@ export default function ProfilePage() {
           interests: data.user.profile.interests || "",
           skills: data.user.profile.skills || "",
           dreamJob: data.user.profile.dreamJob || "",
-          avatarUrl: data.user.profile.avatarUrl || ""
+          avatarUrl: data.user.profile.avatarUrl || "",
+          mbtiType: data.user.profile.mbtiType || ""
         });
         setAvatarUrl(data.user.profile.avatarUrl || "");
         setUserInfo({
@@ -237,6 +239,16 @@ export default function ProfilePage() {
               />
             </div>
           ))}
+
+          <div>
+            <label className="block text-sm font-medium">MBTI Type:</label>
+            <input
+              type="text"
+              value={formData.mbtiType || "Not tested yet"}
+              readOnly
+              className="w-full p-2 border rounded-md bg-gray-100 text-black"
+            />
+          </div>
         </div>
       </div>
 
@@ -244,17 +256,25 @@ export default function ProfilePage() {
         <button
           onClick={() => handleSubmit(false)}
           disabled={loading}
-          className={`w-full md:w-1/3 py-3 rounded transition ${
-            loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
+          className={`w-full md:w-1/3 py-3 rounded transition transform duration-100 ${
+            loading
+              ? "bg-gray-400"
+              : "bg-blue-500 hover:bg-blue-600 active:scale-95 active:shadow-inner"
           } text-white`}
         >
           {loading ? "Saving..." : "Confirm"}
         </button>
         <button
           onClick={() => router.push("/matching")}
-          className="w-full md:w-1/3 bg-yellow-400 text-black py-3 rounded hover:bg-yellow-500 transition"
+          className="w-full md:w-1/3 bg-yellow-400 text-black py-3 rounded hover:bg-yellow-500 active:scale-95 active:shadow-inner transition transform duration-100"
         >
-          Start matching
+          Start Matching
+        </button>
+        <button
+          onClick={() => window.open("http://localhost:3001/test", "_blank")}
+          className="w-full md:w-1/3 bg-green-400 text-black py-3 rounded hover:bg-green-500 active:scale-95 active:shadow-inner transition transform duration-100"
+        >
+          Start MBTI Test
         </button>
       </div>
 

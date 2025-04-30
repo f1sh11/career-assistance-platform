@@ -28,7 +28,8 @@ const userSchema = new mongoose.Schema({
     skills: { type: String, maxlength: 50, default: '' },
     dreamJob: { type: String, maxlength: 20, default: '' },
     introduction: { type: String, maxlength: 100, default: '' },
-    avatarUrl: { type: String, default: '' }
+    avatarUrl: { type: String, default: '' },
+    mbtiType: { type: String, maxlength: 4, default: "" }
   },
   connections: [{
     type: mongoose.Schema.Types.ObjectId,

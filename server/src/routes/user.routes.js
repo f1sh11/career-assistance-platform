@@ -1,4 +1,3 @@
-// src/routes/user.routes.js 
 import express from 'express';
 import {
   getProfile,
@@ -7,7 +6,8 @@ import {
   getUserById,
   getUserCollections,
   getUserComments,
-  getUserReplies 
+  getUserReplies,
+  saveMbtiResult // ✅ 新增导入
 } from '../controllers/user.controller.js';
 import {
   authenticate,
@@ -21,6 +21,10 @@ router.get('/me', authenticate, getProfile);
 
 // Update the current user's profile (requires authentication)
 router.put('/me', authenticate, updateProfile);
+
+// Save MBTI type for current user (requires authentication) ✅ 新增路由
+router.post('/me/mbti', authenticate, saveMbtiResult);
+
 
 // Get user's collected posts
 router.get('/me/collections', authenticate, getUserCollections);
@@ -38,5 +42,3 @@ router.get('/', authenticate, authorize('admin'), getUsers);
 router.get('/:id', authenticate, getUserById);
 
 export default router;
-
-
