@@ -1,4 +1,3 @@
-//resourcepage
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -60,7 +59,7 @@ export default function ResourcePage() {
     "Interview Preparation",
     "Company Profiles",
     "Skill Development Courses",
-    "Psychological Tests",
+    "Mbti Tests",
   ];
 
   const resourcesData = {
@@ -87,10 +86,6 @@ export default function ResourcePage() {
     "Skill Development Courses": Array.from({ length: 20 }, (_, i) => ({
       title: `Skill Course #${i + 1}`,
       description: "Courses to help you upskill efficiently...",
-    })),
-    "Psychological Tests": Array.from({ length: 16 }, (_, i) => ({
-      title: `Psych Test #${i + 1}`,
-      description: "Sample tests for self-assessment...",
     })),
   };
 
@@ -127,9 +122,13 @@ export default function ResourcePage() {
             <div
               key={category}
               onClick={() => {
-                setSelectedCategory(category);
-                setCurrentPage(1);
-                setShowAll(false);
+                if (category === "Mbti Tests") {
+                  window.location.href = "/resource/mbti";
+                } else {
+                  setSelectedCategory(category);
+                  setCurrentPage(1);
+                  setShowAll(false);
+                }
               }}
               className={`text-lg font-light px-4 py-3 rounded-md transition cursor-pointer ${
                 selectedCategory === category
@@ -165,7 +164,7 @@ export default function ResourcePage() {
 
           {/* 卡片内容 */}
           <main className="pt-25 space-y-2 w-full">
-            {(showAll ? paginatedResources : paginatedResources.slice(0, 3)).map((resource, index) => (
+            {(showAll ? paginatedResources : paginatedResources?.slice(0, 3)).map((resource, index) => (
               <ResourceCard
                 key={index}
                 resource={resource}
@@ -177,7 +176,7 @@ export default function ResourcePage() {
           </main>
 
           {/* Show More 按钮 */}
-          {!showAll && paginatedResources.length > 3 && (
+          {!showAll && paginatedResources?.length > 3 && (
             <div className="flex justify-center mt-6">
               <button
                 onClick={() => setShowAll(true)}
@@ -223,5 +222,6 @@ export default function ResourcePage() {
     </div>
   );
 }
+
 
 
