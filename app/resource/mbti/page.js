@@ -38,7 +38,8 @@ export default function MatchingIntroPage() {
               <button
                 className="text-xl px-10 py-4 bg-black text-yellow-400 font-semibold rounded hover:opacity-90 transition"
                 onClick={() => {
-                  // To be added: navigate to test page
+                  console.log("clicked");
+                  window.open("http://localhost:3001/test", "_blank");
                 }}
               >
                 Start
