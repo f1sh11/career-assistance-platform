@@ -10,3 +10,8 @@ yarn install
 
 npm run dev --workspace=mbti-personality-test-app-main
 单独运行mbti
+
+普通运行：
+yarn dev 
+yarn server
+yarn dev:mbti
