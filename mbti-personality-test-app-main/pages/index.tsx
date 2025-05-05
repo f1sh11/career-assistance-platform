@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Link from "next/link";
 import { Heading, Text, Highlight, Flex, Button } from "@chakra-ui/react";
 import { FiArrowRight } from "react-icons/fi";
@@ -5,6 +6,15 @@ import { FiArrowRight } from "react-icons/fi";
 import MainLayout from "../components/layouts/main-layout";
 
 export default function HomePage() {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (token) {
+      localStorage.setItem("token", token);
+      console.log("✅ Token stored in localStorage:", token);
+    }
+  }, []);
+
   return (
     <>
       <MainLayout>

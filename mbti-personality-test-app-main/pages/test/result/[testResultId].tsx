@@ -1,7 +1,8 @@
+// pages/test/result/[testResultId].tsx
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { Option, AsyncData, Result } from "@swan-io/boxed";
-import { Flex, Show, Text, useToast, UseToastOptions } from "@chakra-ui/react";
+import { Flex, Show, Text, useToast, UseToastOptions, Button } from "@chakra-ui/react";
 import axios from "axios";
 
 import MainLayout from "../../../components/layouts/main-layout";
@@ -21,6 +22,33 @@ export default function TestResultPage() {
   const [testResult, setTestResult] = useState<
     AsyncData<Result<Option<ITestResult>, Error>>
   >(AsyncData.NotAsked());
+  const [tokenReady, setTokenReady] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+
+    if (token) {
+      localStorage.setItem("token", token);
+      setTimeout(() => setTokenReady(true), 300);
+
+      const currentUrl = new URL(window.location.href);
+      if (!currentUrl.searchParams.get("token")) {
+        currentUrl.searchParams.set("token", token);
+        window.history.replaceState({}, "", currentUrl.toString());
+      }
+    } else {
+      const localToken = localStorage.getItem("token");
+      if (!localToken) {
+        console.warn("⚠️ token 未注入且 localStorage 中也为空！");
+      } else {
+        const currentUrl = window.location.href;
+        const connector = currentUrl.includes("?") ? "&" : "?";
+        const newUrl = `${currentUrl}${connector}token=${localToken}`;
+        window.location.href = newUrl;
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (router.isReady) {
@@ -32,61 +60,78 @@ export default function TestResultPage() {
     }
   }, [router.isReady, router.query.testResultId]);
 
-  // 保存 MBTI 类型到后端
-  useEffect(() => {
-    const saveMbtiType = async (mbtiType: string) => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          console.error("未找到用户认证 token");
-          return;
-        }
+  const saveMbtiType = async (mbtiType: string) => {
+    let token = localStorage.getItem("token");
 
-        await axios.post(
-          "http://localhost:5000/api/users/me/mbti",
-          { mbtiType },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        toast({
-          title: "MBTI保存成功",
-          description: "你的MBTI测试结果已成功保存✅",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-          position: "bottom",
-        } as UseToastOptions);
-      } catch (error: any) {
-        console.error("❌ 保存失败:", error.response?.data || error.message);
-        toast({
-          title: "保存失败",
-          description: "无法保存MBTI结果，请稍后再试❗",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-          position: "bottom",
-        } as UseToastOptions);
+    if (!token) {
+      const params = new URLSearchParams(window.location.search);
+      token = params.get("token") || "";
+      if (token) {
+        localStorage.setItem("token", token);
       }
-    };
+    }
 
-    if (testResult.isDone()) {
+    token = localStorage.getItem("token");
+
+    if (!token) {
+      toast({
+        title: "缺少 Token",
+        description: "未检测到登录信息，无法保存结果",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "bottom",
+      } as UseToastOptions);
+      return;
+    }
+
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/users/me/mbti",
+        { mbtiType },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      toast({
+        title: "MBTI保存成功",
+        description: "你的MBTI测试结果已成功保存✅",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "bottom",
+      } as UseToastOptions);
+
+      setTimeout(() => {
+        window.location.href = "http://localhost:3000/profile";
+      }, 5000);
+    } catch (error: any) {
+      toast({
+        title: "保存失败",
+        description: "无法保存MBTI结果，请稍后再试❗",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "bottom",
+      } as UseToastOptions);
+    }
+  };
+
+  useEffect(() => {
+    if (tokenReady && testResult.isDone()) {
       const result = testResult.value;
       if (result.isOk()) {
         const value = result.value;
         if (value.isSome()) {
           const data = value.value;
-
           const personalityClassGroup = getPersonalityClassGroupByTestScores(
             data.testScores
           );
           const mbtiType = personalityClassGroup.type;
-
-          console.log("✅ Calculated MBTI Type:", mbtiType);
 
           if (mbtiType?.length === 4) {
             saveMbtiType(mbtiType);
@@ -94,7 +139,7 @@ export default function TestResultPage() {
         }
       }
     }
-  }, [testResult, toast]);
+  }, [testResult, toast, tokenReady]);
 
   return (
     <MainLayout>
@@ -107,15 +152,15 @@ export default function TestResultPage() {
             Ok: (value) =>
               value.match({
                 Some: (data) => (
-                  <Flex
-                    h="full"
-                    direction={{ base: "column", lg: "row" }}
-                  >
+                  <Flex h="full" direction={{ base: "column", lg: "row" }}>
                     <TestResultStats testResult={data} />
                     <TestResult testResult={data} />
                     <Show above="lg">
                       <TestResultTableOfContent />
                     </Show>
+                    <Button mt={8} colorScheme="blue" onClick={() => router.push("/profile")}>
+                      返回主页
+                    </Button>
                   </Flex>
                 ),
                 None: () => <Text>No Data</Text>,
