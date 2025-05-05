@@ -5,7 +5,7 @@ import { writeLog, writeError } from '../utils/logHelper.js';
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '1h'
+    expiresIn: '7d'
   });
 };
 

@@ -271,7 +271,15 @@ export default function ProfilePage() {
           Start Matching
         </button>
         <button
-          onClick={() => window.open("http://localhost:3001/test", "_blank")}
+          onClick={() => {
+            const token = localStorage.getItem("token");
+            if (token) {
+              const url = `http://localhost:3001/test?token=${token}`;
+              window.open(url, "_blank");
+            } else {
+              alert("请先登录，未找到 token");
+            }
+          }}
           className="w-full md:w-1/3 bg-green-400 text-black py-3 rounded hover:bg-green-500 active:scale-95 active:shadow-inner transition transform duration-100"
         >
           Start MBTI Test
