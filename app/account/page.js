@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { FaBell, FaShieldAlt, FaClock, FaUserFriends } from "react-icons/fa";
 
-export default function AccountPage() {
+export default function AccountOverviewPage() {
   const [username, setUsername] = useState("User");
+  const router = useRouter();
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
@@ -13,48 +16,70 @@ export default function AccountPage() {
     }
   }, []);
 
+  const cards = [
+    {
+      title: "Notifications",
+      icon: <FaBell className="text-yellow-500 w-7 h-7" />,
+      description: "You have 2 unread notifications.",
+      link: "/notifications"
+    },
+    {
+      title: "Security",
+      icon: <FaShieldAlt className="text-green-500 w-7 h-7" />,
+      description: "Your account is secured with 2FA.",
+      link: "/security"
+    },
+    {
+      title: "Last Login",
+      icon: <FaClock className="text-blue-500 w-7 h-7" />,
+      description: "April 20, 2025, 21:34",
+      link: "/security#logins"
+    },
+    {
+      title: "Connections",
+      icon: <FaUserFriends className="text-pink-500 w-7 h-7" />,
+      description: "You are connected with 5 mentors/alumni.",
+      link: "/connections"
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-100 pt-[15px]">
-      {/* 顶部欢迎横幅区域 */}
-      <div className="relative w-full h-[500px]">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white font-inter text-gray-900">
+      {/* Hero Banner */}
+      <div className="relative h-[420px] w-full">
         <Image
           src="/Curtin5.jpg"
           alt="Dashboard Banner"
-          layout="fill"
-          objectFit="cover"
-          quality={100}
-          className="z-0"
+          fill
+          className="object-cover brightness-75"
         />
-        <div className="absolute inset-0 flex flex-col justify-center items-center text-white bg-black/40 backdrop-blur-sm z-10">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4 z-10">
+          <h1 className="text-4xl md:text-6xl font-extrabold drop-shadow mb-4">
             Welcome back, {username}!
           </h1>
-          <p className="text-lg font-light">
-            This is your personal dashboard overview.
+          <p className="text-lg md:text-xl max-w-2xl font-light drop-shadow-sm">
+            Explore your dashboard to stay informed, secure, and connected.
           </p>
         </div>
       </div>
 
-      {/* 信息卡片区域 */}
-      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 py-16 px-6">
-        {/* Notifications */}
-        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
-          <h2 className="text-black font-semibold mb-2">🔔 Notifications</h2>
-          <p className="text-gray-600">You have 2 unread notifications.</p>
-        </div>
-
-        {/* Security */}
-        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
-          <h2 className="text-black font-semibold mb-2">🛡️ Security</h2>
-          <p className="text-gray-600">Your account is secured with 2FA.</p>
-        </div>
-
-        {/* Last login */}
-        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
-          <h2 className="text-black font-semibold mb-2">📅 Last Login</h2>
-          <p className="text-gray-600">April 20, 2025, 21:34</p>
-        </div>
-      </div>
+      {/* Cards Section */}
+      <section className="max-w-6xl mx-auto px-6 py-16 grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        {cards.map((card, index) => (
+          <div
+            key={index}
+            onClick={() => router.push(card.link)}
+            className="bg-white rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer p-6 group"
+          >
+            <div className="flex items-center gap-4 mb-3">
+              <div className="group-hover:scale-110 transition-transform">{card.icon}</div>
+              <h3 className="text-lg font-semibold">{card.title}</h3>
+            </div>
+            <p className="text-sm text-gray-600 leading-relaxed pl-11">{card.description}</p>
+          </div>
+        ))}
+      </section>
     </div>
   );
 }
+
