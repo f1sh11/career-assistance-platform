@@ -1,20 +1,15 @@
-// ✅ Navbar.js - 最终修复版（使用 absolute + relative 渲染 dropdown，确保正常下拉，无需 portal）
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useAuth } from "../context/AuthContext"; // import auth context
 
 export default function Navbar() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, logout } = useAuth(); // get user and logout function
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const router = useRouter();
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -27,7 +22,7 @@ export default function Navbar() {
   }, []);
 
   const handleMenuClick = (route) => {
-    if (!isLoggedIn && route !== "/login") {
+    if (!user && route !== "/login") {
       alert("You need to log in before accessing this feature.");
       router.push("/login");
     } else {
@@ -40,7 +35,7 @@ export default function Navbar() {
     <>
       <nav className="w-full bg-black/80 backdrop-blur-md text-white fixed top-0 left-0 z-10000 shadow-md">
         <div className="flex items-center justify-between w-full px-6 py-4">
-          {/* 左侧：Logo + 学校名 */}
+          {/* Left: Logo and title */}
           <div
             className="flex items-center space-x-2 cursor-pointer"
             onClick={() => router.push("/")}
@@ -56,7 +51,7 @@ export default function Navbar() {
             </h1>
           </div>
 
-          {/* 右侧：导航菜单 */}
+          {/* Right: Navigation menu */}
           <div className="flex items-center space-x-4 text-sm sm:text-base relative">
             {[{ label: "Home", route: "/" }, { label: "Community", route: "/community" }, { label: "Resource", route: "/resource" }, { label: "Matching", route: "/matching/intro" }].map((item) => (
               <button
@@ -68,7 +63,7 @@ export default function Navbar() {
               </button>
             ))}
 
-            {!isLoggedIn ? (
+            {!user ? (
               <button
                 onClick={() => router.push("/login")}
                 className="bg-yellow-400 text-black px-3 py-1 rounded hover:bg-yellow-500 transition"
@@ -92,10 +87,11 @@ export default function Navbar() {
                           key={index}
                           onClick={() => {
                             if (isLogout) {
-                              localStorage.removeItem("token");
-                              localStorage.removeItem("username");
+                              logout();
+                              router.push("/login");
+                            } else {
+                              handleMenuClick(item.route);
                             }
-                            handleMenuClick(item.route);
                           }}
                           className={`w-full text-left px-4 py-2 text-sm transition relative group ${
                             isLogout

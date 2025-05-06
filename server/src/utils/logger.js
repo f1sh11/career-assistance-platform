@@ -19,4 +19,14 @@ const logger = createLogger({
   ],
 });
 
+export const writeLog = (scope, message, metadata = {}) => {
+  logger.info(`[${scope}] ${message} ${JSON.stringify(metadata)}`);
+};
+
+export const writeError = (message, stack) => {
+  logger.error(`[ERROR] ${message}`);
+  if (stack) logger.error(stack);
+};
+
 export default logger;
+

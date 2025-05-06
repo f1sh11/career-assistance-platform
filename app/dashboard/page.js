@@ -1,50 +1,45 @@
 
 /*dashboard*/
 "use client";
-
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function Dashboard() {
+export default function DashboardRedirector() {
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // 标记组件已挂载（确保 localStorage 可用）
-    setIsClient(true);
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      router.push("/login");
+      return;
+    }
+
+    try {
+      const user = JSON.parse(userData);
+      const role = user.role?.toLowerCase();
+
+      if (role === "student") {
+        router.push("/dashboard-student");
+      } else if (role === "mentor") {
+        router.push("/dashboard-mentor");
+      } else if (role === "industry") {
+        router.push("/dashboard-industry");
+      } else if (role === "admin") {
+        router.push("/dashboard-admin");
+      } else {
+        router.push("/login");
+      }
+    } catch (err) {
+      console.error("Failed to parse user data:", err);
+      router.push("/login");
+    }
   }, []);
 
-  useEffect(() => {
-    if (!isClient) return;
-
-    const token = typeof window !== "undefined" && localStorage.getItem("token");
-
-    console.log("🧪 Token in dashboard:", token);
-
-    if (!token) {
-      console.log("🔁 No token, going back to login...");
-      router.replace("/login");
-    } else {
-      // 模拟用户数据
-      const user = { role: "student" };
-      localStorage.setItem("loginMessage", `Welcome back, ${user.role}!`);
-
-      console.log("✅ Token found, navigating to home soon...");
-      setTimeout(() => {
-        router.replace("/");
-      }, 2000);
-    }
-  }, [isClient]);
-
-  if (!isClient) return null;
-
   return (
-    <div className="flex items-center justify-center min-h-screen bg-black text-white">
-      <div className="text-center space-y-6">
-        <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-yellow-500 border-opacity-50 mx-auto"></div>
-        <h1 className="text-3xl md:text-4xl font-light text-yellow-500">Loading dashboard...</h1>
-        <p className="text-gray-400">Preparing your profile...</p>
-      </div>
+    <div className="flex items-center justify-center h-screen bg-white text-black text-xl font-semibold">
+      🎬 Redirecting to your dashboard...
     </div>
   );
 }
+
+

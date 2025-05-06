@@ -1,117 +1,104 @@
-// src/controllers/auth.controller.js
-import User from '../models/user.model.js';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { writeLog, writeError } from '../utils/logHelper.js';
+import User from '../models/user.model.js';
 
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '1h'
-  });
-};
-
-// User registration
 export const register = async (req, res) => {
   try {
     const { identifier, password, role } = req.body;
 
     if (!identifier || !password || !role) {
-      return res.status(400).json({ message: 'Please provide all necessary information' });
+      return res.status(400).json({ message: 'All fields are required.' });
     }
 
-    const validRoles = ['student', 'mentor', 'industry', 'admin'];
-    if (!validRoles.includes(role)) {
-      return res.status(400).json({ message: 'Invalid user role' });
-    }
-
-    if (role === 'student' && !/^\d+$/.test(identifier)) {
-      return res.status(400).json({ message: 'Student ID must be a number' });
-    }
-
-    if (role !== 'student' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
-      return res.status(400).json({ message: 'Please provide a valid email address' });
-    }
-
-    const existingUser = await User.findOne({ identifier });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    const user = await User.create({ identifier, password, role });
-
-    writeLog('auth', `New user registered`, {
-      userId: user._id.toString(),
-      url: req.originalUrl,
-      role
+    const existingUser = await User.findOne({
+      $or: [{ email: identifier }, { studentId: identifier }],
     });
+
+    if (existingUser) {
+      return res.status(409).json({ message: 'User already exists.' });
+    }
+
+    let newUserData = {
+      password,
+      role: role.toLowerCase(),
+    };
+
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
+      newUserData.email = identifier;
+    } else {
+      newUserData.studentId = identifier;
+    }
+
+    const newUser = new User(newUserData);
+    await newUser.save();
+
+    console.log('✅ Registered new user:', newUser);
 
     res.status(201).json({
-      message: 'Registration successful',
-      userId: user._id
+      message: 'User registered successfully',
+      user: {
+        id: newUser._id,
+        role: newUser.role,
+      },
     });
-  } catch (error) {
-    writeError(`Registration error: ${error.message}`, error.stack);
-    res.status(500).json({ message: 'Registration failed', error: error.message });
+  } catch (err) {
+    console.error('❌ Registration error:', err.message);
+    res.status(500).json({ message: 'Registration failed', error: err.message });
   }
 };
 
-// User login
 export const login = async (req, res) => {
   try {
-    const { identifier, password } = req.body;
+    const { identifier, password, role } = req.body;
 
-    if (!identifier || !password) {
-      return res.status(400).json({ message: 'Please provide login credentials' });
+    console.log("📥 Login input:", { identifier, password, role });
+
+    if (!identifier || !password || !role) {
+      return res.status(400).json({ message: 'All fields are required.' });
     }
 
-    const user = await User.findOne({ identifier });
+    const query = { role: role.toLowerCase() };
+
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
+      query.email = identifier;
+    } else {
+      query.studentId = identifier;
+    }
+
+    console.log("🔍 Login query:", query);
+
+    const user = await User.findOne(query);
+
+    console.log("📄 User found:", user);
+
     if (!user) {
       return res.status(401).json({ message: 'Invalid login credentials' });
     }
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      writeLog('auth', `Login failed: password mismatch`, {
-        identifier,
-        url: req.originalUrl
-      });
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
-      return res.status(401).json({ message: '无效的登录凭证' });
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid login credentials' });
     }
 
-    user.lastLogin = Date.now();
-    await user.save();
-
-    const token = generateToken(user._id);
-
-    writeLog('auth', `User login successful`, {
-      userId: user._id.toString(),
-      url: req.originalUrl,
-      role: user.role
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
     });
 
     res.status(200).json({
       message: 'Login successful',
       token,
-      role: user.role
+      user: {
+        id: user._id,
+        role: user.role,
+      },
     });
-  } catch (error) {
-    writeError(`Login error: ${error.message}`, error.stack);
-    res.status(500).json({ message: 'Login failed', error: error.message });
+  } catch (err) {
+    console.error('❌ Login error:', err.message);
+    res.status(500).json({ message: 'Login failed', error: err.message });
   }
 };
 
-// Get current user information
-export const getCurrentUser = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id).select('-password');
 
-    if (!user) {
-      return res.status(404).json({ message: 'User does not exist' });
-    }
 
-    res.status(200).json(user);
-  } catch (error) {
-    writeError(`Get user information error: ${error.message}`, error.stack);
-    res.status(500).json({ message: 'Get user information failed', error: error.message });
-  }
-};
+
