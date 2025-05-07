@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import { useEffect, useState, useRef } from "react";
+import axios from "axios";
 
-// 资源卡片组件
-function ResourceCard({ resource, scrollTop, index, lastIndex }) {
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+function ResourceCard({ resource, index, scrollTop, lastIndex }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(true);
 
@@ -46,102 +47,89 @@ function ResourceCard({ resource, scrollTop, index, lastIndex }) {
 }
 
 export default function ResourcePage() {
-  const [selectedCategory, setSelectedCategory] = useState("Career Guides");
+  const [category, setCategory] = useState("Career Guides");
+  const [resources, setResources] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchText, setSearchText] = useState("");
+  const [role, setRole] = useState("");
   const [scrollTop, setScrollTop] = useState(0);
   const [showAll, setShowAll] = useState(false);
-  const [searchText, setSearchText] = useState("");
-
-  const categories = [
-    "Career Guides",
-    "Templates",
-    "AI tool",
-    "Interview Preparation",
-    "Company Profiles",
-    "Skill Development Courses",
-    "Mbti Tests",
-  ];
-
-  const resourcesData = {
-    "Career Guides": Array.from({ length: 34 }, (_, i) => ({
-      title: `Career Guide #${i + 1}`,
-      description: "How to plan your career path effectively...",
-    })),
-    "Templates": Array.from({ length: 22 }, (_, i) => ({
-      title: `Template #${i + 1}`,
-      description: "Downloadable templates for various purposes...",
-    })),
-    "AI tool": Array.from({ length: 17 }, (_, i) => ({
-      title: `AI Tool #${i + 1}`,
-      description: "Use AI to optimize your career path...",
-    })),
-    "Interview Preparation": Array.from({ length: 25 }, (_, i) => ({
-      title: `Interview Prep #${i + 1}`,
-      description: "Best practices for interview success...",
-    })),
-    "Company Profiles": Array.from({ length: 18 }, (_, i) => ({
-      title: `Company Profile #${i + 1}`,
-      description: "Detailed profiles of top companies...",
-    })),
-    "Skill Development Courses": Array.from({ length: 20 }, (_, i) => ({
-      title: `Skill Course #${i + 1}`,
-      description: "Courses to help you upskill efficiently...",
-    })),
-  };
 
   const itemsPerPage = 15;
-  const totalItems = resourcesData[selectedCategory]?.length || 0;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const categories = [
+    "Career Guides", "Templates", "AI tool", "Interview Preparation", "Company Profiles", "Skill Development Courses", "Mbti Tests"
+  ];
 
-  const paginatedResources = resourcesData[selectedCategory]?.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const fetchResources = async () => {
+    try {
+      const res = await axios.get(
+        `${API}/api/resources?category=${encodeURIComponent(category)}&page=${currentPage}&limit=${itemsPerPage}&search=${searchText}`
+      );
+      setResources(res.data.resources);
+      setTotalPages(res.data.totalPages);
+    } catch (err) {
+      console.error("Failed to fetch resources", err);
+    }
+  };
 
-  const goToPage = (pageNumber) => {
-    if (pageNumber >= 1 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-      setShowAll(false);
+  const fetchRole = () => {
+    try {
+      const userStr = localStorage.getItem("user");
+      if (!userStr) return;
+      const user = JSON.parse(userStr);
+      setRole(user.role);
+    } catch (err) {
+      console.error("Failed to parse role");
     }
   };
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrollTop(window.scrollY);
-    };
+    fetchRole();
+  }, []);
+
+  useEffect(() => {
+    fetchResources();
+  }, [category, currentPage, searchText]);
+
+  useEffect(() => {
+    const handleScroll = () => setScrollTop(window.scrollY);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const goToPage = (pageNum) => {
+    if (pageNum >= 1 && pageNum <= totalPages) {
+      setCurrentPage(pageNum);
+      setShowAll(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-fixed bg-cover bg-center pt-[80px]" style={{ backgroundImage: "url('/Curtin3.jpg')" }}>
       <div className="flex">
-        {/* 左边分类栏 */}
+        {/* 分类侧栏 */}
         <aside className="w-48 bg-gray-800 text-white fixed top-[0px] left-0 h-screen z-40 flex flex-col pt-24 space-y-2">
-          {categories.map((category) => (
+          {categories.map((cat) => (
             <div
-              key={category}
+              key={cat}
               onClick={() => {
-                if (category === "Mbti Tests") {
-                  window.location.href = "/resource/mbti";
-                } else {
-                  setSelectedCategory(category);
-                  setCurrentPage(1);
-                  setShowAll(false);
-                }
+                setCategory(cat);
+                setCurrentPage(1);
+                setShowAll(false);
               }}
               className={`text-lg font-light px-4 py-3 rounded-md transition cursor-pointer ${
-                selectedCategory === category
+                category === cat
                   ? "bg-yellow-400 text-black"
                   : "bg-gray-800 hover:bg-yellow-300 hover:text-black"
               }`}
             >
-              {category}
+              {cat}
             </div>
           ))}
         </aside>
 
-        {/* 右侧内容区域 */}
+        {/* 内容主区域 */}
         <div className="ml-64 flex-1 pr-8 py-20 relative">
           {/* 搜索框 */}
           <div className="fixed top-30 right-8 left-64 max-w-[calc(100%-320px)] z-20">
@@ -154,7 +142,7 @@ export default function ResourcePage() {
                 className="flex-1 p-4 border rounded bg-gray-100 placeholder-gray-400 focus:placeholder-black text-black"
               />
               <button
-                onClick={() => console.log("Searching for:", searchText)}
+                onClick={() => fetchResources()}
                 className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded shadow"
               >
                 Search
@@ -162,21 +150,33 @@ export default function ResourcePage() {
             </div>
           </div>
 
-          {/* 卡片内容 */}
-          <main className="pt-25 space-y-2 w-full">
-            {(showAll ? paginatedResources : paginatedResources?.slice(0, 3)).map((resource, index) => (
+          {/* 上传按钮，仅 Mentor/Industry/Admin 可见 */}
+          {(role === "mentor" || role === "industry" || role === "admin") && (
+            <div className="fixed bottom-10 right-10 z-50">
+              <button
+                onClick={() => window.location.href = "/resource/upload"}
+                className="bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600"
+              >
+                Upload Resource
+              </button>
+            </div>
+          )}
+
+          {/* 资源卡片 */}
+          <main className="pt-24 space-y-4">
+            {(showAll ? resources : resources?.slice(0, 3)).map((res, index) => (
               <ResourceCard
-                key={index}
-                resource={resource}
-                index={index}
+                key={res._id || index}
+                resource={res}
                 scrollTop={scrollTop}
-                lastIndex={paginatedResources.length - 1}
+                index={index}
+                lastIndex={resources.length - 1}
               />
             ))}
           </main>
 
-          {/* Show More 按钮 */}
-          {!showAll && paginatedResources?.length > 3 && (
+          {/* Show More */}
+          {!showAll && resources?.length > 3 && (
             <div className="flex justify-center mt-6">
               <button
                 onClick={() => setShowAll(true)}
@@ -187,13 +187,10 @@ export default function ResourcePage() {
             </div>
           )}
 
-          {/* 页码翻页器 */}
+          {/* 分页器 */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center space-x-2 mt-8">
-              <button
-                onClick={() => goToPage(1)}
-                className="px-3 py-2 bg-gray-200 text-black rounded hover:bg-yellow-300"
-              >
+              <button onClick={() => goToPage(1)} className="px-3 py-2 bg-gray-200 text-black rounded hover:bg-yellow-300">
                 First
               </button>
               {Array.from({ length: totalPages }, (_, i) => (
@@ -201,18 +198,13 @@ export default function ResourcePage() {
                   key={i}
                   onClick={() => goToPage(i + 1)}
                   className={`px-4 py-2 rounded ${
-                    currentPage === i + 1
-                      ? "bg-yellow-400 text-black"
-                      : "bg-gray-200 text-black hover:bg-yellow-300"
+                    currentPage === i + 1 ? "bg-yellow-400 text-black" : "bg-gray-200 text-black hover:bg-yellow-300"
                   }`}
                 >
                   {i + 1}
                 </button>
               ))}
-              <button
-                onClick={() => goToPage(totalPages)}
-                className="px-3 py-2 bg-gray-200 text-black rounded hover:bg-yellow-300"
-              >
+              <button onClick={() => goToPage(totalPages)} className="px-3 py-2 bg-gray-200 text-black rounded hover:bg-yellow-300">
                 Last
               </button>
             </div>
@@ -222,6 +214,7 @@ export default function ResourcePage() {
     </div>
   );
 }
+
 
 
 
