@@ -4,7 +4,7 @@ import User from '../models/user.model.js';
 import { writeLog, writeError } from '../utils/logHelper.js';
 
 // Verify that the user is authenticated
-export const authenticate = async (req, res, next) => {
+export const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {

@@ -1,4 +1,4 @@
-
+// src/routes/posts.js
 import express from 'express';
 import {
   createPost,
@@ -8,7 +8,7 @@ import {
   toggleCollect
 } from '../controllers/postController.js';
 
-import { authenticate } from '../middleware/auth.middleware.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
@@ -24,7 +24,7 @@ router.get('/', getPosts);
  * @desc    Create a new post (status: approved by default)
  * @access  Private (authenticated users only)
  */
-router.post('/', authenticate, createPost);
+router.post('/', authenticateToken, createPost);
 
 /**
  * @route   GET /api/posts/:id
@@ -38,17 +38,13 @@ router.get('/:id', getPostById);
  * @desc    Like or unlike a post (toggle)
  * @access  Private
  */
-router.put('/:id/like', authenticate, likePost);
+router.put('/:id/like', authenticateToken, likePost);
 
 /**
  * @route   PUT /api/posts/:id/collect
  * @desc    Collect or un-collect a post (toggle)
  * @access  Private
  */
-router.put('/:id/collect', authenticate, toggleCollect);
+router.put('/:id/collect', authenticateToken, toggleCollect);
 
 export default router;
-
-
-
-

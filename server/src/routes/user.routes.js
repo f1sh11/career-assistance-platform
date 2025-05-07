@@ -1,3 +1,4 @@
+// src/routes/user.routes.js
 import express from 'express';
 import {
   getProfile,
@@ -10,35 +11,34 @@ import {
   saveMbtiResult // ✅ 新增导入
 } from '../controllers/user.controller.js';
 import {
-  authenticate,
+  authenticateToken,
   authorize
 } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
 // Get the current user's profile (requires authentication)
-router.get('/me', authenticate, getProfile);
+router.get('/me', authenticateToken, getProfile);
 
 // Update the current user's profile (requires authentication)
-router.put('/me', authenticate, updateProfile);
+router.put('/me', authenticateToken, updateProfile);
 
 // Save MBTI type for current user (requires authentication) ✅ 新增路由
-router.post('/me/mbti', authenticate, saveMbtiResult);
-
+router.post('/me/mbti', authenticateToken, saveMbtiResult);
 
 // Get user's collected posts
-router.get('/me/collections', authenticate, getUserCollections);
+router.get('/me/collections', authenticateToken, getUserCollections);
 
 // Get user's comments with post titles
-router.get('/me/comments', authenticate, getUserComments);
+router.get('/me/comments', authenticateToken, getUserComments);
 
 // ✅ Get replies received by the user
-router.get('/me/replies', authenticate, getUserReplies);
+router.get('/me/replies', authenticateToken, getUserReplies);
 
 // Get all users (only for admins)
-router.get('/', authenticate, authorize('admin'), getUsers);
+router.get('/', authenticateToken, authorize('admin'), getUsers);
 
 // Get the specified user's profile (requires authentication)
-router.get('/:id', authenticate, getUserById);
+router.get('/:id', authenticateToken, getUserById);
 
 export default router;

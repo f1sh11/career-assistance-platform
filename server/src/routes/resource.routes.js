@@ -2,11 +2,8 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
-import { getAuditLogs } from "../controllers/resource.controller.js";
-
-router.get("/logs", authenticateToken, getAuditLogs);
-
 import {
+  getAuditLogs,
   uploadResource,
   getResources,
   getPendingResources,
@@ -16,7 +13,10 @@ import {
 } from "../controllers/resource.controller.js";
 import { authenticateToken } from "../middleware/auth.middleware.js";
 
-const router = express.Router();
+const router = express.Router(); // ✅ 必须在这里先声明
+
+// ✅ 放在 router 初始化之后
+router.get("/logs", authenticateToken, getAuditLogs);
 
 // 处理 __dirname (__ESM compatibility)
 const __filename = fileURLToPath(import.meta.url);
@@ -51,4 +51,3 @@ router.put("/:id/approve", authenticateToken, approveResource);
 router.put("/:id/reject", authenticateToken, rejectResource);
 
 export default router;
-
