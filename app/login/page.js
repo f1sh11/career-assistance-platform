@@ -1,10 +1,8 @@
-/*login*/
-
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { useAuth } from "../context/AuthContext"; // added
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const [role, setRole] = useState("");
@@ -12,29 +10,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const { login } = useAuth(); // added
+  const { login } = useAuth();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userStr = localStorage.getItem("user");
     if (token && userStr) {
-      const userData = JSON.parse(userStr);
-      switch (userData.role) {
-        case "student":
-          router.push("/dashboard-student");
-          break;
-        case "mentor":
-          router.push("/dashboard-mentor");
-          break;
-        case "industry":
-          router.push("/dashboard-industry");
-          break;
-        case "admin":
-          router.push("/dashboard-admin");
-          break;
-        default:
-          router.push("/dashboard");
-      }
+      router.push("/dashboard"); 
     }
   }, []);
 
@@ -44,8 +26,10 @@ export default function LoginPage() {
 
     if (!role) return setError("Please select your identity.");
     if (!identifier || !password) return setError("Please fill in all fields.");
-    if (role === "student" && !/^\d+$/.test(identifier)) return setError("Student ID must be numeric.");
-    if (role !== "student" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) return setError("Please enter a valid email.");
+    if (role === "student" && !/^\d+$/.test(identifier))
+      return setError("Student ID must be numeric.");
+    if (role !== "student" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier))
+      return setError("Please enter a valid email.");
 
     try {
       const response = await axios.post("http://localhost:5000/api/auth/login", {
@@ -63,24 +47,9 @@ export default function LoginPage() {
 
       const userData = profileRes.data.user;
       localStorage.setItem("user", JSON.stringify(userData));
-      login(userData); // update global auth context
+      login(userData); // 更新全局登录状态
 
-      switch (userData.role) {
-        case "student":
-          router.push("/dashboard-student");
-          break;
-        case "mentor":
-          router.push("/dashboard-mentor");
-          break;
-        case "industry":
-          router.push("/dashboard-industry");
-          break;
-        case "admin":
-          router.push("/dashboard-admin");
-          break;
-        default:
-          router.push("/dashboard");
-      }
+      router.push("/dashboard"); // ✅ 成功登录后只跳转到 redirector 页面
     } catch (err) {
       console.error("Login error:", err.response?.data || err.message);
       if (!err.response) {
@@ -156,6 +125,7 @@ export default function LoginPage() {
     </div>
   );
 }
+
 
 
 
