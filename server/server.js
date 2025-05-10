@@ -23,6 +23,8 @@ import { writeLog, writeError } from './src/utils/logHelper.js';
 
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import chatRoutes from './src/routes/chat.routes.js';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -84,6 +86,7 @@ app.use('/api/matching', matchingRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/chat', chatRoutes); 
 
 // ✅ 健康检查
 app.get('/api/status', (req, res) => {
