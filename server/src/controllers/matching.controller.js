@@ -11,9 +11,21 @@ export const getRecommendations = async (req, res) => {
     };
 
     if (req.user.role === 'student') {
-      const mentors = await User.find({ role: 'mentor' }).select('_id role profile').limit(4);
-      const alumni = await User.find({ role: 'student', _id: { $ne: req.user._id } }).select('_id role profile').limit(4);
-      const professionals = await User.find({ role: 'industry' }).select('_id role profile').limit(4);
+      const major = req.user.profile.major;
+
+      const mentors = await User.find({
+        role: 'mentor',
+        'profile.major': major
+      }).select('_id role profile').limit(6);
+
+      const alumni = await User.find({
+        role: 'student',
+        _id: { $ne: req.user._id }
+      }).select('_id role profile').limit(4);
+
+      const professionals = await User.find({
+        role: 'industry'
+      }).select('_id role profile').limit(4);
 
       writeLog('matching', 'Student requested recommendations', meta);
       res.status(200).json({ mentors, alumni, professionals });

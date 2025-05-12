@@ -8,6 +8,8 @@ import { toast } from "react-hot-toast";
 export default function ProfilePage() {
   const router = useRouter();
 
+  const majorOptions = ["Computer Science", "Business", "Engineering"];
+
   const [formData, setFormData] = useState({
     introduction: "",
     phone: "",
@@ -49,6 +51,7 @@ export default function ProfilePage() {
       const data = await res.json();
       if (res.ok) {
         setFormData({
+          name: data.user.profile.name || "",
           introduction: data.user.profile.introduction || "",
           phone: data.user.profile.phone || "",
           email: data.user.profile.email || "",
@@ -204,7 +207,14 @@ export default function ProfilePage() {
             </label>
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-1">{userInfo.username}</h1>
+            <input
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Enter your name"
+              className="text-2xl font-bold text-gray-800 mb-1 bg-transparent outline-none"
+            />
             <p className="text-sm text-gray-500">identity：{userInfo.role}</p>
           </div>
         </div>
@@ -213,7 +223,7 @@ export default function ProfilePage() {
         <div className="bg-white shadow-md rounded-xl p-6">
           <h2 className="text-xl font-semibold mb-6">basic information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {["phone", "email", "address", "major", "interests", "skills", "dreamJob"].map((field) => (
+            {["phone", "email", "address", "interests", "skills", "dreamJob"].map((field) => (
               <div key={field}>
                 <label className="block text-sm font-medium mb-1 capitalize">{field.replace(/([A-Z])/g, " $1")}：</label>
                 <input
@@ -225,6 +235,22 @@ export default function ProfilePage() {
                 />
               </div>
             ))}
+
+            {/* Major dropdown */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Major：</label>
+              <select
+                name="major"
+                value={formData.major}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-50"
+              >
+                <option value="">Select Major</option>
+                {majorOptions.map((major, index) => (
+                  <option key={index} value={major}>{major}</option>
+                ))}
+              </select>
+            </div>
 
             <div>
               <label className="block text-sm font-medium mb-1">MBTI type：</label>

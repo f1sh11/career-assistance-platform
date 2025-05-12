@@ -25,8 +25,10 @@ export const register = async (req, res) => {
 
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
       newUserData.email = identifier;
+      newUserData.identifier = identifier;
     } else {
       newUserData.studentId = identifier;
+      newUserData.identifier = identifier;
     }
 
     const newUser = new User(newUserData);
