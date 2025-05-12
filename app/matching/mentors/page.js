@@ -48,7 +48,7 @@ export default function MentorsPage() {
       .then((data) => {
         toast.success(`Connected with ${mentor.profile.name || "Mentor"}`);
         setTimeout(() => {
-          router.push("/chat");
+          router.push(`/chat?target=${mentor._id}`);
         }, 800);
       })
       .catch(() => toast.error("Failed to connect."));

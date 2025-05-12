@@ -45,14 +45,17 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 const accessLogStream = fs.createWriteStream(path.join(logDirectory, 'morgan-access.log'), { flags: 'a' });
+const isDev = process.env.NODE_ENV !== 'production';
 
 // ✅ 安全中间件
 app.use(helmet());
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests from this IP, please try again later.'
-}));
+if (!isDev) {
+  app.use(rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Too many requests from this IP, please try again later.'
+  }));
+}
 
 // ✅ 通用中间件
 app.use(cors({

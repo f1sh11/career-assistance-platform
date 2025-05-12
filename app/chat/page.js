@@ -1,118 +1,269 @@
 "use client";
 
-import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 export default function ChatPage() {
-  const [activeSection, setActiveSection] = useState("private");
-  const [showOptions, setShowOptions] = useState(false);
+  const [targetUser, setTargetUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [message, setMessage] = useState("");
+  const [chatList, setChatList] = useState([]);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const targetId = searchParams.get("target");
+  const postId = searchParams.get("post");
+  const API_URL = "http://localhost:5000";
+  const textareaRef = useRef();
+  const scrollRef = useRef();
 
-  const toggleSection = (section) => {
-    setActiveSection((prev) => (prev === section ? "" : section));
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  const formatTime = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+      month: "short",
+      day: "numeric"
+    });
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetch(`${API_URL}/api/users/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => setCurrentUser(data.user));
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (token) {
+      fetch(`${API_URL}/api/users/me/connections`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => setChatList(data.connections || []));
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (token && targetId) {
+      fetch(`${API_URL}/api/users/${targetId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => setTargetUser(data));
+    }
+  }, [targetId, token]);
+
+  useEffect(() => {
+    if (!postId && currentUser && targetUser && token) {
+      const createPost = async () => {
+        const res = await fetch(`${API_URL}/api/posts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            title: `Chat between ${currentUser.profile.name} and ${targetUser.profile.name}`,
+            content: "Private conversation.",
+            isAnonymous: true
+          })
+        });
+        const post = await res.json();
+        router.push(`/chat?post=${post._id}&target=${targetId}`);
+      };
+      createPost();
+    }
+  }, [postId, currentUser, targetUser, token]);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      if (!postId || !token) return;
+
+      const res = await fetch(`${API_URL}/api/comments/${postId}`);
+      const data = await res.json();
+      setComments(data);
+
+      if (data.length === 0 && currentUser?.profile) {
+        const p = currentUser.profile;
+        const intro = `Hi, I'm ${p.name || "a student"}. My major is ${p.major || "N/A"}, I'm skilled in ${p.skills || "N/A"}, interested in ${p.interests || "N/A"}, and my dream job is ${p.dreamJob || "N/A"}. Looking forward to learning from you!`;
+
+        try {
+          await fetch(`${API_URL}/api/comments/${postId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ text: intro })
+          });
+
+          const newRes = await fetch(`${API_URL}/api/comments/${postId}`);
+          const newComments = await newRes.json();
+          setComments(newComments);
+        } catch (err) {
+          console.warn("Intro message failed:", err.message);
+        }
+      }
+    };
+
+    if (currentUser && postId) fetchComments();
+  }, [postId, token, currentUser]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [comments]);
+
+  const sendMessage = async () => {
+    if (!message.trim()) return;
+    try {
+      const res = await fetch(`${API_URL}/api/comments/${postId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: message })
+      });
+      if (res.ok) {
+        setMessage("");
+        const newComment = await res.json();
+        setComments(prev => [...prev, newComment]);
+        if (textareaRef.current) textareaRef.current.style.height = "auto";
+      }
+    } catch (error) {
+      toast.error("Failed to send message");
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const deleteMessage = async (commentId) => {
+    try {
+      const res = await fetch(`${API_URL}/api/comments/delete/${commentId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setComments(prev => prev.filter(c => c._id !== commentId));
+      }
+    } catch (error) {
+      toast.error("Failed to delete message");
+    }
+  };
+
+  const isCurrentUser = (userId) => {
+    return userId === currentUser?._id || userId?._id === currentUser?._id;
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="pt-[72px] flex h-screen overflow-hidden">
-        {/* 左侧聊天栏 */}
-        <aside className="w-48 h-screen rounded shadow flex flex-col overflow-y-auto bg-black text-white">
-          {/* 私聊按钮 */}
-          <div
-            className="bg-blue-500 px-4 py-4 cursor-pointer h-14 hover:text-gray-200"
-            onClick={() => toggleSection("private")}
-          >
-            Private chat
-          </div>
+    <div className="min-h-screen bg-gray-100 flex flex-col pt-[72px]">
+      <div className="flex-1 flex overflow-hidden">
+        <aside className="w-60 bg-black text-white flex flex-col">
+          <div className="bg-blue-500 px-4 py-4 font-semibold">Private Chats</div>
 
-          {/* 私聊列表 */}
-          <div className={activeSection === "private" ? "bg-gray-800" : "bg-gray-200"}>
-            {activeSection === "private" &&
-              [...Array(4)].map((_, i) => (
-                <div key={i} className="flex items-center px-4 py-2 border-b border-gray-700">
-                  <div className="w-8 h-8 rounded-full bg-gray-400 mr-3" />
-                  <span className="text-sm text-white">Name</span>
-                </div>
-              ))}
-          </div>
-
-          {/* 群聊按钮 */}
-          <div
-            className="bg-blue-500 px-4 py-4 cursor-pointer h-14 hover:text-gray-200"
-            onClick={() => toggleSection("group")}
-          >
-            Group chat
-          </div>
-
-          {/* 群聊列表 */}
-          <div className={activeSection === "group" ? "bg-gray-800" : "bg-gray-200"}>
-            {activeSection === "group" &&
-              [...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-center px-4 py-2 border-b border-gray-700">
-                  <div className="w-8 h-8 rounded-full bg-gray-400 mr-3" />
-                  <span className="text-sm text-white">Name</span>
-                </div>
-              ))}
-          </div>
-
-          {/* 底部灰色背景块 */}
-          <div className="mt-auto h-0 bg-gray-200 w-full shrink-0" />
+          {targetUser && (
+            <div className="flex items-center px-4 py-2 border-b border-gray-700 bg-gray-800">
+              <img
+                src={`${API_URL}${targetUser.profile.avatarUrl || "/default-avatar.png"}`}
+                className="w-8 h-8 rounded-full object-cover mr-3"
+              />
+              <span className="text-sm">{targetUser.profile.name}</span>
+            </div>
+          )}
+          
+          {chatList.map((user, idx) => (
+            <button
+              key={idx}
+              className={`flex items-center px-4 py-2 hover:bg-gray-800 ${user._id === targetId ? "bg-gray-800" : ""}`}
+              onClick={() => router.push(`/chat?post=${postId}&target=${user._id}`)}
+            >
+              <img
+                src={`${API_URL}${user.profile.avatarUrl || "/default-avatar.png"}`}
+                className="w-8 h-8 rounded-full object-cover mr-3"
+              />
+              <span className="text-sm">{user.profile.name}</span>
+            </button>
+          ))}
         </aside>
 
-        {/* 主聊天区域 */}
         <main className="flex-1 flex flex-col relative">
-          <div className="flex-1 p-6 overflow-y-auto space-y-6">
-            <div className="flex items-start">
-              <div className="w-10 h-10 rounded-full bg-gray-300 mr-3" />
-              <div className="bg-black text-white px-4 py-2 rounded-lg rounded-bl-none max-w-xs">
-                Hello, how are you?
+          <div className="flex-1 overflow-y-auto p-6" ref={scrollRef}>
+            {targetUser && (
+              <div className="text-black font-semibold mb-4">
+                Chatting with {targetUser.profile.name}
               </div>
-            </div>
-            <div className="flex items-start justify-end">
-              <div className="bg-gray-900 text-white px-4 py-2 rounded-lg rounded-br-none max-w-xs">
-                I'm good, thanks!
+            )}
+
+            {comments.map((c, idx) => (
+              <div
+                key={idx}
+                className={`flex items-start mb-4 ${isCurrentUser(c.userId) ? "justify-end" : ""}`}
+              >
+                {!isCurrentUser(c.userId) && (
+                  <img
+                    src={`${API_URL}${targetUser?.profile.avatarUrl || "/default-avatar.png"}`}
+                    className="w-10 h-10 rounded-full object-cover mr-3"
+                  />
+                )}
+                <div className="max-w-xs group">
+                  <div className="bg-black text-white px-4 py-2 rounded-lg relative">
+                    <p>{c.text}</p>
+                    <span className="text-xs text-gray-300 block mt-1">{formatTime(c.createdAt)}</span>
+                    {isCurrentUser(c.userId) && (
+                      <button
+                        onClick={() => deleteMessage(c._id)}
+                        className="absolute top-1 right-1 text-xs text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {isCurrentUser(c.userId) && (
+                  <img
+                    src={`${API_URL}${currentUser?.profile.avatarUrl || "/default-avatar.png"}`}
+                    className="w-10 h-10 rounded-full object-cover ml-3"
+                  />
+                )}
               </div>
-              <div className="w-10 h-10 rounded-full bg-gray-300 ml-3" />
-            </div>
+            ))}
           </div>
 
-          {/* 输入栏 */}
-          <div className="bg-black-200 px-4 py-3 flex items-end gap-4">
+          <div className="bg-white px-4 py-3 flex items-end gap-4 border-t">
             <textarea
+              ref={textareaRef}
               rows={1}
               placeholder="Type a message..."
               className="flex-1 px-4 py-2 rounded border border-gray-400 text-black resize-none overflow-y-auto max-h-[33vh] leading-snug"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
               onInput={(e) => {
                 e.target.style.height = "auto";
                 e.target.style.height = `${Math.min(e.target.scrollHeight, window.innerHeight / 3)}px`;
               }}
             />
-            <button className="px-6 py-2 bg-black text-white rounded">Send</button>
+            <button className="px-6 py-2 bg-black text-white rounded" onClick={sendMessage}>
+              Send
+            </button>
           </div>
-
-          {/* 展开按钮组 */}
-          {showOptions && (
-            <div className="absolute bottom-36 right-6 flex flex-col space-y-3 items-end">
-              <button className="bg-blue-500 text-white px-4 py-2 rounded shadow">Send File</button>
-              <button className="bg-blue-500 text-white px-4 py-2 rounded shadow">Send Image</button>
-              <button className="bg-blue-500 text-white px-4 py-2 rounded shadow">Send Video</button>
-            </div>
-          )}
-
-          {/* 加号按钮 */}
-          <button
-            className="absolute bottom-20 right-6 w-12 h-12 bg-blue-500 text-white rounded-full text-2xl"
-            onClick={() => setShowOptions(!showOptions)}
-          >
-            +
-          </button>
         </main>
       </div>
     </div>
   );
 }
-
-
-
-
-            
-   
