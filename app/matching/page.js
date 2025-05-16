@@ -10,12 +10,28 @@ export default function MatchingPage() {
   const [isMatching, setIsMatching] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("Session expired. Please login again.");
-      router.push("/login");
-    }
-  }, []);
+  const token = localStorage.getItem("token");
+  if (!token) {
+    toast.error("Session expired. Please login again.");
+    router.push("/login");
+    return;
+  }
+
+  fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/users/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data?.user?.role === "mentor") {
+        router.replace("/chat");
+      }
+    })
+    .catch(() => toast.error("Failed to verify user role"));
+}, []);
+
+
 
   const roles = [
     {

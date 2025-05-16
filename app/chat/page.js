@@ -43,11 +43,11 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (token) {
-      fetch(`${API_URL}/api/users/me/connections`, {
+      fetch(`${API_URL}/api/chat/list`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())
-        .then(data => setChatList(data.connections || []));
+        .then(data => setChatList(data));
     }
   }, [token]);
 
@@ -186,17 +186,17 @@ export default function ChatPage() {
             </div>
           )}
           
-          {chatList.map((user, idx) => (
+          {chatList.map((item, idx) => (
             <button
               key={idx}
-              className={`flex items-center px-4 py-2 hover:bg-gray-800 ${user._id === targetId ? "bg-gray-800" : ""}`}
-              onClick={() => router.push(`/chat?post=${postId}&target=${user._id}`)}
+              className={`flex items-center px-4 py-2 hover:bg-gray-800 ${item.user._id === targetId ? "bg-gray-800" : ""}`}
+              onClick={() => router.push(`/chat?post=${item.postId}&target=${item.user._id}`)}
             >
               <img
-                src={`${API_URL}${user.profile.avatarUrl || "/default-avatar.png"}`}
+                src={`${API_URL}${item.user.profile.avatarUrl || "/default-avatar.png"}`}
                 className="w-8 h-8 rounded-full object-cover mr-3"
               />
-              <span className="text-sm">{user.profile.name}</span>
+              <span className="text-sm">{item.user.profile.name}</span>
             </button>
           ))}
         </aside>

@@ -15,6 +15,7 @@ import uploadRoutes from './src/routes/upload.routes.js';
 import postRoutes from './src/routes/posts.js';
 import commentRoutes from './src/routes/comments.js';
 import resourceRoutes from './src/routes/resource.routes.js'; 
+import chatRoutes from "./src/routes/chat.routes.js";
 
 import connectDB from './src/config/db.js';
 import logger from './src/utils/logger.js';
@@ -64,7 +65,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use("/api/chat", chatRoutes);
 // ✅ 静态托管 uploads 目录（头像和资源文件）
 app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
   setHeaders: (res, path) => {

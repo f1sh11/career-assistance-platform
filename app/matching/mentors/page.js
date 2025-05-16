@@ -48,7 +48,7 @@ export default function MentorsPage() {
       .then((data) => {
         toast.success(`Connected with ${mentor.profile.name || "Mentor"}`);
         setTimeout(() => {
-          router.push(`/chat?target=${mentor._id}`);
+          router.push(`/chat?post=${data.postId}&target=${mentor._id}`);
         }, 800);
       })
       .catch(() => toast.error("Failed to connect."));
@@ -61,7 +61,11 @@ export default function MentorsPage() {
         {mentors.map((item) => (
           <div key={item._id} className="flex justify-between items-center border p-4 rounded-md">
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-full bg-gray-300" />
+              <img
+                src={`${API_URL}${item.profile.avatarUrl || "/default-avatar.png"}`}
+                alt="mentor avatar"
+                className="w-10 h-10 rounded-full object-cover"
+              />  
               <p className="text-black">{item.profile.name || "Unnamed Mentor"}</p>
             </div>
             <button
