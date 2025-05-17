@@ -3,15 +3,14 @@
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useAuth } from "../context/AuthContext"; // import auth context
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
-  const { user, logout } = useAuth(); // get user and logout function
+  const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const router = useRouter();
 
-  // 检查本地 token，并监听路由变化
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -36,7 +35,6 @@ export default function Navbar() {
     <>
       <nav className="w-full bg-black/80 backdrop-blur-md text-white fixed top-0 left-0 z-10000 shadow-md">
         <div className="flex items-center justify-between w-full px-6 py-4">
-          {/* Left: Logo and title */}
           <div
             className="flex items-center space-x-2 cursor-pointer"
             onClick={() => router.push("/")}
@@ -52,7 +50,6 @@ export default function Navbar() {
             </h1>
           </div>
 
-          {/* Right: Navigation menu */}
           <div className="flex items-center space-x-4 text-sm sm:text-base relative">
             {[{ label: "Home", route: "/" }, { label: "Community", route: "/community" }, { label: "Resource", route: "/resource" }, { label: "Matching", route: "/matching/intro" }].map((item) => (
               <button
@@ -64,7 +61,7 @@ export default function Navbar() {
               </button>
             ))}
 
-            {!user ? (
+            {user === undefined ? null : !user ? (
               <button
                 onClick={() => router.push("/login")}
                 className="bg-yellow-400 text-black px-3 py-1 rounded hover:bg-yellow-500 transition"
@@ -89,7 +86,9 @@ export default function Navbar() {
                           onClick={() => {
                             if (isLogout) {
                               logout();
-                              router.push("/login");
+                              localStorage.removeItem("token");
+                              router.replace("/login");
+                              window.location.reload(); // ✅ 强制刷新以重载 Navbar 状态
                             } else {
                               handleMenuClick(item.route);
                             }
