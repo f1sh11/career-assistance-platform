@@ -86,11 +86,11 @@ export const createConnection = async (req, res) => {
     }
 
     // 查找是否已存在连接
+    const [u1, u2] = [req.user._id.toString(), userId.toString()].sort();
+    
     const existing = await Connection.findOne({
-      $or: [
-        { user1: req.user._id, user2: userId },
-        { user1: userId, user2: req.user._id }
-      ]
+      user1: u1,
+      user2: u2
     });
 
     let postId;
@@ -107,9 +107,11 @@ export const createConnection = async (req, res) => {
         status: "approved"
       });
 
+      
+
       await Connection.create({
-        user1: req.user._id,
-        user2: userId,
+        user1: u1,
+        user2: u2,
         postId: post._id
       });
 

@@ -16,12 +16,25 @@ export const createComment = async (req, res) => {
 
 export const getCommentsByPost = async (req, res) => {
   const { postId } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const skip = (page - 1) * limit;
 
   try {
     const comments = await Comment.find({ postId })
       .populate('userId', 'username profile.avatarUrl')
-      .sort({ createdAt: 1 });
-    res.json(comments);
+      .sort({ createdAt: 1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Comment.countDocuments({ postId });
+
+    res.json({
+      comments,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit)
+    });
+  
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
