@@ -74,13 +74,15 @@ export default function LoginPage() {
           onChange={(e) => {
             setRole(e.target.value);
             setIdentifier("");
+            setPassword("");
           }}
           className="border p-2 w-full rounded mb-4 text-black"
         >
           <option value="student">Student</option>
           <option value="mentor">Mentor</option>
-          <option value="industry">Industry</option>
-          <option value="admin">Administrator</option>
+          <option value="alumin">Alumin</option>
+          <option value="industry professional">Industry Professional</option>
+          <option value="administrator">Admin</option>
         </select>
 
         <input
