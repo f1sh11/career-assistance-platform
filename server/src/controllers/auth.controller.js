@@ -113,7 +113,7 @@ export const resetPassword = async (req, res) => {
     }
 
     user.password = newPassword;
-    await user.save(); // 如果模型有 pre-save 加密，会自动加密
+    await user.save(); 
 
     res.status(200).json({ message: 'Password has been reset successfully.' });
   } catch (err) {

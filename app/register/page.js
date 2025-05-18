@@ -1,5 +1,7 @@
 'use client';
-import { useState } from 'react';
+
+
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
@@ -8,6 +10,13 @@ export default function RegisterPage() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 清空账号密码字段
+  useEffect(() => {
+    setIdentifier('');
+    setPassword('');
+  }, [role]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -18,15 +27,21 @@ export default function RegisterPage() {
       return;
     }
 
+    const payload =
+      role === 'student'
+        ? { studentId: identifier, password, role }
+        : { email: identifier, password, role };
+
     try {
+      setIsLoading(true);
       const res = await fetch('http://localhost:5000/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, password, role }),
+        body: JSON.stringify(payload),
       });
+      setIsLoading(false);
 
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.message || 'Registration failed');
       } else {
@@ -34,6 +49,7 @@ export default function RegisterPage() {
       }
     } catch (err) {
       console.error(err);
+      setIsLoading(false);
       setError('Something went wrong');
     }
   };
@@ -55,7 +71,7 @@ export default function RegisterPage() {
 
         <input
           type="text"
-          placeholder="Email or Student ID"
+          placeholder={role === 'student' ? 'Student ID' : 'Email'}
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
           className="mb-4 w-full p-2 border rounded text-black"
@@ -71,15 +87,14 @@ export default function RegisterPage() {
 
         {error && <p className="text-red-500 mb-4">{error}</p>}
 
-        <button type="submit" className="bg-blue-500 text-white w-full p-2 rounded hover:bg-blue-600">
-          Register
+        <button
+          type="submit"
+          disabled={isLoading}
+          className={`w-full p-2 rounded text-white ${isLoading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
+        >
+          {isLoading ? 'Registering...' : 'Register'}
         </button>
       </form>
     </div>
   );
 }
-
-
-
-
-
