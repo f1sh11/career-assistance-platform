@@ -21,25 +21,25 @@ export default function AccountOverviewPage() {
       title: "Notifications",
       icon: <FaBell className="text-yellow-500 w-7 h-7" />,
       description: "You have 2 unread notifications.",
-      link: "/notifications"
+      link: "/account/notifications"
     },
     {
       title: "Security",
       icon: <FaShieldAlt className="text-green-500 w-7 h-7" />,
       description: "Your account is secured with 2FA.",
-      link: "/security"
+      link: "/account/security"
     },
     {
       title: "Last Login",
       icon: <FaClock className="text-blue-500 w-7 h-7" />,
       description: "April 20, 2025, 21:34",
-      link: "/security#logins"
+      link: "/account/security#logins"
     },
     {
       title: "Connections",
       icon: <FaUserFriends className="text-pink-500 w-7 h-7" />,
       description: "You are connected with 5 mentors/alumni.",
-      link: "/connections"
+      link: "/chat"
     }
   ];
 
