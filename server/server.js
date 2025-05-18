@@ -1,5 +1,3 @@
-// server.js - 合并版本（头像上传 + 安全设置 + 帖子和评论支持）
-
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -16,6 +14,8 @@ import matchingRoutes from './src/routes/matching.routes.js';
 import uploadRoutes from './src/routes/upload.routes.js';
 import postRoutes from './src/routes/posts.js';
 import commentRoutes from './src/routes/comments.js';
+import resourceRoutes from './src/routes/resource.routes.js'; 
+import chatRoutes from "./src/routes/chat.routes.js";
 
 import connectDB from './src/config/db.js';
 import logger from './src/utils/logger.js';
@@ -41,21 +41,24 @@ if (!fs.existsSync(logDirectory)) {
   fs.mkdirSync(logDirectory, { recursive: true });
 }
 
-// ✅ 确保 uploads 目录存在（用于头像上传）
+// ✅ 确保 uploads 目录存在（用于头像 + 资源文件上传）
 const uploadDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 const accessLogStream = fs.createWriteStream(path.join(logDirectory, 'morgan-access.log'), { flags: 'a' });
+const isDev = process.env.NODE_ENV !== 'production';
 
 // ✅ 安全中间件
 app.use(helmet());
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests from this IP, please try again later.'
-}));
+if (!isDev) {
+  app.use(rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Too many requests from this IP, please try again later.'
+  }));
+}
 
 // ✅ 通用中间件
 app.use(cors({
@@ -64,8 +67,8 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// ✅ 静态托管头像上传目录
+app.use("/api/chat", chatRoutes);
+// ✅ 静态托管 uploads 目录（头像和资源文件）
 app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
   setHeaders: (res, path) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
@@ -86,7 +89,7 @@ app.use('/api/matching', matchingRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
-app.use('/api/chat', chatRoutes); 
+app.use('/api/resources', resourceRoutes); // ✅ 注册资源模块路由
 
 // ✅ 健康检查
 app.get('/api/status', (req, res) => {
@@ -111,3 +114,4 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`✅ Backend running on port ${PORT}`);
 });
+

@@ -24,6 +24,12 @@ export default function MatchingIntroPage() {
         });
         const data = await res.json();
 
+        // 👇 跳过 intro 页面，如果是 mentor
+        if (data?.user?.role === "mentor") {
+          router.replace("/chat");
+          return;
+        }
+
         const profile = data.user?.profile || {};
         const isComplete = profile.introduction && profile.email && profile.major;
         setProfileReady(!!isComplete);
@@ -51,9 +57,9 @@ export default function MatchingIntroPage() {
         className="w-full md:w-1/2 bg-cover h-64 md:h-auto"
         style={{
           backgroundImage: "url('/Curtin4.jpg')",
-          backgroundPosition: "80% center" 
+          backgroundPosition: "80% center"
         }}
-></div>
+      ></div>
 
       {/* Right: Text and Button */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-10">
@@ -78,5 +84,3 @@ export default function MatchingIntroPage() {
     </div>
   );
 }
-
-

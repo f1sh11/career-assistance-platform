@@ -3,11 +3,19 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
-  identifier: {
+  email: {
     type: String,
-    required: true,
+    match: [/^\S+@\S+\.\S+$/, 'Please fill a valid email address'],
+    lowercase: true,
+    trim: true,
     unique: true,
-    trim: true
+    sparse: true // 因为 student 不一定有 email
+  },
+  studentId: {
+    type: String,
+    trim: true,
+    unique: true,
+    sparse: true // 因为 mentor/industry 不一定有 studentId
   },
   password: {
     type: String,

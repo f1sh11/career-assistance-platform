@@ -1,172 +1,124 @@
-/*login*/
-
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
-export default function Login() {
-  const [role, setRole] = useState("");
+export default function LoginPage() {
+  const [role, setRole] = useState("student");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+  const { login } = useAuth();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userStr = localStorage.getItem("user");
-  
     if (token && userStr) {
-      const userData = JSON.parse(userStr); // Get user from localStorage
-      if (userData.role === "student") {
-        router.push("/dashboard-student");
-      } else if (userData.role === "mentor") {
-        router.push("/dashboard-mentor");
-      } else if (userData.role === "industry") {
-        router.push("/dashboard-industry");
-      } else if (userData.role === "admin") {
-        router.push("/dashboard-admin");
-      } else {
-        router.push("/dashboard");
-      }
+      router.push("/dashboard"); 
     }
   }, []);
-  
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
 
-    // Form validation
-    if (!role) {
-      setError("⚠️ Please select your identity.");
-      return;
-    }
-    if (!identifier || !password) {
-      setError("⚠️ Please fill in all fields.");
-      return;
-    }
-    if (role === "student" && !/^\d+$/.test(identifier)) {
-      setError("⚠️ Student ID must be numeric.");
-      return;
-    }
-    if (role !== "student" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
-      setError("⚠️ Please enter a valid email.");
-      return;
-    }
+    if (!role) return setError("Please select your identity.");
+    if (!identifier || !password) return setError("Please fill in all fields.");
+    if (role === "student" && !/^\d+$/.test(identifier))
+      return setError("Student ID must be numeric.");
+    if (role !== "student" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier))
+      return setError("Please enter a valid email.");
 
     try {
-      // Send login request
       const response = await axios.post("http://localhost:5000/api/auth/login", {
         identifier,
         password,
+        role: role.toLowerCase(),
       });
 
       const token = response.data.token;
+      localStorage.setItem("token", token);
 
-      localStorage.setItem("token",token);
-
-      // ✅ BONUS: Fetch user info from /me
       const profileRes = await axios.get("http://localhost:5000/api/users/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      const userData = profileRes.data;
-      console.log("✅ Logged in user info:", userData);
-
-      // Optional: Store userData to localStorage
+      const userData = profileRes.data.user;
       localStorage.setItem("user", JSON.stringify(userData));
+      login(userData); // 更新全局登录状态
 
-      router.push("/dashboard"); // Redirect after login
-      
+      router.push("/dashboard"); // ✅ 成功登录后只跳转到 redirector 页面
     } catch (err) {
+      console.error("Login error:", err.response?.data || err.message);
       if (!err.response) {
-        setError("❌ Backend server is not available.");
+        setError("Backend server is not available.");
       } else if (err.response.status === 400) {
-        setError("⚠️ Invalid credentials.");
+        setError("Invalid credentials.");
+      } else if (err.response.status === 401) {
+        setError("Unauthorized: Incorrect identifier, password or role.");
       } else {
-        setError("❌ Unexpected error occurred.");
+        setError("Unexpected error occurred.");
       }
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <form
-        onSubmit={handleLogin}
-        className="bg-white p-8 rounded-lg shadow-lg w-96"
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">
-          Login 
-        </h2>
+    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-100 to-gray-300">
+      <form onSubmit={handleLogin} className="bg-white p-8 rounded shadow-md w-96">
+        <h1 className="text-3xl font-bold mb-6 text-center text-black">Login</h1>
 
-        {/* Identity Selection */}
-        <label className="block font-medium mb-2 text-black">Select Identity</label>
         <select
           value={role}
           onChange={(e) => {
             setRole(e.target.value);
-            setIdentifier(""); // Clear identifier when role changes
+            setIdentifier("");
+            setPassword("");
           }}
           className="border p-2 w-full rounded mb-4 text-black"
         >
-          <option value="">-- Choose Role --</option>
           <option value="student">Student</option>
-          <option value="mentor">Mentor (Career Advisor)</option>
-          <option value="industry">Industry Professional</option>
-          <option value="admin">Administrator</option>
+          <option value="mentor">Mentor</option>
+          <option value="alumin">Alumin</option>
+          <option value="industry professional">Industry Professional</option>
+          <option value="administrator">Admin</option>
         </select>
 
-
-        {/* Identifier Input Field */}
-        <label className="block font-medium mb-2 text-black">
-          {role === "student" ? "Student ID" : "Email"}
-        </label>
         <input
           type={role === "student" ? "text" : "email"}
-          placeholder={role === "student" ? "Enter Student ID" : "Enter Email"}
-          className="border p-2 w-full rounded mb-4 focus:ring-2 focus:ring-blue-500"
+          placeholder={role === "student" ? "Student ID" : "Email"}
+          className="border p-2 w-full rounded mb-4 text-black"
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
         />
 
-        {/* Password Input */}
-        <label className="block font-medium mb-2 text-black">Password</label>
         <input
           type="password"
-          placeholder="Enter Password"
-          className="border p-2 w-full rounded mb-4 focus:ring-2 focus:ring-blue-500"
+          placeholder="Password"
+          className="border p-2 w-full rounded mb-4 text-black"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleLogin(e)} // Support Enter key to login
         />
 
-        {/* Error Message */}
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
-        {/* Login Button */}
         <button
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 w-full rounded transition duration-200"
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
         >
           Login
         </button>
 
-        {/* Register Link */}
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600">
-            Don’t have an account?{" "}
-            <a href="/register" className="text-blue-500 hover:underline">
-              Register
-            </a>
-          </p>
+        <div className="mt-4 text-center text-sm text-gray-600">
+          Don’t have an account?{" "}
+          <a href="/register" className="text-blue-500 hover:underline">
+            Register
+          </a>
         </div>
 
-
-        {/* Forgot Password Link */}
-        <div className="mt-4 text-center">
-          <a href="/forgot-password" className="text-blue-500 text-sm hover:underline">
+        <div className="mt-2 text-center text-sm">
+          <a href="/forgot-password" className="text-blue-500 hover:underline">
             Forgot Password?
           </a>
         </div>
@@ -174,3 +126,7 @@ export default function Login() {
     </div>
   );
 }
+
+
+
+

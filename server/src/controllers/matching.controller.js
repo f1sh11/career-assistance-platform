@@ -1,5 +1,7 @@
 // src/controllers/matching.controller.js
 import User from '../models/user.model.js';
+import Post from '../models/Post.js';
+import Connection from '../models/Connection.js';
 import { writeLog, writeError } from '../utils/logHelper.js';
 
 export const getRecommendations = async (req, res) => {
@@ -11,9 +13,21 @@ export const getRecommendations = async (req, res) => {
     };
 
     if (req.user.role === 'student') {
-      const mentors = await User.find({ role: 'mentor' }).select('_id role profile').limit(4);
-      const alumni = await User.find({ role: 'student', _id: { $ne: req.user._id } }).select('_id role profile').limit(4);
-      const professionals = await User.find({ role: 'industry' }).select('_id role profile').limit(4);
+      const major = req.user.profile.major;
+
+      const mentors = await User.find({
+        role: 'mentor',
+        'profile.major': major
+      }).select('_id role profile').limit(6);
+
+      const alumni = await User.find({
+        role: 'student',
+        _id: { $ne: req.user._id }
+      }).select('_id role profile').limit(4);
+
+      const professionals = await User.find({
+        role: 'industry'
+      }).select('_id role profile').limit(4);
 
       writeLog('matching', 'Student requested recommendations', meta);
       res.status(200).json({ mentors, alumni, professionals });
@@ -61,15 +75,48 @@ export const createConnection = async (req, res) => {
     }
 
     const currentUser = await User.findById(req.user._id);
-    if (currentUser.connections.includes(userId)) {
-      return res.status(400).json({ message: 'Connection already exists' });
+
+    // 双向连接（老逻辑保留）
+    if (!currentUser.connections.includes(userId)) {
+      currentUser.connections.push(userId);
+      await currentUser.save();
+
+      targetUser.connections.push(req.user._id);
+      await targetUser.save();
     }
 
-    currentUser.connections.push(userId);
-    await currentUser.save();
+    // 查找是否已存在连接
+    const [u1, u2] = [req.user._id.toString(), userId.toString()].sort();
+    
+    const existing = await Connection.findOne({
+      user1: u1,
+      user2: u2
+    });
 
-    targetUser.connections.push(req.user._id);
-    await targetUser.save();
+    let postId;
+
+    if (existing) {
+      postId = existing.postId;
+    } else {
+      // 创建隐藏聊天帖
+      const post = await Post.create({
+        title: "Private Chat",
+        content: "Auto-generated private chat",
+        authorId: req.user._id,
+        isAnonymous: true,
+        status: "approved"
+      });
+
+      
+
+      await Connection.create({
+        user1: u1,
+        user2: u2,
+        postId: post._id
+      });
+
+      postId = post._id;
+    }
 
     writeLog('matching', 'User created connection', {
       userId: req.user._id.toString(),
@@ -85,7 +132,8 @@ export const createConnection = async (req, res) => {
         userId: targetUser._id,
         role: targetUser.role,
         profile: targetUser.profile
-      }
+      },
+      postId
     });
   } catch (error) {
     writeError(`Create connection error: ${error.message}`, error.stack);

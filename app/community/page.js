@@ -1,3 +1,4 @@
+// /app/community/page.js
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -9,9 +10,6 @@ import Link from "next/link";
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export function PostCard({ post, index, lastIndex, keyword }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(true);
-
   const highlight = (text, keyword) =>
     keyword
       ? text.replace(
@@ -20,37 +18,8 @@ export function PostCard({ post, index, lastIndex, keyword }) {
         )
       : text;
 
-  useEffect(() => {
-    const handleVisibility = () => {
-      if (!ref.current) return;
-      const rect = ref.current.getBoundingClientRect();
-      const distanceFromTop = rect.top;
-      const disappearThreshold = 150;
-      const bottomPreserveBuffer = 3;
-
-      if (index >= lastIndex - bottomPreserveBuffer) {
-        setVisible(true);
-      } else {
-        setVisible(distanceFromTop >= disappearThreshold);
-      }
-    };
-
-    handleVisibility();
-    window.addEventListener("scroll", handleVisibility);
-    window.addEventListener("resize", handleVisibility);
-    return () => {
-      window.removeEventListener("scroll", handleVisibility);
-      window.removeEventListener("resize", handleVisibility);
-    };
-  }, [index, lastIndex]);
-
   return (
-    <div
-      ref={ref}
-      className={`transition-all duration-300 ${
-        visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
-      }`}
-    >
+    <div className="transition-all duration-300">
       <Link href={`/community/article/${post._id}`}>
         <div className="bg-white/90 rounded-lg shadow-md p-6 mb-6 hover:shadow-xl transition cursor-pointer">
           <div className="flex items-center gap-2 mb-2">
@@ -77,7 +46,6 @@ export function PostCard({ post, index, lastIndex, keyword }) {
   );
 }
 
-
 export default function CommunityPage() {
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
@@ -89,7 +57,6 @@ export default function CommunityPage() {
   const [userInfo, setUserInfo] = useState({ username: "", avatarUrl: "", anonymous: false });
   const router = useRouter();
   const searchParams = useSearchParams();
-  const hotKeywords = ["career", "internship", "resume", "mentor", "event"];
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -111,7 +78,6 @@ export default function CommunityPage() {
     };
     fetchProfile();
   }, []);
-  
 
   const fetchPosts = async (pageToFetch = 1, limit = 3, keyword = "") => {
     try {
@@ -178,179 +144,150 @@ export default function CommunityPage() {
   const shouldShowPagination = showAll && totalPages > 1;
 
   return (
-    <>
-      <div className="fixed top-[100px] left-0 right-0 z-[9998] flex justify-center">
-        <div className="bg-white p-4 rounded shadow-md w-full max-w-7xl flex space-x-4">
-          <input
-            type="text"
-            value={search}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Search for posts..."
-            className="flex-1 px-4 py-2 border rounded text-black"
-          />
-          <button
-            onClick={handleSearch}
-            className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded"
-          >
-            Search
-          </button>
-        </div>
-      </div>
+    <div className="min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
+      <div className="flex">
+        {/* 左侧菜单栏 */}
+        <aside className="w-48 bg-gray-800 text-white h-full min-h-screen pt-[100px] flex flex-col space-y-6 px-4">
+          <Link href="/community/collect"><div className="hover:text-yellow-400">Collect</div></Link>
+          <Link href="/community/comment"><div className="hover:text-yellow-400">Comment</div></Link>
+          <Link href="/community/reply"><div className="hover:text-yellow-400">Reply</div></Link>
+          <Link href="/community"><div className="hover:text-yellow-400">Return</div></Link>
+        </aside>
 
-      <div className="fixed top-[200px] right-10 w-80 bg-white shadow-md rounded p-4 z-[9998]">
-        <h2 className="text-md font-medium mb-2 text-center text-black">Search Mode</h2>
-        <div className="flex justify-between items-center text-sm font-medium mb-2 px-2">
-          <span className={`${searchMode === "keyword" ? "text-yellow-500" : "text-gray-400"}`}>Keyword</span>
-          <span className={`${searchMode === "direct" ? "text-yellow-500" : "text-gray-400"}`}>Direct</span>
-        </div>
-        <div
-          className="relative w-12 h-6 bg-gray-300 rounded-full cursor-pointer mx-auto"
-          onClick={() => setSearchMode(searchMode === "keyword" ? "direct" : "keyword")}
-        >
-          <div
-            className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
-              searchMode === "keyword" ? "left-1" : "left-6 -translate-x-full"
-            }`}
-          ></div>
-        </div>
-      </div>
-
-      <div className="fixed top-[320px] right-10 w-80 bg-white shadow-md rounded p-4 z-[9998]">
-        <div className="flex items-center space-x-4 mb-2">
-          <img
-            src={userInfo.anonymous ? "/default-avatar.png" : userInfo.avatarUrl || "/default-avatar.png"}
-            alt="avatar"
-            className="w-12 h-12 rounded-full object-cover"
-          />
-          <div className="text-black font-medium text-sm">
-            {userInfo.anonymous ? "Anonymous User" : userInfo.username || "Unnamed"}
+        <div className="flex-1 px-8 pt-[100px] pb-24">
+          {/* 搜索栏 */}
+          <div className="bg-white p-4 rounded shadow-md w-full max-w-5xl mb-8 mx-auto flex space-x-4">
+            <input
+              type="text"
+              value={search}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Search for posts..."
+              className="flex-1 px-4 py-2 border rounded text-black"
+            />
+            <button
+              onClick={handleSearch}
+              className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded"
+            >
+              Search
+            </button>
           </div>
-        </div>
-        <div className="flex justify-between items-center text-sm font-medium mb-2">
-          <span className="text-gray-600">Anonymous Mode</span>
-          <div
-            className="relative w-12 h-6 bg-gray-300 rounded-full cursor-pointer"
-            onClick={() => setUserInfo((prev) => ({ ...prev, anonymous: !prev.anonymous }))}
-          >
-            <div
-              className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
-                userInfo.anonymous ? "left-6 -translate-x-full" : "left-1"
-              }`}
-            ></div>
-          </div>
-        </div>
-        <p className="text-xs text-gray-500">When anonymous is enabled, others will not see your name or avatar when you post.</p>
-      </div>
-      <div className="overflow-x-auto">
-        <div
-          className="w-[1690px] min-w-[1600px] mx-auto min-h-screen bg-fixed bg-cover bg-center"
-          style={{ backgroundImage: "url('/Curtin2.jpg')" }}
-        >
-          <div className="flex">
-            <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col cursor-pointer pt-24 space-y-6">
-              <Link href="/community/collect"><div className="hover:text-yellow-400 px-4 py-2 rounded">Collect</div></Link>
-              <Link href="/community/comment"><div className="hover:text-yellow-400 px-4 py-2 rounded">Comment</div></Link>
-              <Link href="/community/reply"><div className="hover:text-yellow-400 px-4 py-2 rounded">Reply</div></Link>
-            </aside>
 
-            <div className="ml-48 flex flex-1 px-8 py-10 space-x-8">
-              <main className="flex-1 overflow-y-auto pt-[160px] pb-[150px]">
-                {posts.map((post, index) => (
-                  <PostCard
-                    key={post._id}
-                    post={post}
-                    index={index}
-                    lastIndex={posts.length - 1}
-                    keyword={search}
-                  />
-                ))}
+          <div className="flex gap-8">
+            {/* 主内容区 */}
+            <main className="flex-1">
+              {posts.map((post, index) => (
+                <PostCard
+                  key={post._id}
+                  post={post}
+                  index={index}
+                  lastIndex={posts.length - 1}
+                  keyword={search}
+                />
+              ))}
 
-                {!showAll && totalPages > 1 && (
-                  <div className="flex justify-center mt-6">
-                    <button
-                      onClick={() => {
-                        setShowAll(true);
-                        fetchPosts(1, 15, search);
-                      }}
-                      className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded"
-                    >
-                      Show More
-                    </button>
-                  </div>
-                )}
-
-                {shouldShowPagination && (
-                  <div className="flex justify-center mt-8">
-                    <div className="flex gap-2">
-                      {["First", "Prev"].map((label) => (
-                        <button
-                          key={label}
-                          onClick={() => goToPage(label === "First" ? 1 : page - 1)}
-                          disabled={page === 1}
-                          className={`px-3 py-1 rounded ${
-                            page === 1
-                              ? "bg-blue-500 text-white opacity-50 cursor-not-allowed"
-                              : "bg-blue-500 text-white hover:bg-blue-600"
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                      {[...Array(totalPages)].map((_, i) => (
-                        <button
-                          key={i}
-                          onClick={() => goToPage(i + 1)}
-                          className={`px-3 py-1 rounded font-medium ${
-                            page === i + 1
-                              ? "bg-yellow-400 text-black"
-                              : "bg-gray-200 text-black hover:bg-gray-300"
-                          }`}
-                        >
-                          {i + 1}
-                        </button>
-                      ))}
-                      {["Next", "Last"].map((label) => (
-                        <button
-                          key={label}
-                          onClick={() => goToPage(label === "Last" ? totalPages : page + 1)}
-                          disabled={page === totalPages}
-                          className={`px-3 py-1 rounded ${
-                            page === totalPages
-                              ? "bg-blue-500 text-white opacity-50 cursor-not-allowed"
-                              : "bg-blue-500 text-white hover:bg-blue-600"
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </main>
-
-              <aside className="w-80 flex flex-col space-y-8">
-                <div className="fixed bottom-5 right-10 w-80 bg-white shadow-md p-6 text-black z-50 rounded">
-                  <h2 className="text-xl font-semibold mb-4">Post Something</h2>
-                  <textarea
-                    className="w-full h-64 p-3 border rounded bg-gray-100 resize-none mb-2"
-                    placeholder="What's on your mind?"
-                    value={newPost}
-                    onChange={(e) => setNewPost(e.target.value)}
-                  />
+              {!showAll && totalPages > 1 && (
+                <div className="flex justify-center mt-6">
                   <button
-                    onClick={handlePost}
-                    className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+                    onClick={() => {
+                      setShowAll(true);
+                      fetchPosts(1, 15, search);
+                    }}
+                    className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded"
                   >
-                    Post
+                    Show More
                   </button>
                 </div>
-              </aside>
-            </div>
+              )}
+
+              {shouldShowPagination && (
+                <div className="flex justify-center mt-8">
+                  <div className="flex gap-2">
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => goToPage(i + 1)}
+                        className={`px-3 py-1 rounded font-medium ${
+                          page === i + 1
+                            ? "bg-yellow-400 text-black"
+                            : "bg-gray-200 text-black hover:bg-gray-300"
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </main>
+
+            {/* 右侧栏 */}
+            <aside className="w-[320px] space-y-6">
+              <div className="bg-white shadow-md rounded p-4">
+                <h2 className="text-md font-medium mb-2 text-center text-black">Search Mode</h2>
+                <div className="flex justify-between items-center text-sm font-medium mb-2 px-2">
+                  <span className={`${searchMode === "keyword" ? "text-yellow-500" : "text-gray-400"}`}>Keyword</span>
+                  <span className={`${searchMode === "direct" ? "text-yellow-500" : "text-gray-400"}`}>Direct</span>
+                </div>
+                <div
+                  className="relative w-12 h-6 bg-gray-300 rounded-full cursor-pointer mx-auto"
+                  onClick={() => setSearchMode(searchMode === "keyword" ? "direct" : "keyword")}
+                >
+                  <div
+                    className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
+                      searchMode === "keyword" ? "left-1" : "left-6 -translate-x-full"
+                    }`}
+                  ></div>
+                </div>
+              </div>
+
+              <div className="bg-white shadow-md rounded p-4">
+                <div className="flex items-center space-x-4 mb-2">
+                  <img
+                    src={userInfo.anonymous ? "/default-avatar.png" : userInfo.avatarUrl || "/default-avatar.png"}
+                    alt="avatar"
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div className="text-black font-medium text-sm">
+                    {userInfo.anonymous ? "Anonymous User" : userInfo.username || "Unnamed"}
+                  </div>
+                </div>
+                <div className="flex justify-between items-center text-sm font-medium mb-2">
+                  <span className="text-gray-600">Anonymous Mode</span>
+                  <div
+                    className="relative w-12 h-6 bg-gray-300 rounded-full cursor-pointer"
+                    onClick={() => setUserInfo((prev) => ({ ...prev, anonymous: !prev.anonymous }))}
+                  >
+                    <div
+                      className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
+                        userInfo.anonymous ? "left-6 -translate-x-full" : "left-1"
+                      }`}
+                    ></div>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">When anonymous is enabled, others will not see your name or avatar when you post.</p>
+              </div>
+
+              <div className="bg-white shadow-md rounded p-4 text-black">
+                <h2 className="text-xl font-semibold mb-4">Post Something</h2>
+                <textarea
+                  className="w-full h-40 p-3 border rounded bg-gray-100 resize-none mb-2"
+                  placeholder="What's on your mind?"
+                  value={newPost}
+                  onChange={(e) => setNewPost(e.target.value)}
+                />
+                <button
+                  onClick={handlePost}
+                  className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+                >
+                  Post
+                </button>
+              </div>
+            </aside>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
-
+  
