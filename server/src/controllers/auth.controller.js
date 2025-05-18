@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
 
+// 注册
 export const register = async (req, res) => {
   try {
     const { identifier, password, role } = req.body;
@@ -34,8 +35,6 @@ export const register = async (req, res) => {
     const newUser = new User(newUserData);
     await newUser.save();
 
-    console.log('✅ Registered new user:', newUser);
-
     res.status(201).json({
       message: 'User registered successfully',
       user: {
@@ -49,11 +48,10 @@ export const register = async (req, res) => {
   }
 };
 
+// 登录
 export const login = async (req, res) => {
   try {
     const { identifier, password, role } = req.body;
-
-    console.log("📥 Login input:", { identifier, password, role });
 
     if (!identifier || !password || !role) {
       return res.status(400).json({ message: 'All fields are required.' });
@@ -67,11 +65,7 @@ export const login = async (req, res) => {
       query.studentId = identifier;
     }
 
-    console.log("🔍 Login query:", query);
-
     const user = await User.findOne(query);
-
-    console.log("📄 User found:", user);
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid login credentials' });
@@ -101,6 +95,29 @@ export const login = async (req, res) => {
   }
 };
 
+// 重置密码（无需 token）
+export const resetPassword = async (req, res) => {
+  const { identifier, newPassword } = req.body;
 
+  if (!identifier || !newPassword) {
+    return res.status(400).json({ message: 'Identifier and new password are required.' });
+  }
 
+  try {
+    const user = await User.findOne({
+      $or: [{ email: identifier }, { studentId: identifier }],
+    });
 
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.password = newPassword;
+    await user.save(); // 如果模型有 pre-save 加密，会自动加密
+
+    res.status(200).json({ message: 'Password has been reset successfully.' });
+  } catch (err) {
+    console.error('❌ Reset password error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
