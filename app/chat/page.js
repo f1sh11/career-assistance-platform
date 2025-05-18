@@ -281,12 +281,8 @@ export default function ChatPage() {
               onKeyDown={handleKeyDown}
               onInput={(e) => {
                 e.target.style.height = "auto";
-                e.target.style.height = `${Math.min(
-                  e.target.scrollHeight,
-                  window.innerHeight / 3
-                )}px`;
+                e.target.style.height = `${Math.min(e.target.scrollHeight, window.innerHeight / 3)}px`;
               }}
-              onKeyDown={handleKeyDown}
             />
             <button className="px-6 py-2 bg-black text-white rounded" onClick={sendMessage}>
               Send
