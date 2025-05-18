@@ -5,7 +5,7 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState("student");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -77,7 +77,6 @@ export default function LoginPage() {
           }}
           className="border p-2 w-full rounded mb-4 text-black"
         >
-          <option value="">Select your identity</option>
           <option value="student">Student</option>
           <option value="mentor">Mentor</option>
           <option value="industry">Industry</option>
