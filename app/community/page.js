@@ -7,6 +7,7 @@ import debounce from "lodash.debounce";
 import axios from "axios";
 import Link from "next/link";
 import CommunitySidebar from "../components/CommunitySidebar";
+import PostSomethingCard from "../components/PostSomethingCard";
 
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -269,21 +270,12 @@ export default function CommunityPage() {
                 <p className="text-xs text-gray-500">When anonymous is enabled, others will not see your name or avatar when you post.</p>
               </div>
 
-              <div className="bg-white shadow-md rounded p-4 text-black">
-                <h2 className="text-xl font-semibold mb-4">Post Something</h2>
-                <textarea
-                  className="w-full h-40 p-3 border rounded bg-gray-100 resize-none mb-2"
-                  placeholder="What's on your mind?"
-                  value={newPost}
-                  onChange={(e) => setNewPost(e.target.value)}
-                />
-                <button
-                  onClick={handlePost}
-                  className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-                >
-                  Post
-                </button>
-              </div>
+<PostSomethingCard
+  newPost={newPost}
+  setNewPost={setNewPost}
+  onPost={handlePost}
+/>
+
             </aside>
           </div>
         </div>
