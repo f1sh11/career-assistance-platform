@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
+import CommunitySidebar from "../../components/CommunitySidebar";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -27,12 +28,8 @@ export default function ReplyPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
-      <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col pt-24 space-y-6">
-        <Link href="/community/collect"><div className="hover:text-yellow-400 px-4 py-2">Collect</div></Link>
-        <Link href="/community/comment"><div className="hover:text-yellow-400 px-4 py-2">Comment</div></Link>
-        <Link href="/community/reply"><div className="hover:text-yellow-400 px-4 py-2">Reply</div></Link>
-        <Link href="/community"><div className="hover:text-yellow-400 px-4 py-2">Return</div></Link>
-      </aside>
+      <CommunitySidebar showReturn={true} />
+
 
       <div className="ml-48 flex-1 pt-[100px] px-8">
         <h1 className="text-5xl font-bold mb-12 text-black">My Replies Received</h1>

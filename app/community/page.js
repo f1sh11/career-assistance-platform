@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import debounce from "lodash.debounce";
 import axios from "axios";
 import Link from "next/link";
+import CommunitySidebar from "../components/CommunitySidebar";
+
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -147,14 +149,9 @@ export default function CommunityPage() {
     <div className="min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
       <div className="flex">
         {/* 左侧菜单栏 */}
-        <aside className="w-48 bg-gray-800 text-white h-full min-h-screen pt-[100px] flex flex-col space-y-6 px-4">
-          <Link href="/community/collect"><div className="hover:text-yellow-400">Collect</div></Link>
-          <Link href="/community/comment"><div className="hover:text-yellow-400">Comment</div></Link>
-          <Link href="/community/reply"><div className="hover:text-yellow-400">Reply</div></Link>
-          <Link href="/community"><div className="hover:text-yellow-400">Return</div></Link>
-        </aside>
+        <CommunitySidebar showReturn={false} />
 
-        <div className="flex-1 px-8 pt-[100px] pb-24">
+        <div className="ml-48 flex-1 px-8 pt-[100px] pb-24">
           {/* 搜索栏 */}
           <div className="bg-white p-4 rounded shadow-md w-full max-w-5xl mb-8 mx-auto flex space-x-4">
             <input
