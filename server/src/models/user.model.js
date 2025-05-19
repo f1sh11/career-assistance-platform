@@ -1,12 +1,22 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+// src/models/user.model.js
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
-  identifier: {
+  email: {
     type: String,
-    required: true,
+    match: [/^\S+@\S+\.\S+$/, 'Please fill a valid email address'],
+    lowercase: true,
+    trim: true,
     unique: true,
-    trim: true
+    sparse: true // 因为 student 不一定有 email
+  },
+  studentId: {
+    type: String,
+    trim: true,
+    unique: true,
+    sparse: true, // 因为 mentor/industry 不一定有 studentId
+    match: [/^\d{8}$/, 'Student ID must be exactly 8 digits']
   },
   password: {
     type: String,
@@ -18,58 +28,17 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   profile: {
-    name: { 
-      type: String, 
-      maxlength: 50,
-      trim: true,
-      default: '' 
-    },
-    phone: { 
-      type: String, 
-      match: [/^\+?[0-9\s\-]{7,20}$/, 'Please fill a valid phone number'],
-      default: '' 
-    },
-    email: { 
-      type: String, 
-      match: [/^\S+@\S+\.\S+$/, 'Please fill a valid email address'],
-      lowercase: true, 
-      trim: true, 
-      default: '' 
-    },
-    address: { 
-      type: String, 
-      maxlength: 50, 
-      default: '' 
-    },
-    major: { 
-      type: String, 
-      maxlength: 50, 
-      default: '' 
-    },
-    interests: { 
-      type: String, 
-      maxlength: 50, 
-      default: '' 
-    },
-    skills: { 
-      type: String, 
-      maxlength: 50, 
-      default: '' 
-    },
-    dreamJob: { 
-      type: String, 
-      maxlength: 20, 
-      default: '' 
-    },
-    introduction: { 
-      type: String, 
-      maxlength: 100, 
-      default: '' 
-    },
-    avatarUrl: { 
-      type: String, 
-      default: '' 
-    }
+    name: { type: String, maxlength: 50, trim: true, default: '' },
+    phone: { type: String, match: [/^\+?[0-9\s\-]{7,20}$/, 'Please fill a valid phone number'], default: '' },
+    email: { type: String, match: [/^\S+@\S+\.\S+$/, 'Please fill a valid email address'], lowercase: true, trim: true, default: '' },
+    address: { type: String, maxlength: 50, default: '' },
+    major: { type: String, maxlength: 50, default: '' },
+    interests: { type: String, maxlength: 50, default: '' },
+    skills: { type: String, maxlength: 50, default: '' },
+    dreamJob: { type: String, maxlength: 20, default: '' },
+    introduction: { type: String, maxlength: 100, default: '' },
+    avatarUrl: { type: String, default: '' },
+    mbtiType: { type: String, maxlength: 4, default: "" }
   },
   connections: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -86,7 +55,7 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Encrypt passwords before saving
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   try {
     if (!this.isModified('password')) return next();
     const salt = await bcrypt.genSalt(10);
@@ -98,10 +67,9 @@ userSchema.pre('save', async function(next) {
 });
 
 // Verify the password
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
 const User = mongoose.model('User', userSchema);
-
-module.exports = User;
+export default User;

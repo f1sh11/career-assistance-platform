@@ -1,15 +1,19 @@
-const express = require('express');
+// ✅ 更新后的 src/routes/auth.routes.js
+import express from 'express';
+import {
+  register,
+  login,
+  resetPassword
+} from '../controllers/auth.controller.js';
+
 const router = express.Router();
-const authController = require('../controllers/auth.controller');
-const { authenticate } = require('../middleware/auth.middleware');
 
 // User registration
-router.post('/register', authController.register);
+router.post('/register', register);
 
-// User Login
-router.post('/login', authController.login);
+// User login
+router.post('/login', login);
 
-// Get current user information (requires authentication)
-router.get('/me', authenticate, authController.getCurrentUser);
+router.post('/reset-password', resetPassword);
 
-module.exports = router; 
+export default router;

@@ -1,115 +1,85 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { FaBell, FaShieldAlt, FaClock, FaUserFriends } from "react-icons/fa";
+import { notificationData } from "../data/notifications"; // ✅ 相对路径正确
 
-export default function AccountPage() {
-    const router = useRouter();
-    const [username, setUsername] = useState("");
+export default function AccountOverviewPage() {
+  const [username, setUsername] = useState("User");
+  const [cards, setCards] = useState([]);
+  const router = useRouter();
 
-    useEffect(() => {
-        const storedUsername = localStorage.getItem("username");
-        if (storedUsername) {
-            setUsername(storedUsername);
-        }
-    }, []);
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) setUsername(storedUsername);
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("username");
-        router.push("/login");
-    };
+    // 设置卡片内容（避免 SSR 与客户端不一致）
+    setCards([
+      {
+        title: "Notifications",
+        icon: <FaBell className="text-yellow-500 w-7 h-7" />,
+        description: `You have ${notificationData.length} unread notifications.`,
+        link: "/account/notifications"
+      },
+      {
+        title: "Security",
+        icon: <FaShieldAlt className="text-green-500 w-7 h-7" />,
+        description: "Your account is secured with 2FA.",
+        link: "/account/security"
+      },
+      {
+        title: "Last Login",
+        icon: <FaClock className="text-blue-500 w-7 h-7" />,
+        description: "April 20, 2025, 21:34",
+        link: "/account/security#logins"
+      },
+      {
+        title: "Connections",
+        icon: <FaUserFriends className="text-pink-500 w-7 h-7" />,
+        description: "You are connected with 5 mentors/alumni.",
+        link: "/chat"
+      }
+    ]);
+  }, []);
 
-    const menuItems = [
-        { label: "Settings", route: "/settings" },
-        { label: "Activity", route: "/activity" },
-        { label: "Notifications", route: "/notifications" },
-        { label: "Security", route: "/security" },
-    ];
-
-    return (
-        <div className="min-h-screen flex flex-col">
-            {/* 顶部菜单栏 */}
-            <nav className="w-full bg-black text-white fixed top-0 left-0 z-50 flex justify-between items-center px-12 py-4">
-                <div className="flex items-center space-x-4">
-                    <Image src="/curtinlogo.png.png" alt="Curtin Singapore" width={50} height={50} />
-                    <h1 className="text-xl font-light">Curtin Singapore</h1>
-                </div>
-                <div className="space-x-8 text-lg">
-                    <a href="/" className="hover:text-yellow-400">Home</a>
-                    <a href="/community" className="hover:text-yellow-400">Community</a>
-                    <a href="/profile" className="hover:text-yellow-400">Profile</a>
-                    <a href="/chat" className="hover:text-yellow-400">Chat</a>
-                    <a href="/resources" className="hover:text-yellow-400">Resource</a>
-                    <button
-                        onClick={() => router.push("/account")}
-                        className="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-500 transition"
-                    >
-                        Account
-                    </button>
-                </div>
-            </nav>
-
-            {/* 图片背景区域 */}
-            <div className="relative w-full h-[500px] mt-10">
-                <Image
-                    src="/Curtin5.jpg"
-                    alt="Curtin Background"
-                    layout="fill"
-                    objectFit="cover"
-                    quality={100}
-                    className="z-0"
-                />
-                {/* 标题覆盖 */}
-                <div className="absolute inset-0 top-2/3 flex flex-col items-center justify-center z-10">
-                    <h1 className="text-white text-5xl font-bold mb-16">MY ACCOUNT</h1>
-
-                    {/* 四个功能按钮 */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-20">
-                        {menuItems.map((item, index) => (
-                            <button
-                                key={index}
-                                onClick={() => router.push(item.route)}
-                                className="w-60 h-48 bg-white bg-opacity-90 rounded-lg shadow-lg flex flex-col justify-center items-center hover:bg-yellow-400 hover:text-black transition text-2xl font-light text-black"
-                            >
-                                {item.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-{/* 灰色背景开始 */}
-<div className="bg-gray-200 flex flex-col items-center py-16">
-
-    {/* 按钮整体向下移动 */}
-    <div className="flex flex-col items-center mt-24 space-y-8">
-        
-        {/* Profile按钮 */}
-        <button
-            onClick={() => router.push("/profile")}
-            className="bg-gray-400 text-white w-300 py-4 rounded-lg text-2xl hover:bg-yellow-500 transition"
-        >
-            Go to Profile
-        </button>
-
-        {/* Logout按钮 */}
-        <button
-            onClick={handleLogout}
-            className="bg-black text-white w-300 py-4 rounded-lg text-2xl hover:bg-red-600 transition"
-        >
-            Logout
-        </button>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white font-inter text-gray-900">
+      {/* Hero Banner */}
+      <div className="relative h-[420px] w-full">
+        <Image
+          src="/Curtin5.jpg"
+          alt="Dashboard Banner"
+          fill
+          className="object-cover brightness-75"
+        />
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4 z-10">
+          <h1 className="text-4xl md:text-6xl font-extrabold drop-shadow mb-4">
+            Welcome back, {username}!
+          </h1>
+          <p className="text-lg md:text-xl max-w-2xl font-light drop-shadow-sm">
+            Explore your dashboard to stay informed, secure, and connected.
+          </p>
         </div>
+      </div>
+
+      {/* Cards Section */}
+      <section className="max-w-6xl mx-auto px-6 py-16 grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        {cards.map((card, index) => (
+          <div
+            key={index}
+            onClick={() => router.push(card.link)}
+            className="bg-white rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer p-6 group"
+          >
+            <div className="flex items-center gap-4 mb-3">
+              <div className="group-hover:scale-110 transition-transform">{card.icon}</div>
+              <h3 className="text-lg font-semibold">{card.title}</h3>
+            </div>
+            <p className="text-sm text-gray-600 leading-relaxed pl-11">{card.description}</p>
+          </div>
+        ))}
+      </section>
     </div>
-</div>
-
-
-    );
+  );
 }
-
-
-
-
-
