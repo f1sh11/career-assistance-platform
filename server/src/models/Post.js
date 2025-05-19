@@ -6,7 +6,7 @@ const postSchema = new mongoose.Schema({
   authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   authorName: { type: String }, 
   authorAvatarUrl: { type: String }, 
-  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'approved' },
+  status: { type: String, enum: ['pending', 'approved', 'rejected','draft'], default: 'approved' },
   isAnonymous: { type: Boolean, default: false }, 
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   collectedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

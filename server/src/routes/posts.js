@@ -5,9 +5,12 @@ import {
   getPosts,
   getPostById,
   likePost,
-  toggleCollect
+  toggleCollect,
+  deleteDraft,       
+  publishDraft,
+  updatePost       
 } from '../controllers/postController.js';
-
+import { getMyDrafts } from '../controllers/postController.js';
 import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
@@ -31,7 +34,7 @@ router.post('/', authenticateToken, createPost);
  * @desc    Get a single post by ID (approved only)
  * @access  Public
  */
-router.get('/:id', getPostById);
+router.get('/:id', authenticateToken, getPostById);
 
 /**
  * @route   PUT /api/posts/:id/like
@@ -46,5 +49,9 @@ router.put('/:id/like', authenticateToken, likePost);
  * @access  Private
  */
 router.put('/:id/collect', authenticateToken, toggleCollect);
+router.put('/:id', authenticateToken, updatePost);
+router.delete('/drafts/:id', authenticateToken, deleteDraft);        
+router.put('/drafts/:id/publish', authenticateToken, publishDraft);  
+router.get('/me/drafts', authenticateToken, getMyDrafts);
 
 export default router;

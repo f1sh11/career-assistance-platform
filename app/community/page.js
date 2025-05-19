@@ -130,21 +130,27 @@ export default function CommunityPage() {
     fetchPosts(pageNum, 15, search);
   };
 
-  const handlePost = async () => {
-    if (!newPost.trim()) return;
-    const token = localStorage.getItem("token");
-    try {
-      await axios.post(
-        `${API}/api/posts`,
-        { title: newPost.slice(0, 50), content: newPost, isAnonymous: userInfo.anonymous },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setNewPost("");
-      fetchPosts(1, showAll ? 15 : 3, search);
-    } catch (err) {
-      console.error("Failed to create post", err);
-    }
-  };
+ const handlePost = async (isDraft = false) => {
+  if (!newPost.trim()) return;
+  const token = localStorage.getItem("token");
+  try {
+    await axios.post(
+      `${API}/api/posts`,
+      {
+        title: newPost.slice(0, 50),
+        content: newPost,
+        isAnonymous: userInfo.anonymous,
+        isDraft: isDraft 
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setNewPost("");
+    fetchPosts(1, showAll ? 15 : 3, search);
+  } catch (err) {
+    console.error("Failed to create post", err);
+  }
+};
+
 
   const shouldShowPagination = showAll && totalPages > 1;
 

@@ -19,6 +19,7 @@ export default function CommunitySidebar({ showReturn = false }) {
       <Link href="/community/collect"><div className={linkClass("/community/collect")}>Collect</div></Link>
       <Link href="/community/comment"><div className={linkClass("/community/comment")}>Comment</div></Link>
       <Link href="/community/reply"><div className={linkClass("/community/reply")}>Reply</div></Link>
+      <Link href="/community/draft"><div className={linkClass("/community/draft")}>Draft</div></Link>
       {showReturn && (
         <Link href="/community"><div className={linkClass("/community")}>Return</div></Link>
       )}
