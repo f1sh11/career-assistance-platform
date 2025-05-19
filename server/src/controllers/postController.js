@@ -188,7 +188,15 @@ export const deleteDraft = async (req, res) => {
     const userId = req.user.id;
     const postId = req.params.id;
 
-    const draft = await Post.findOne({ _id: postId, authorId: userId, isDraft: true });
+    const draft = await Post.findOne({
+      _id: postId,
+      authorId: userId,
+      $or: [
+        { isDraft: true },
+        { status: "draft" }
+      ]
+    });
+
     if (!draft) {
       return res.status(404).json({ message: "Draft not found or access denied" });
     }
@@ -199,6 +207,7 @@ export const deleteDraft = async (req, res) => {
     res.status(500).json({ error: "Failed to delete draft" });
   }
 };
+
 
 // PUT /api/posts/drafts/:id/publish
 export const publishDraft = async (req, res) => {

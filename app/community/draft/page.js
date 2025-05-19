@@ -51,24 +51,50 @@ useEffect(() => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
               {drafts.map((post) => (
                 <div
-                  key={post._id}
-                  className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition cursor-pointer"
-                >
-                  <h2 className="text-xl font-semibold text-black mb-2">
-                    {post.title || "(Untitled Draft)"}
-                  </h2>
-                  <p className="text-gray-700 mb-1">
-                    {(post.content || "").slice(0, 100)}...
-                  </p>
-                  <p className="text-xs text-gray-400 mb-2">
-                    Last updated: {new Date(post.updatedAt).toLocaleString()}
-                  </p>
-                  <Link href={`/community/edit/${post._id}`}>
-                    <button className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                      Continue Editing
-                    </button>
-                  </Link>
-                </div>
+  key={post._id}
+  className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition relative"
+>
+  {/* 删除按钮 */}
+  <button
+    onClick={async () => {
+      const confirmed = window.confirm("Are you sure you want to delete this draft?");
+      if (!confirmed) return;
+
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`${API}/api/posts/drafts/${post._id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // 删除成功后移除这条草稿
+        setDrafts((prev) => prev.filter((d) => d._id !== post._id));
+      } catch (err) {
+        alert("❌ Failed to delete draft");
+        console.error(err);
+      }
+    }}
+    className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xl"
+    title="Delete draft"
+  >
+    ×
+  </button>
+
+  <h2 className="text-xl font-semibold text-black mb-2">
+    {post.title || "(Untitled Draft)"}
+  </h2>
+  <p className="text-gray-700 mb-1">
+    {(post.content || "").slice(0, 100)}...
+  </p>
+  <p className="text-xs text-gray-400 mb-2">
+    Last updated: {new Date(post.updatedAt).toLocaleString()}
+  </p>
+  <Link href={`/community/edit/${post._id}`}>
+    <button className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+      Continue Editing
+    </button>
+  </Link>
+</div>
+
               ))}
             </div>
           </div>
