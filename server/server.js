@@ -23,7 +23,7 @@ import { writeLog, writeError } from './src/utils/logHelper.js';
 
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import chatRoutes from './src/routes/chat.routes.js';
+
 
 
 const __filename = fileURLToPath(import.meta.url);
