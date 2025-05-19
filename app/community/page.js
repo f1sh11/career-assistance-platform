@@ -226,16 +226,18 @@ export default function CommunityPage() {
                   <span className={`${searchMode === "keyword" ? "text-yellow-500" : "text-gray-400"}`}>Keyword</span>
                   <span className={`${searchMode === "direct" ? "text-yellow-500" : "text-gray-400"}`}>Direct</span>
                 </div>
-                <div
-                  className="relative w-12 h-6 bg-gray-300 rounded-full cursor-pointer mx-auto"
-                  onClick={() => setSearchMode(searchMode === "keyword" ? "direct" : "keyword")}
-                >
-                  <div
-                    className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
-                      searchMode === "keyword" ? "left-1" : "left-6 -translate-x-full"
+             <div className="flex justify-center mt-2">
+  <div
+    className="relative w-12 h-6 bg-gray-500 rounded-full cursor-pointer"
+    onClick={() => setSearchMode(searchMode === "keyword" ? "direct" : "keyword")}
+  >
+    <div
+      className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 ${
+        searchMode === "keyword" ? "translate-x-1" : "translate-x-6"
                     }`}
                   ></div>
                 </div>
+              </div>
               </div>
 
               <div className="bg-white shadow-md rounded p-4">
@@ -251,13 +253,15 @@ export default function CommunityPage() {
                 </div>
                 <div className="flex justify-between items-center text-sm font-medium mb-2">
                   <span className="text-gray-600">Anonymous Mode</span>
-                  <div
-                    className="relative w-12 h-6 bg-gray-300 rounded-full cursor-pointer"
-                    onClick={() => setUserInfo((prev) => ({ ...prev, anonymous: !prev.anonymous }))}
-                  >
-                    <div
-                      className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
-                        userInfo.anonymous ? "left-6 -translate-x-full" : "left-1"
+                <div
+  className="relative w-12 h-6 bg-gray-500 rounded-full cursor-pointer"
+  onClick={() =>
+    setUserInfo((prev) => ({ ...prev, anonymous: !prev.anonymous }))
+  }
+>
+  <div
+    className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+      userInfo.anonymous ? "translate-x-6" : "translate-x-1"
                       }`}
                     ></div>
                   </div>
