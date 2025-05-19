@@ -4,15 +4,15 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { use } from "react";
 import CommunitySidebar from "../../../components/CommunitySidebar";
 
 
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export default function ArticlePage() {
-  const params = useParams();
-  const articleId = params?.id;
+export default function ArticlePage({ params }) {
+const { id: articleId } = use(params);
 
   const [post, setPost] = useState(null);
   const [likes, setLikes] = useState(0);
@@ -143,14 +143,14 @@ export default function ArticlePage() {
                 <p className="text-gray-700">No comments yet. Be the first to reply!</p>
               ) : (
                 <div className="space-y-4 mb-6">
-                  {comments.map((c, idx) => (
-                    <div key={idx} className="bg-gray-100 p-4 rounded text-black">
-                      <p className="text-sm">{c.text}</p>
-                      <p className="text-xs text-right text-gray-500">
-                        {c.userId?.username || "User"} @ {new Date(c.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                  ))}
+                  {Array.isArray(comments) && comments.map((c, idx) => (
+  <div key={idx} className="bg-gray-100 p-4 rounded text-black">
+    <p className="text-sm">{c.text}</p>
+    <p className="text-xs text-right text-gray-500">
+      {c.userId?.username || "User"} @ {new Date(c.createdAt).toLocaleString()}
+    </p>
+  </div>
+))}
                 </div>
               )}
 
