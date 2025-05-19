@@ -4,23 +4,30 @@ const API = process.env.API_URL || "http://localhost:5000";
 
 // 创建帖子
 export const createPost = async (req, res) => {
-  const { title, content, isAnonymous, isChat } = req.body; 
-  const userId = req.user.id;
+  const { title, content, isAnonymous, isChat } = req.body;
+  const user = req.user;
 
   try {
+    const name = user.profile?.name || user.identifier || "Unnamed";
+    const avatar = user.profile?.avatarUrl ? `${API}${user.profile.avatarUrl}` : "/default-avatar.png";
+
     const post = await Post.create({
       title,
       content,
       isAnonymous: !!isAnonymous,
-      isChat: !!isChat, 
-      authorId: userId,
+      isChat: !!isChat,
+      authorId: user._id,
+      authorName: isAnonymous ? "Anonymous User" : name,
+      authorAvatarUrl: isAnonymous ? "/default-avatar.png" : avatar,
       status: 'approved'
     });
+
     res.status(201).json(post);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // 获取分页帖子列表
 export const getPosts = async (req, res) => {
@@ -49,11 +56,16 @@ export const getPosts = async (req, res) => {
       .limit(limit)
       .populate("authorId", "identifier profile.avatarUrl");
 
-    const enrichedPosts = posts.map(post => ({
-      ...post.toObject(),
-      authorName: post.isAnonymous ? null : post.authorId?.identifier,
-      authorAvatarUrl: post.isAnonymous ? null : `${API}${post.authorId?.profile?.avatarUrl || ""}`
-    }));
+    const enrichedPosts = posts.map(post => {
+  const base = post.toObject();
+
+  return {
+    ...base,
+    authorName: base.authorName || (post.isAnonymous ? null : post.authorId?.identifier),
+    authorAvatarUrl: base.authorAvatarUrl || (post.isAnonymous ? null : `${API}${post.authorId?.profile?.avatarUrl || ""}`)
+  };
+});
+
 
     res.json({
       posts: enrichedPosts,
