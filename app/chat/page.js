@@ -75,36 +75,38 @@ export default function ChatPage() {
     }
   }, [targetId, token]);
 
-  useEffect(() => {
-    if (!postId && !hasRedirected && currentUser && targetUser && token) {
-      const createPost = async () => {
-        try {
-          const res = await fetch(`${API_URL}/api/posts`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              title: `Chat between ${currentUser.profile.name} and ${targetUser.profile.name}`,
-              content: "Private conversation.",
-              isAnonymous: true
-            })
-          });
+useEffect(() => {
+  if (!postId && !hasRedirected && currentUser && targetUser && token) {
+    const createPost = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/posts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            title: `Chat between ${currentUser.profile.name} and ${targetUser.profile.name}`,
+            content: "Private conversation.",
+            isAnonymous: true,
+            isChat: true 
+          })
+        });
 
-          const post = await res.json();
-          if (!post?._id) throw new Error("Post creation failed");
+        const post = await res.json();
+        if (!post?._id) throw new Error("Post creation failed");
 
-          setHasRedirected(true); // ✅ 防止死循环
-          router.replace(`/chat?post=${post._id}&target=${targetId}`);
-        } catch {
-          toast.error("Failed to create chat post");
-        }
-      };
+        setHasRedirected(true);
+        router.replace(`/chat?post=${post._id}&target=${targetId}`);
+      } catch {
+        toast.error("Failed to create chat post");
+      }
+    };
 
-      createPost();
-    }
-  }, [postId, currentUser, targetUser, token, targetId, hasRedirected]);
+    createPost();
+  }
+}, [postId, currentUser, targetUser, token, targetId, hasRedirected]);
+
 
   const fetchComments = async (pageToLoad = 1) => {
     if (!postId || !token || loading || (pageToLoad !== 1 && !hasMore)) return;
