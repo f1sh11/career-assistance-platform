@@ -4,44 +4,45 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaBell, FaShieldAlt, FaClock, FaUserFriends } from "react-icons/fa";
+import { notificationData } from "../data/notifications"; // ✅ 相对路径正确
 
 export default function AccountOverviewPage() {
   const [username, setUsername] = useState("User");
+  const [cards, setCards] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
-    if (storedUsername) {
-      setUsername(storedUsername);
-    }
-  }, []);
+    if (storedUsername) setUsername(storedUsername);
 
-  const cards = [
-    {
-      title: "Notifications",
-      icon: <FaBell className="text-yellow-500 w-7 h-7" />,
-      description: "You have 2 unread notifications.",
-      link: "/account/notifications"
-    },
-    {
-      title: "Security",
-      icon: <FaShieldAlt className="text-green-500 w-7 h-7" />,
-      description: "Your account is secured with 2FA.",
-      link: "/account/security"
-    },
-    {
-      title: "Last Login",
-      icon: <FaClock className="text-blue-500 w-7 h-7" />,
-      description: "April 20, 2025, 21:34",
-      link: "/account/security#logins"
-    },
-    {
-      title: "Connections",
-      icon: <FaUserFriends className="text-pink-500 w-7 h-7" />,
-      description: "You are connected with 5 mentors/alumni.",
-      link: "/chat"
-    }
-  ];
+    // 设置卡片内容（避免 SSR 与客户端不一致）
+    setCards([
+      {
+        title: "Notifications",
+        icon: <FaBell className="text-yellow-500 w-7 h-7" />,
+        description: `You have ${notificationData.length} unread notifications.`,
+        link: "/account/notifications"
+      },
+      {
+        title: "Security",
+        icon: <FaShieldAlt className="text-green-500 w-7 h-7" />,
+        description: "Your account is secured with 2FA.",
+        link: "/account/security"
+      },
+      {
+        title: "Last Login",
+        icon: <FaClock className="text-blue-500 w-7 h-7" />,
+        description: "April 20, 2025, 21:34",
+        link: "/account/security#logins"
+      },
+      {
+        title: "Connections",
+        icon: <FaUserFriends className="text-pink-500 w-7 h-7" />,
+        description: "You are connected with 5 mentors/alumni.",
+        link: "/chat"
+      }
+    ]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white font-inter text-gray-900">
@@ -82,4 +83,3 @@ export default function AccountOverviewPage() {
     </div>
   );
 }
-

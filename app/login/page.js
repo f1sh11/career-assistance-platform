@@ -84,7 +84,7 @@ export default function LoginPage() {
           <option value="industry professional">Industry Professional</option>
           <option value="admin">Admin</option>
         </select>
-
+   
         <input
           type={role === "student" ? "text" : "email"}
           placeholder={role === "student" ? "Student ID" : "Email"}
