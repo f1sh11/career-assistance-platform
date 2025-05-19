@@ -80,11 +80,11 @@ export default function LoginPage() {
         >
           <option value="student">Student</option>
           <option value="mentor">Mentor</option>
-          <option value="alumin">Alumin</option>
+          <option value="alumni">Alumni</option>
           <option value="industry professional">Industry Professional</option>
-          <option value="administrator">Admin</option>
+          <option value="admin">Admin</option>
         </select>
-
+   
         <input
           type={role === "student" ? "text" : "email"}
           placeholder={role === "student" ? "Student ID" : "Email"}

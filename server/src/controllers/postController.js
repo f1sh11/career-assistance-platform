@@ -1,10 +1,10 @@
 import Post from '../models/Post.js';
 
-const API = process.env.API_URL || "http://localhost:5000"; // 添加全局前缀变量
+const API = process.env.API_URL || "http://localhost:5000";
 
 // 创建帖子
 export const createPost = async (req, res) => {
-  const { title, content, isAnonymous } = req.body;
+  const { title, content, isAnonymous, isChat } = req.body; 
   const userId = req.user.id;
 
   try {
@@ -12,6 +12,7 @@ export const createPost = async (req, res) => {
       title,
       content,
       isAnonymous: !!isAnonymous,
+      isChat: !!isChat, 
       authorId: userId,
       status: 'approved'
     });
@@ -31,6 +32,7 @@ export const getPosts = async (req, res) => {
   try {
     const filter = {
       status: 'approved',
+      isChat: { $ne: true }, 
       ...(search && {
         $or: [
           { title: { $regex: search, $options: 'i' } },
@@ -117,6 +119,7 @@ export const toggleCollect = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 

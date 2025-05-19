@@ -15,7 +15,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
     unique: true,
-    sparse: true // 因为 mentor/industry 不一定有 studentId
+    sparse: true, // 因为 mentor/industry 不一定有 studentId
+    match: [/^\d{8}$/, 'Student ID must be exactly 8 digits']
   },
   password: {
     type: String,

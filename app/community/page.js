@@ -6,6 +6,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import debounce from "lodash.debounce";
 import axios from "axios";
 import Link from "next/link";
+import CommunitySidebar from "../components/CommunitySidebar";
+import PostSomethingCard from "../components/PostSomethingCard";
+
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -147,14 +150,9 @@ export default function CommunityPage() {
     <div className="min-h-screen bg-fixed bg-cover bg-center" style={{ backgroundImage: "url('/Curtin2.jpg')" }}>
       <div className="flex">
         {/* 左侧菜单栏 */}
-        <aside className="w-48 bg-gray-800 text-white h-full min-h-screen pt-[100px] flex flex-col space-y-6 px-4">
-          <Link href="/community/collect"><div className="hover:text-yellow-400">Collect</div></Link>
-          <Link href="/community/comment"><div className="hover:text-yellow-400">Comment</div></Link>
-          <Link href="/community/reply"><div className="hover:text-yellow-400">Reply</div></Link>
-          <Link href="/community"><div className="hover:text-yellow-400">Return</div></Link>
-        </aside>
+        <CommunitySidebar showReturn={false} />
 
-        <div className="flex-1 px-8 pt-[100px] pb-24">
+        <div className="ml-48 flex-1 px-8 pt-[100px] pb-24">
           {/* 搜索栏 */}
           <div className="bg-white p-4 rounded shadow-md w-full max-w-5xl mb-8 mx-auto flex space-x-4">
             <input
@@ -229,16 +227,18 @@ export default function CommunityPage() {
                   <span className={`${searchMode === "keyword" ? "text-yellow-500" : "text-gray-400"}`}>Keyword</span>
                   <span className={`${searchMode === "direct" ? "text-yellow-500" : "text-gray-400"}`}>Direct</span>
                 </div>
-                <div
-                  className="relative w-12 h-6 bg-gray-300 rounded-full cursor-pointer mx-auto"
-                  onClick={() => setSearchMode(searchMode === "keyword" ? "direct" : "keyword")}
-                >
-                  <div
-                    className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
-                      searchMode === "keyword" ? "left-1" : "left-6 -translate-x-full"
+             <div className="flex justify-center mt-2">
+  <div
+    className="relative w-12 h-6 bg-gray-500 rounded-full cursor-pointer"
+    onClick={() => setSearchMode(searchMode === "keyword" ? "direct" : "keyword")}
+  >
+    <div
+      className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 ${
+        searchMode === "keyword" ? "translate-x-1" : "translate-x-6"
                     }`}
                   ></div>
                 </div>
+              </div>
               </div>
 
               <div className="bg-white shadow-md rounded p-4">
@@ -254,13 +254,15 @@ export default function CommunityPage() {
                 </div>
                 <div className="flex justify-between items-center text-sm font-medium mb-2">
                   <span className="text-gray-600">Anonymous Mode</span>
-                  <div
-                    className="relative w-12 h-6 bg-gray-300 rounded-full cursor-pointer"
-                    onClick={() => setUserInfo((prev) => ({ ...prev, anonymous: !prev.anonymous }))}
-                  >
-                    <div
-                      className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
-                        userInfo.anonymous ? "left-6 -translate-x-full" : "left-1"
+                <div
+  className="relative w-12 h-6 bg-gray-500 rounded-full cursor-pointer"
+  onClick={() =>
+    setUserInfo((prev) => ({ ...prev, anonymous: !prev.anonymous }))
+  }
+>
+  <div
+    className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+      userInfo.anonymous ? "translate-x-6" : "translate-x-1"
                       }`}
                     ></div>
                   </div>
@@ -268,21 +270,12 @@ export default function CommunityPage() {
                 <p className="text-xs text-gray-500">When anonymous is enabled, others will not see your name or avatar when you post.</p>
               </div>
 
-              <div className="bg-white shadow-md rounded p-4 text-black">
-                <h2 className="text-xl font-semibold mb-4">Post Something</h2>
-                <textarea
-                  className="w-full h-40 p-3 border rounded bg-gray-100 resize-none mb-2"
-                  placeholder="What's on your mind?"
-                  value={newPost}
-                  onChange={(e) => setNewPost(e.target.value)}
-                />
-                <button
-                  onClick={handlePost}
-                  className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-                >
-                  Post
-                </button>
-              </div>
+<PostSomethingCard
+  newPost={newPost}
+  setNewPost={setNewPost}
+  onPost={handlePost}
+/>
+
             </aside>
           </div>
         </div>
