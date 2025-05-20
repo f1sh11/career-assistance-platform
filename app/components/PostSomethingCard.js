@@ -23,20 +23,29 @@ export default function PostSomethingCard({ onPost, newPost, setNewPost }) {
         </button>
       </div>
 
-      {/* 发布输入区域 */}
-      <textarea
-        className="w-full h-40 p-3 border rounded bg-gray-100 resize-none text-black mb-2"
-        placeholder="What's on your mind?"
-        value={newPost}
-        onChange={(e) => setNewPost(e.target.value)}
-      />
+{/* 发布输入区域 */}
+<textarea
+  className="w-full h-40 p-3 border rounded bg-gray-100 resize-none text-black mb-2"
+  placeholder="What's on your mind?"
+  value={newPost}
+  onChange={(e) => setNewPost(e.target.value)}
+/>
 
-      <button
-        onClick={onPost}
-        className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-      >
-        Post
-      </button>
-    </div>
+<div className="flex gap-4">
+  <button
+    onClick={() => onPost(false)} // false 表示正常发布
+    className="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+  >
+    Post
+  </button>
+  <button
+    onClick={() => onPost(true)} // true 表示保存草稿
+    className="flex-1 bg-gray-500 text-white py-2 rounded hover:bg-gray-600"
+  >
+    Save Draft
+  </button>
+</div>
+</div>
+
   );
 }

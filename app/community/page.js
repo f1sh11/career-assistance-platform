@@ -26,14 +26,15 @@ export function PostCard({ post, index, lastIndex, keyword }) {
       <Link href={`/community/article/${post._id}`}>
         <div className="bg-white/90 rounded-lg shadow-md p-6 mb-6 hover:shadow-xl transition cursor-pointer">
           <div className="flex items-center gap-2 mb-2">
-            <img
-              src={post.isAnonymous ? "/default-avatar.png" : post.authorAvatarUrl || "/default-avatar.png"}
-              alt="avatar"
-              className="w-8 h-8 rounded-full"
-            />
-            <span className="text-sm text-gray-700">
-              {post.isAnonymous ? "Anonymous User" : post.authorName || "Unnamed"}
-            </span>
+<img
+  src={post.isAnonymous ? "/default-avatar.png" : post.authorAvatarUrl || "/default-avatar.png"}
+  alt="avatar"
+  className="w-8 h-8 rounded-full"
+/>
+<span className="text-sm text-gray-700">
+  {post.isAnonymous ? "Anonymous User" : post.authorName || "Unnamed"}
+</span>
+
           </div>
           <h2 className="text-2xl font-semibold mb-2 text-black">{post.title}</h2>
           <p
@@ -70,11 +71,12 @@ export default function CommunityPage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const user = res.data.user;
-        setUserInfo({
-          username: user.identifier || "User",
-          avatarUrl: `${API}${user.profile.avatarUrl}` || "/default-avatar.png",
-          anonymous: false,
-        });
+       setUserInfo({
+  username: user.profile?.name || user.identifier || "Unnamed",
+  avatarUrl: `${API}${user.profile?.avatarUrl || ""}` || "/default-avatar.png",
+  anonymous: false
+});
+
       } catch (err) {
         console.error("Failed to fetch profile", err);
       }
@@ -128,21 +130,27 @@ export default function CommunityPage() {
     fetchPosts(pageNum, 15, search);
   };
 
-  const handlePost = async () => {
-    if (!newPost.trim()) return;
-    const token = localStorage.getItem("token");
-    try {
-      await axios.post(
-        `${API}/api/posts`,
-        { title: newPost.slice(0, 50), content: newPost, isAnonymous: userInfo.anonymous },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setNewPost("");
-      fetchPosts(1, showAll ? 15 : 3, search);
-    } catch (err) {
-      console.error("Failed to create post", err);
-    }
-  };
+ const handlePost = async (isDraft = false) => {
+  if (!newPost.trim()) return;
+  const token = localStorage.getItem("token");
+  try {
+    await axios.post(
+      `${API}/api/posts`,
+      {
+        title: newPost.slice(0, 50),
+        content: newPost,
+        isAnonymous: userInfo.anonymous,
+        isDraft: isDraft 
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setNewPost("");
+    fetchPosts(1, showAll ? 15 : 3, search);
+  } catch (err) {
+    console.error("Failed to create post", err);
+  }
+};
+
 
   const shouldShowPagination = showAll && totalPages > 1;
 
