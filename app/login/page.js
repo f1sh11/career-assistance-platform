@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -16,9 +17,9 @@ export default function LoginPage() {
     const token = localStorage.getItem("token");
     const userStr = localStorage.getItem("user");
     if (token && userStr) {
-      router.push("/dashboard"); 
+      router.push("/dashboard");
     }
-  }, []);
+  }, [router]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -39,17 +40,19 @@ export default function LoginPage() {
       });
 
       const token = response.data.token;
-      localStorage.setItem("token", token);
 
       const profileRes = await axios.get("http://localhost:5000/api/users/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const userData = profileRes.data.user;
-      localStorage.setItem("user", JSON.stringify(userData));
-      login(userData); // 更新全局登录状态
 
-      router.push("/dashboard"); // ✅ 成功登录后只跳转到 redirector 页面
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(userData));
+      sessionStorage.setItem("token", token); // 备用写入
+      login(userData);
+
+      router.push("/dashboard");
     } catch (err) {
       console.error("Login error:", err.response?.data || err.message);
       if (!err.response) {
@@ -126,7 +129,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-
-
-

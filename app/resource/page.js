@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -47,6 +48,7 @@ function ResourceCard({ resource, index, scrollTop, lastIndex }) {
 }
 
 export default function ResourcePage() {
+  const router = useRouter();
   const [category, setCategory] = useState("Career Guides");
   const [resources, setResources] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,7 +60,9 @@ export default function ResourcePage() {
 
   const itemsPerPage = 15;
   const categories = [
-    "Career Guides", "Templates", "AI tool", "Interview Preparation", "Company Profiles", "Skill Development Courses", "Mbti Tests"
+    "Career Guides", "Templates", "AI tool",
+    "Interview Preparation", "Company Profiles",
+    "Skill Development Courses", "Mbti Tests"
   ];
 
   const fetchResources = async () => {
@@ -131,9 +135,9 @@ export default function ResourcePage() {
 
         {/* 内容主区域 */}
         <div className="ml-64 flex-1 pr-8 py-20 relative">
-          {/* 搜索框 */}
-          <div className="fixed top-30 right-8 left-64 max-w-[calc(100%-320px)] z-20">
-            <div className="bg-white rounded-lg shadow-md p-6 flex space-x-4">
+          {/* ✅ 搜索栏：向左贴近侧栏，视觉平衡 */}
+          <div className="fixed top-24 z-20 w-full pl-56 pr-8">
+            <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 flex space-x-4">
               <input
                 type="text"
                 placeholder="Search for resources..."
@@ -142,7 +146,7 @@ export default function ResourcePage() {
                 className="flex-1 p-4 border rounded bg-gray-100 placeholder-gray-400 focus:placeholder-black text-black"
               />
               <button
-                onClick={() => fetchResources()}
+                onClick={fetchResources}
                 className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded shadow"
               >
                 Search
@@ -150,11 +154,11 @@ export default function ResourcePage() {
             </div>
           </div>
 
-          {/* 上传按钮，仅 Mentor/Industry/Admin 可见 */}
-          {(role === "mentor" || role === "industry" || role === "admin") && (
+          {/* 上传按钮 */}
+          {["mentor", "industry", "admin"].includes(role) && (
             <div className="fixed bottom-10 right-10 z-50">
               <button
-                onClick={() => window.location.href = "/resource/upload"}
+                onClick={() => router.push("/resource/upload")}
                 className="bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600"
               >
                 Upload Resource
@@ -162,7 +166,7 @@ export default function ResourcePage() {
             </div>
           )}
 
-          {/* 资源卡片 */}
+          {/* 资源卡片展示 */}
           <main className="pt-24 space-y-4">
             {(showAll ? resources : resources?.slice(0, 3)).map((res, index) => (
               <ResourceCard
@@ -187,7 +191,7 @@ export default function ResourcePage() {
             </div>
           )}
 
-          {/* 分页器 */}
+          {/* 分页 */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center space-x-2 mt-8">
               <button onClick={() => goToPage(1)} className="px-3 py-2 bg-gray-200 text-black rounded hover:bg-yellow-300">
@@ -214,7 +218,3 @@ export default function ResourcePage() {
     </div>
   );
 }
-
-
-
-

@@ -12,32 +12,47 @@ export default function UploadResourcePage() {
     title: "",
     description: "",
     fileUrl: "",
-    category: "Career Guides"
+    category: "Career Guides",
   });
   const [role, setRole] = useState("");
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
 
   const categories = [
-    "Career Guides", "Templates", "AI tool", "Interview Preparation", "Company Profiles", "Skill Development Courses"
+    "Career Guides",
+    "Templates",
+    "AI tool",
+    "Interview Preparation",
+    "Company Profiles",
+    "Skill Development Courses"
   ];
 
   useEffect(() => {
-    try {
-      const userStr = localStorage.getItem("user");
-      if (!userStr) return router.push("/login");
-      const user = JSON.parse(userStr);
-      const userRole = user.role;
-      if (!["mentor", "industry", "admin"].includes(userRole)) {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) {
+      console.warn("⛔ No token found. Redirecting to login...");
+      router.push("/login");
+      return;
+    }
+
+    axios.get(`${API}/api/users/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then((res) => {
+      const user = res.data.user;
+      if (!["mentor", "industry", "admin"].includes(user.role)) {
+        console.warn("⛔ Role not allowed:", user.role);
         router.push("/resource");
       } else {
-        setRole(userRole);
+        setRole(user.role);
+        console.log("✅ Authenticated as:", user.role);
       }
-    } catch (err) {
-      console.error("Failed to get role:", err);
+    })
+    .catch((err) => {
+      console.error("❌ Token invalid or expired:", err);
       router.push("/login");
-    }
-  }, []);
+    });
+  }, [router]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -57,16 +72,22 @@ export default function UploadResourcePage() {
       setFormData((prev) => ({ ...prev, fileUrl: res.data.url }));
       setMessage("✅ File uploaded successfully!");
     } catch (err) {
-      console.error("File upload failed", err);
+      console.error("❌ File upload failed:", err);
       setMessage("❌ File upload failed.");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setMessage("❌ Token missing. Please log in again.");
+      router.push("/login");
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.post(`${API}/api/resources`, formData, {
+      await axios.post(`${API}/api/resources`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessage("✅ Resource submitted!");
@@ -78,8 +99,13 @@ export default function UploadResourcePage() {
       });
       setFile(null);
     } catch (err) {
-      console.error("Upload failed", err);
-      setMessage("❌ Resource submission failed.");
+      console.error("❌ Upload failed:", err);
+      if (err.response?.status === 401) {
+        setMessage("⚠️ Token expired. Redirecting to login...");
+        router.push("/login");
+      } else {
+        setMessage("❌ Resource submission failed.");
+      }
     }
   };
 
@@ -115,11 +141,13 @@ export default function UploadResourcePage() {
             className="w-full p-3 border rounded bg-gray-100"
           >
             {categories.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
             ))}
           </select>
 
-          {/* 本地文件上传 */}
+          {/* 上传文件区域 */}
           <div className="space-y-2">
             <input
               type="file"
@@ -134,7 +162,9 @@ export default function UploadResourcePage() {
               Upload File
             </button>
             {formData.fileUrl && (
-              <p className="text-sm text-green-600 break-all">File uploaded: {formData.fileUrl}</p>
+              <p className="text-sm text-green-600 break-all">
+                File uploaded: {formData.fileUrl}
+              </p>
             )}
           </div>
 
@@ -146,7 +176,9 @@ export default function UploadResourcePage() {
           </button>
         </form>
 
-        {message && <p className="mt-4 text-center font-semibold">{message}</p>}
+        {message && (
+          <p className="mt-4 text-center font-semibold">{message}</p>
+        )}
       </div>
     </div>
   );
