@@ -67,6 +67,7 @@ export default function RegisterPage() {
           <option value="student">Student</option>
           <option value="mentor">Mentor</option>
           <option value="industry">Industry professional</option>
+          <option value="alumni">Alumni</option>
         </select>
 
         <input
