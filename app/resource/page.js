@@ -2,12 +2,14 @@
 
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-function ResourceCard({ resource, index, scrollTop, lastIndex }) {
+function ResourceCard({ resource, index, scrollTop, lastIndex, role, currentUserId, handleDelete }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(true);
+  const [showFull, setShowFull] = useState(false);
 
   useEffect(() => {
     const handleVisibility = () => {
@@ -33,6 +35,41 @@ function ResourceCard({ resource, index, scrollTop, lastIndex }) {
     };
   }, [scrollTop, index, lastIndex]);
 
+  const renderDescription = () => {
+    const lines = resource.description.split('\n');
+    const fullText = lines.map((line, idx) => <p key={idx}>{line}</p>);
+
+    if (resource.description.length <= 60 || showFull) {
+      return (
+        <div className="text-gray-700 space-y-2">
+          {fullText}
+          {resource.description.length > 60 && (
+            <button
+              onClick={() => setShowFull(false)}
+              className="text-blue-500 underline text-sm"
+            >
+              Hide
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    const preview = resource.description.slice(0, 60) + '...';
+
+    return (
+      <div className="text-gray-700 space-y-2">
+        <p>{preview}</p>
+        <button
+          onClick={() => setShowFull(true)}
+          className="text-blue-500 underline text-sm"
+        >
+          Show
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div
       ref={ref}
@@ -41,10 +78,19 @@ function ResourceCard({ resource, index, scrollTop, lastIndex }) {
       }`}
     >
       <h2 className="text-2xl font-semibold mb-4 text-black">{resource.title}</h2>
-      <p className="text-gray-700">{resource.description}</p>
+      {renderDescription()}
+      {(role === "admin" || resource.uploader === currentUserId) && (
+        <button
+          onClick={() => handleDelete(resource._id)}
+          className="text-red-500 mt-2 underline text-sm hover:text-red-700"
+        >
+          Delete
+        </button>
+      )}
     </div>
   );
 }
+
 
 export default function ResourcePage() {
   const [category, setCategory] = useState("Career Guides");
@@ -53,12 +99,21 @@ export default function ResourcePage() {
   const [totalPages, setTotalPages] = useState(1);
   const [searchText, setSearchText] = useState("");
   const [role, setRole] = useState("");
+  const [currentUserId, setCurrentUserId] = useState("");
   const [scrollTop, setScrollTop] = useState(0);
   const [showAll, setShowAll] = useState(false);
 
+  const router = useRouter();
+
   const itemsPerPage = 15;
   const categories = [
-    "Career Guides", "Templates", "AI tool", "Interview Preparation", "Company Profiles", "Skill Development Courses", "Mbti Tests"
+    "Career Guides",
+    "Templates",
+    "AI tool",
+    "Interview Preparation",
+    "Company Profiles",
+    "Skill Development Courses",
+    "Mbti Tests"
   ];
 
   const fetchResources = async () => {
@@ -79,8 +134,24 @@ export default function ResourcePage() {
       if (!userStr) return;
       const user = JSON.parse(userStr);
       setRole(user.role);
+      setCurrentUserId(user._id || user.id || "");
     } catch (err) {
       console.error("Failed to parse role");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const token = localStorage.getItem("token");
+    if (!confirm("Are you sure you want to delete this resource?")) return;
+
+    try {
+      await axios.delete(`${API}/api/resources/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setResources((prev) => prev.filter((r) => r._id !== id));
+    } catch (err) {
+      console.error("❌ Failed to delete resource", err);
+      alert("Failed to delete resource");
     }
   };
 
@@ -119,9 +190,7 @@ export default function ResourcePage() {
                 setShowAll(false);
               }}
               className={`text-lg font-light px-4 py-3 rounded-md transition cursor-pointer ${
-                category === cat
-                  ? "bg-yellow-400 text-black"
-                  : "bg-gray-800 hover:bg-yellow-300 hover:text-black"
+                category === cat ? "bg-yellow-400 text-black" : "bg-gray-800 hover:bg-yellow-300 hover:text-black"
               }`}
             >
               {cat}
@@ -150,11 +219,11 @@ export default function ResourcePage() {
             </div>
           </div>
 
-          {/* 上传按钮，仅 Mentor/Industry/Admin 可见 */}
+          {/* 上传按钮 */}
           {(role === "mentor" || role === "industry" || role === "admin") && (
             <div className="fixed bottom-10 right-10 z-50">
               <button
-                onClick={() => window.location.href = "/resource/upload"}
+                onClick={() => router.push("/resource/upload")}
                 className="bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600"
               >
                 Upload Resource
@@ -162,7 +231,7 @@ export default function ResourcePage() {
             </div>
           )}
 
-          {/* 资源卡片 */}
+          {/* 资源卡片列表 */}
           <main className="pt-24 space-y-4">
             {(showAll ? resources : resources?.slice(0, 3)).map((res, index) => (
               <ResourceCard
@@ -171,6 +240,9 @@ export default function ResourcePage() {
                 scrollTop={scrollTop}
                 index={index}
                 lastIndex={resources.length - 1}
+                role={role}
+                currentUserId={currentUserId}
+                handleDelete={handleDelete}
               />
             ))}
           </main>
@@ -214,7 +286,3 @@ export default function ResourcePage() {
     </div>
   );
 }
-
-
-
-
