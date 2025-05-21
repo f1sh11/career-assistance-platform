@@ -106,6 +106,7 @@ export default function ResourcePage() {
     if (pageNum >= 1 && pageNum <= totalPages) {
       setCurrentPage(pageNum);
       setShowAll(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -121,6 +122,7 @@ export default function ResourcePage() {
                 setCategory(cat);
                 setCurrentPage(1);
                 setShowAll(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               className={`text-lg font-light px-4 py-3 rounded-md transition cursor-pointer ${
                 category === cat
@@ -135,27 +137,25 @@ export default function ResourcePage() {
 
         {/* 内容主区域 */}
         <div className="ml-64 flex-1 pr-8 py-20 relative">
-          {/* ✅ 搜索栏：向左贴近侧栏，视觉平衡 */}
-          <div className="fixed top-24 z-20 w-full pl-56 pr-8">
-            <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 flex space-x-4">
-              <input
-                type="text"
-                placeholder="Search for resources..."
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                className="flex-1 p-4 border rounded bg-gray-100 placeholder-gray-400 focus:placeholder-black text-black"
-              />
-              <button
-                onClick={fetchResources}
-                className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded shadow"
-              >
-                Search
-              </button>
-            </div>
+          {/* ✅ 改为自然流式布局的搜索栏 */}
+          <div className="mb-6 max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 flex space-x-4">
+            <input
+              type="text"
+              placeholder="Search for resources..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="flex-1 p-4 border rounded bg-gray-100 placeholder-gray-400 focus:placeholder-black text-black"
+            />
+            <button
+              onClick={fetchResources}
+              className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded shadow"
+            >
+              Search
+            </button>
           </div>
 
           {/* 上传按钮 */}
-          {["mentor", "industry", "admin"].includes(role) && (
+          {['mentor', 'industry', 'admin'].includes(role) && (
             <div className="fixed bottom-10 right-10 z-50">
               <button
                 onClick={() => router.push("/resource/upload")}
@@ -167,7 +167,7 @@ export default function ResourcePage() {
           )}
 
           {/* 资源卡片展示 */}
-          <main className="pt-24 space-y-4">
+          <main className="pt-4 space-y-4">
             {(showAll ? resources : resources?.slice(0, 3)).map((res, index) => (
               <ResourceCard
                 key={res._id || index}

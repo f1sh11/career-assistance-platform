@@ -24,7 +24,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="...">
+      <body className={`${geistSans.variable} ${geistMono.variable} bg-white text-black`}>
         <Toaster position="top-center" reverseOrder={false} />
         <AutoLogout /> {/* ✅ 插入这里 */}
         <AuthProvider>
