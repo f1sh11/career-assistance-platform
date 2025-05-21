@@ -87,8 +87,8 @@ export default function Navbar() {
                             if (isLogout) {
                               logout();
                               localStorage.removeItem("token");
-                              router.replace("/login");
-                              window.location.reload(); // ✅ 强制刷新以重载 Navbar 状态
+                              localStorage.removeItem("user");
+                              router.push("/login");
                             } else {
                               handleMenuClick(item.route);
                             }
