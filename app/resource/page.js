@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-function ResourceCard({ resource, index, scrollTop, lastIndex }) {
+function ResourceCard({ resource, index, scrollTop, lastIndex, role, currentUserId, handleDelete }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(true);
+  const [showFull, setShowFull] = useState(false);
 
   useEffect(() => {
     const handleVisibility = () => {
@@ -34,6 +35,41 @@ function ResourceCard({ resource, index, scrollTop, lastIndex }) {
     };
   }, [scrollTop, index, lastIndex]);
 
+  const renderDescription = () => {
+    const lines = resource.description.split('\n');
+    const fullText = lines.map((line, idx) => <p key={idx}>{line}</p>);
+
+    if (resource.description.length <= 60 || showFull) {
+      return (
+        <div className="text-gray-700 space-y-2">
+          {fullText}
+          {resource.description.length > 60 && (
+            <button
+              onClick={() => setShowFull(false)}
+              className="text-blue-500 underline text-sm"
+            >
+              Hide
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    const preview = resource.description.slice(0, 60) + '...';
+
+    return (
+      <div className="text-gray-700 space-y-2">
+        <p>{preview}</p>
+        <button
+          onClick={() => setShowFull(true)}
+          className="text-blue-500 underline text-sm"
+        >
+          Show
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div
       ref={ref}
@@ -42,27 +78,42 @@ function ResourceCard({ resource, index, scrollTop, lastIndex }) {
       }`}
     >
       <h2 className="text-2xl font-semibold mb-4 text-black">{resource.title}</h2>
-      <p className="text-gray-700">{resource.description}</p>
+      {renderDescription()}
+      {(role === "admin" || resource.uploader === currentUserId) && (
+        <button
+          onClick={() => handleDelete(resource._id)}
+          className="text-red-500 mt-2 underline text-sm hover:text-red-700"
+        >
+          Delete
+        </button>
+      )}
     </div>
   );
 }
 
+
 export default function ResourcePage() {
-  const router = useRouter();
   const [category, setCategory] = useState("Career Guides");
   const [resources, setResources] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchText, setSearchText] = useState("");
   const [role, setRole] = useState("");
+  const [currentUserId, setCurrentUserId] = useState("");
   const [scrollTop, setScrollTop] = useState(0);
   const [showAll, setShowAll] = useState(false);
 
+  const router = useRouter();
+
   const itemsPerPage = 15;
   const categories = [
-    "Career Guides", "Templates", "AI tool",
-    "Interview Preparation", "Company Profiles",
-    "Skill Development Courses", "Mbti Tests"
+    "Career Guides",
+    "Templates",
+    "AI tool",
+    "Interview Preparation",
+    "Company Profiles",
+    "Skill Development Courses",
+    "Mbti Tests"
   ];
 
   const fetchResources = async () => {
@@ -83,8 +134,24 @@ export default function ResourcePage() {
       if (!userStr) return;
       const user = JSON.parse(userStr);
       setRole(user.role);
+      setCurrentUserId(user._id || user.id || "");
     } catch (err) {
       console.error("Failed to parse role");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const token = localStorage.getItem("token");
+    if (!confirm("Are you sure you want to delete this resource?")) return;
+
+    try {
+      await axios.delete(`${API}/api/resources/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setResources((prev) => prev.filter((r) => r._id !== id));
+    } catch (err) {
+      console.error("❌ Failed to delete resource", err);
+      alert("Failed to delete resource");
     }
   };
 
@@ -106,7 +173,6 @@ export default function ResourcePage() {
     if (pageNum >= 1 && pageNum <= totalPages) {
       setCurrentPage(pageNum);
       setShowAll(false);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -122,12 +188,9 @@ export default function ResourcePage() {
                 setCategory(cat);
                 setCurrentPage(1);
                 setShowAll(false);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               className={`text-lg font-light px-4 py-3 rounded-md transition cursor-pointer ${
-                category === cat
-                  ? "bg-yellow-400 text-black"
-                  : "bg-gray-800 hover:bg-yellow-300 hover:text-black"
+                category === cat ? "bg-yellow-400 text-black" : "bg-gray-800 hover:bg-yellow-300 hover:text-black"
               }`}
             >
               {cat}
@@ -137,25 +200,27 @@ export default function ResourcePage() {
 
         {/* 内容主区域 */}
         <div className="ml-64 flex-1 pr-8 py-20 relative">
-          {/* ✅ 改为自然流式布局的搜索栏 */}
-          <div className="mb-6 max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 flex space-x-4">
-            <input
-              type="text"
-              placeholder="Search for resources..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="flex-1 p-4 border rounded bg-gray-100 placeholder-gray-400 focus:placeholder-black text-black"
-            />
-            <button
-              onClick={fetchResources}
-              className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded shadow"
-            >
-              Search
-            </button>
+          {/* 搜索框 */}
+          <div className="fixed top-30 right-8 left-64 max-w-[calc(100%-320px)] z-20">
+            <div className="bg-white rounded-lg shadow-md p-6 flex space-x-4">
+              <input
+                type="text"
+                placeholder="Search for resources..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                className="flex-1 p-4 border rounded bg-gray-100 placeholder-gray-400 focus:placeholder-black text-black"
+              />
+              <button
+                onClick={() => fetchResources()}
+                className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded shadow"
+              >
+                Search
+              </button>
+            </div>
           </div>
 
           {/* 上传按钮 */}
-          {['mentor', 'industry', 'admin'].includes(role) && (
+          {(role === "mentor" || role === "industry" || role === "admin") && (
             <div className="fixed bottom-10 right-10 z-50">
               <button
                 onClick={() => router.push("/resource/upload")}
@@ -166,8 +231,8 @@ export default function ResourcePage() {
             </div>
           )}
 
-          {/* 资源卡片展示 */}
-          <main className="pt-4 space-y-4">
+          {/* 资源卡片列表 */}
+          <main className="pt-24 space-y-4">
             {(showAll ? resources : resources?.slice(0, 3)).map((res, index) => (
               <ResourceCard
                 key={res._id || index}
@@ -175,6 +240,9 @@ export default function ResourcePage() {
                 scrollTop={scrollTop}
                 index={index}
                 lastIndex={resources.length - 1}
+                role={role}
+                currentUserId={currentUserId}
+                handleDelete={handleDelete}
               />
             ))}
           </main>
@@ -191,7 +259,7 @@ export default function ResourcePage() {
             </div>
           )}
 
-          {/* 分页 */}
+          {/* 分页器 */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center space-x-2 mt-8">
               <button onClick={() => goToPage(1)} className="px-3 py-2 bg-gray-200 text-black rounded hover:bg-yellow-300">

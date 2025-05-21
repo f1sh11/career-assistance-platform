@@ -66,17 +66,19 @@ export default function RegisterPage() {
         >
           <option value="student">Student</option>
           <option value="mentor">Mentor</option>
+          <option value="alumni">Alumni</option>
           <option value="industry">Industry professional</option>
           <option value="alumni">Alumni</option>
         </select>
 
         <input
           type="text"
-          placeholder={role === 'student' ? 'Student ID' : 'Email'}
+          placeholder={['student'].includes(role) ? 'Student ID' : 'Email'}
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
           className="mb-4 w-full p-2 border rounded text-black"
         />
+
 
         <input
           type="password"
