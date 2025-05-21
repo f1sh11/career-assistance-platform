@@ -9,12 +9,15 @@ import {
   getPendingResources,
   approveResource,
   rejectResource,
-  uploadFile
+  uploadFile,
+  deleteResource
 } from "../controllers/resource.controller.js";
 import { authenticateToken } from "../middleware/auth.middleware.js";
 
 const router = express.Router(); // ✅ 必须在这里先声明
 
+router.delete("/:id", authenticateToken, deleteResource);
+// ✅ 删除资源（上传者本人或管理员）
 // ✅ 放在 router 初始化之后
 router.get("/logs", authenticateToken, getAuditLogs);
 

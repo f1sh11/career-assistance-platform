@@ -70,7 +70,7 @@ export const getPendingResources = async (req, res) => {
   }
 };
 
-// 审核通过资源（记录日志）
+// 审核通过资源
 export const approveResource = async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -96,7 +96,7 @@ export const approveResource = async (req, res) => {
   }
 };
 
-// 审核驳回资源（记录日志）
+// 审核驳回资源
 export const rejectResource = async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -122,7 +122,7 @@ export const rejectResource = async (req, res) => {
   }
 };
 
-// 上传本地文件（返回 URL）
+// 上传本地文件
 export const uploadFile = async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: "No file uploaded" });
@@ -150,4 +150,24 @@ export const getAuditLogs = async (req, res) => {
   }
 };
 
+// ✅ 删除资源（上传者本人或管理员）
+export const deleteResource = async (req, res) => {
+  try {
+    const resource = await Resource.findById(req.params.id);
+    if (!resource) {
+      return res.status(404).json({ message: "Resource not found" });
+    }
 
+    const isUploader = resource.uploader.toString() === req.user.id;
+    const isAdmin = req.user.role === "admin";
+
+    if (!isUploader && !isAdmin) {
+      return res.status(403).json({ message: "Not authorized to delete this resource" });
+    }
+
+    await Resource.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Resource deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete resource", error: err.message });
+  }
+};
