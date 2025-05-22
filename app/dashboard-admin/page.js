@@ -62,7 +62,7 @@ export default function DashboardAdmin() {
             🛡️ Welcome back, Administrator!
           </h1>
           <p className="text-lg mt-4">
-            You can review and approve mentor-submitted resources here.
+            You can also manage users, moderate posts, and monitor system activities from this dashboard.
           </p>
           <div className="text-right">
             <button

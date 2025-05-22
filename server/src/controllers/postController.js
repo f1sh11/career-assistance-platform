@@ -255,6 +255,18 @@ export const updatePost = async (req, res) => {
   }
 };
 
+export const deletePostByAdmin = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    await Post.findByIdAndDelete(postId);
+    res.status(200).json({ message: "Post deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete post", error: err.message });
+  }
+};
 
 
 

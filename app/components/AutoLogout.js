@@ -6,7 +6,7 @@ export default function AutoLogout() {
   useEffect(() => {
     const handleUnload = () => {
       localStorage.removeItem("token");
-      localStorage.removeItem("user"); // 如果你有缓存 user 也一并清理
+      localStorage.removeItem("user"); 
     };
 
     window.addEventListener("beforeunload", handleUnload);

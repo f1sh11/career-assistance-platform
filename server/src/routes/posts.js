@@ -11,7 +11,8 @@ import {
   updatePost       
 } from '../controllers/postController.js';
 import { getMyDrafts } from '../controllers/postController.js';
-import { authenticateToken } from '../middleware/auth.middleware.js';
+import { deletePostByAdmin } from "../controllers/postController.js";
+import { authenticateToken, authorize } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
@@ -53,5 +54,5 @@ router.put('/:id', authenticateToken, updatePost);
 router.delete('/drafts/:id', authenticateToken, deleteDraft);        
 router.put('/drafts/:id/publish', authenticateToken, publishDraft);  
 router.get('/me/drafts', authenticateToken, getMyDrafts);
-
+router.delete("/:id", authenticateToken, authorize("admin"), deletePostByAdmin);
 export default router;

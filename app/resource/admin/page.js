@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import AdminSidebar from "../../components/admin/AdminSidebar";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -71,7 +72,8 @@ export default function ResourceAdminPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-10 text-black relative">
+    <div className="min-h-screen bg-gray-100 pt-24 pl-52 pr-8 text-black relative">
+      <AdminSidebar />
       <h1 className="text-4xl font-bold mb-6">🛠 Resource Approval Panel</h1>
 
       {resources.length === 0 ? (
@@ -110,7 +112,6 @@ export default function ResourceAdminPage() {
         </div>
       )}
 
-      {/* Toast 提示框 */}
       {toast && (
         <div className="fixed bottom-6 right-6 bg-black text-white px-6 py-3 rounded shadow-lg z-50 animate-fade-in-out">
           {toast}
@@ -119,4 +120,5 @@ export default function ResourceAdminPage() {
     </div>
   );
 }
+
 
