@@ -3,16 +3,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "next/navigation";
-import Link from "next/link";
-import { use } from "react";
 import CommunitySidebar from "../../../components/CommunitySidebar";
-
-
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export default function ArticlePage({ params }) {
-const { id: articleId } = params;
+export default function ArticlePage() {
+  const params = useParams();
+  const articleId = params.id;
 
   const [post, setPost] = useState(null);
   const [likes, setLikes] = useState(0);
@@ -25,7 +22,9 @@ const { id: articleId } = params;
 
   const fetchPost = async () => {
     try {
-      const res = await axios.get(`${API}/api/posts/${articleId}`);
+      const res = await axios.get(`${API}/api/posts/${articleId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       setPost(res.data);
       setLikes(res.data.likes.length);
       setCollected(res.data.collectedBy.includes(getUserId()));
@@ -35,6 +34,7 @@ const { id: articleId } = params;
   };
 
   const fetchComments = async () => {
+    if (!articleId) return;
     try {
       setLoadingComments(true);
       const res = await axios.get(`${API}/api/comments/${articleId}`);
@@ -45,6 +45,7 @@ const { id: articleId } = params;
       setLoadingComments(false);
     }
   };
+
 
   const getUserId = () => {
     try {
@@ -95,10 +96,13 @@ const { id: articleId } = params;
 
   useEffect(() => {
     if (articleId) {
-      fetchPost();
-      fetchComments();
+      if (token) {
+        fetchPost();
+      }
+      fetchComments(); // 获取评论本来就不需要 token
     }
-  }, [articleId]);
+  }, [articleId, token]);
+
 
   if (!post) return <p className="text-white p-10">Loading article...</p>;
 
