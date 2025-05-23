@@ -132,16 +132,21 @@ export const getUserCollections = async (req, res) => {
 export const getUserComments = async (req, res) => {
   try {
     const userId = req.user._id;
+
     const comments = await Comment.find({ userId })
       .populate('postId', 'title')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean(); // 让结果是可操作的普通对象
 
-    res.status(200).json(comments);
+    const filtered = comments.filter(c => c.postId !== null);
+
+    res.status(200).json(filtered);
   } catch (error) {
     writeError(`Get user comments error: ${error.message}`, error.stack);
     res.status(500).json({ message: 'Failed to get comments' });
   }
 };
+
 
 // Get current user's replies (replies targeting this user)
 export const getUserReplies = async (req, res) => {
