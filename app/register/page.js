@@ -1,6 +1,5 @@
 'use client';
 
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -12,7 +11,6 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // 清空账号密码字段
   useEffect(() => {
     setIdentifier('');
     setPassword('');
@@ -26,12 +24,11 @@ export default function RegisterPage() {
       setError('All fields are required');
       return;
     }
-    
-    const normalizedRole = role.toLowerCase();
+
     const payload = {
       identifier,
       password,
-      role: normalizedRole
+      role: role.toLowerCase()
     };
 
     try {
@@ -66,21 +63,20 @@ export default function RegisterPage() {
           onChange={(e) => setRole(e.target.value)}
           className="mb-4 w-full p-2 border rounded text-black"
         >
+          <option value="">Select Role</option>
           <option value="student">Student</option>
           <option value="mentor">Mentor</option>
           <option value="alumni">Alumni</option>
           <option value="industry">Industry professional</option>
-          <option value="alumni">Alumni</option>
         </select>
 
         <input
           type="text"
-          placeholder={['student'].includes(role) ? 'Student ID' : 'Email'}
+          placeholder={role === 'student' ? 'Student ID' : 'Email'}
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
           className="mb-4 w-full p-2 border rounded text-black"
         />
-
 
         <input
           type="password"
