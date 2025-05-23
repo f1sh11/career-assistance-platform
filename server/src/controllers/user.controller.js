@@ -134,7 +134,7 @@ export const getUserComments = async (req, res) => {
     const userId = req.user._id;
 
     const comments = await Comment.find({ userId })
-      .populate('postId', 'title')
+      .populate('postId', 'title authorAvatarUrl')
       .sort({ createdAt: -1 })
       .lean(); // 让结果是可操作的普通对象
 
@@ -153,7 +153,7 @@ export const getUserReplies = async (req, res) => {
   try {
     const userId = req.user._id;
     const replies = await Comment.find({ targetUserId: userId })
-      .populate('postId', 'title')
+      .populate('postId', 'title authorAvatarUrl')
       .sort({ createdAt: -1 });
 
     res.status(200).json(replies);

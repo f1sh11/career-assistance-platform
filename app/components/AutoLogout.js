@@ -4,62 +4,55 @@ import { useRouter } from "next/navigation";
 
 export default function AutoLogout() {
   const [warningVisible, setWarningVisible] = useState(false);
-  const [logoutTimerId, setLogoutTimerId] = useState(null);
-  const [inactivityTimerId, setInactivityTimerId] = useState(null);
+  const [isPrompting, setIsPrompting] = useState(false); // ✅ 用于锁住 reset
   const router = useRouter();
 
   useEffect(() => {
-    const startTimers = () => {
+    let inactivityTimerId;
+    let logoutTimerId;
+
+    const resetTimers = () => {
+      if (isPrompting) return; // ✅ 提示中不重置
+
       clearTimeout(inactivityTimerId);
       clearTimeout(logoutTimerId);
+      setWarningVisible(false);
 
-      // 15分钟无操作后显示弹窗
-      const inactivityTimer = setTimeout(() => {
+      // ⏱️ 15分钟无操作 → 显示提示框
+      inactivityTimerId = setTimeout(() => {
         setWarningVisible(true);
+        setIsPrompting(true);
 
-        // 5分钟后无点击则自动登出
-        const logoutTimer = setTimeout(() => {
-          sessionStorage.removeItem("token");
-          sessionStorage.removeItem("user");
+        // ⏱️ 提示框出现后 5分钟不操作 → 自动登出
+        logoutTimerId = setTimeout(() => {
+          sessionStorage.clear();
           router.push("/login");
         }, 5 * 60 * 1000);
-
-        setLogoutTimerId(logoutTimer);
-      }, 15 * 60 * 1000);
-
-      setInactivityTimerId(inactivityTimer);
+      }, 30 * 60 * 1000);
     };
 
-    const reset = () => {
-      startTimers();
-      setWarningVisible(false);
-    };
-
-    // 初始计时器
-    startTimers();
-
-    // 监听用户操作
-    window.addEventListener("mousemove", reset);
-    window.addEventListener("keydown", reset);
-    window.addEventListener("click", reset);
+    // ✅ 绑定事件监听
+    window.addEventListener("mousemove", resetTimers);
+    window.addEventListener("keydown", resetTimers);
+    window.addEventListener("click", resetTimers);
+    resetTimers();
 
     return () => {
       clearTimeout(inactivityTimerId);
       clearTimeout(logoutTimerId);
-      window.removeEventListener("mousemove", reset);
-      window.removeEventListener("keydown", reset);
-      window.removeEventListener("click", reset);
+      window.removeEventListener("mousemove", resetTimers);
+      window.removeEventListener("keydown", resetTimers);
+      window.removeEventListener("click", resetTimers);
     };
-  }, []);
+  }, [isPrompting]);
 
   const continueSession = () => {
+    setIsPrompting(false);
     setWarningVisible(false);
-    clearTimeout(logoutTimerId);
   };
 
   const forceLogout = () => {
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("user");
+    sessionStorage.clear();
     router.push("/login");
   };
 
