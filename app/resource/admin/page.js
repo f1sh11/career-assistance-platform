@@ -15,7 +15,7 @@ export default function ResourceAdminPage() {
 
   const fetchPendingResources = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const res = await axios.get(`${API}/api/resources/pending`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -32,7 +32,7 @@ export default function ResourceAdminPage() {
 
   const handleApprove = async (id) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       await axios.put(`${API}/api/resources/${id}/approve`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -46,7 +46,7 @@ export default function ResourceAdminPage() {
 
   const handleReject = async (id) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       await axios.put(`${API}/api/resources/${id}/reject`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -59,7 +59,7 @@ export default function ResourceAdminPage() {
   };
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
+    const userStr = sessionStorage.getItem("user");
     if (!userStr) return router.push("/");
 
     const user = JSON.parse(userStr);

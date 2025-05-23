@@ -11,7 +11,7 @@ export default function MatchingIntroPage() {
 
   useEffect(() => {
     const checkProfile = async () => {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (!token) {
         toast.error("Please log in first.");
         router.push("/login");

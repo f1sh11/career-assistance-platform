@@ -14,7 +14,7 @@ export default function CommentPage() {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const res = await axios.get(`${API}/api/users/me/comments`, {
           headers: { Authorization: `Bearer ${token}` }
         });

@@ -10,12 +10,12 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       setIsLoggedIn(!!token);
-      const msg = localStorage.getItem("loginMessage");
+      const msg = sessionStorage.getItem("loginMessage");
       if (msg) {
         alert(msg);
-        localStorage.removeItem("loginMessage");
+        sessionStorage.removeItem("loginMessage");
       }
     }
   }, []);

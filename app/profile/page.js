@@ -38,7 +38,7 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (!token) return;
 
       const res = await fetch(`${API_URL}/api/users/me`, {
@@ -79,7 +79,7 @@ export default function ProfilePage() {
 
   const updateAvatarOnly = async (newAvatarUrl) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (!token) return;
 
       const res = await fetch(`${API_URL}/api/users/me`, {
@@ -105,7 +105,7 @@ export default function ProfilePage() {
     const file = e.target.files[0];
     if (!file) return;
 
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token) {
       toast.error("Please log in first.");
       return;
@@ -151,7 +151,7 @@ export default function ProfilePage() {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (!token) {
         toast.error("Not logged in.");
         return;
@@ -289,7 +289,7 @@ export default function ProfilePage() {
             </button>
             <button
               onClick={() => {
-                const token = localStorage.getItem("token");
+                const token = sessionStorage.getItem("token");
                 if (token) {
                   const url = `http://localhost:3001/test?token=${token}`;
                   window.open(url, "_blank");

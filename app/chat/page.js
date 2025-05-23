@@ -26,7 +26,7 @@ export default function ChatPage() {
   const textareaRef = useRef();
   const scrollRef = useRef();
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
 
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);

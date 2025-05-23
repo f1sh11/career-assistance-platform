@@ -21,7 +21,7 @@ const { id: articleId } = use(params);
   const [input, setInput] = useState("");
   const [loadingComments, setLoadingComments] = useState(false);
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
 
   const fetchPost = async () => {
     try {

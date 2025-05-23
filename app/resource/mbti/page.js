@@ -38,7 +38,7 @@ export default function MatchingIntroPage() {
               <button
                 className="text-xl px-10 py-4 bg-black text-yellow-400 font-semibold rounded hover:opacity-90 active:scale-95 active:shadow-inner transition transform duration-100"
                 onClick={() => {
-                  const token = localStorage.getItem("token");
+                  const token = sessionStorage.getItem("token");
                   if (token) {
                     window.open(`http://localhost:3001/test?token=${token}`, "_blank");
                   } else {

@@ -14,7 +14,7 @@ export default function DraftPage() {
 useEffect(() => {
   const fetchDrafts = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       console.log("📦 Token = ", token);
 
       const res = await axios.get(`${API}/api/posts/me/drafts`, {
@@ -61,7 +61,7 @@ useEffect(() => {
       if (!confirmed) return;
 
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         await axios.delete(`${API}/api/posts/drafts/${post._id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });

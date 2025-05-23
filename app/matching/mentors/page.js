@@ -10,7 +10,7 @@ export default function MentorsPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token) {
       toast.error("Session expired. Please login again.");
       window.location.href = "/login";
@@ -33,7 +33,7 @@ export default function MentorsPage() {
   }, []);
 
   const handleConnect = (mentor) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token) return;
 
     fetch(`${API_URL}/api/matching/connect`, {

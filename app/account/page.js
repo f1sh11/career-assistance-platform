@@ -12,7 +12,7 @@ export default function AccountOverviewPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
+    const storedUsername = sessionStorage.getItem("username");
     if (storedUsername) setUsername(storedUsername);
 
     // 设置卡片内容（避免 SSR 与客户端不一致）

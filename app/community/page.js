@@ -65,7 +65,7 @@ export default function CommunityPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         if (!token) return;
         const res = await axios.get(`${API}/api/users/me`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -132,7 +132,7 @@ export default function CommunityPage() {
 
  const handlePost = async (isDraft = false) => {
   if (!newPost.trim()) return;
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   try {
     await axios.post(
       `${API}/api/posts`,

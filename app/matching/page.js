@@ -10,7 +10,7 @@ export default function MatchingPage() {
   const [isMatching, setIsMatching] = useState(false);
 
   useEffect(() => {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   if (!token) {
     toast.error("Session expired. Please login again.");
     router.push("/login");

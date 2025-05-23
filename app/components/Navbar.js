@@ -6,12 +6,14 @@ import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const router = useRouter();
   const pathname = usePathname();
   const hideNav = pathname === "/dashboard-admin";
+
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -22,6 +24,11 @@ export default function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+
+  if (loading) {
+    return null; // ❌ 问题在这！
+  }
 
   const handleMenuClick = (route) => {
     if (!user && route !== "/login") {
@@ -99,8 +106,8 @@ export default function Navbar() {
                               if (isLogout) {
                                 setDropdownOpen(false);
                                 logout();
-                                localStorage.removeItem("token");
-                                localStorage.removeItem("user");
+                                sessionStorage.removeItem("token");
+                                sessionStorage.removeItem("user");
                                 router.push("/login").then(() => {
                                   window.location.reload(); // ✅ 完整清理所有状态
                                 });

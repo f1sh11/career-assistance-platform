@@ -29,7 +29,7 @@ export default function TestResultPage() {
     const token = params.get("token");
 
     if (token) {
-      localStorage.setItem("token", token);
+      sessionStorage.setItem("token", token);
       setTimeout(() => setTokenReady(true), 300);
 
       const currentUrl = new URL(window.location.href);
@@ -38,9 +38,9 @@ export default function TestResultPage() {
         window.history.replaceState({}, "", currentUrl.toString());
       }
     } else {
-      const localToken = localStorage.getItem("token");
+      const localToken = sessionStorage.getItem("token");
       if (!localToken) {
-        console.warn("⚠️ token 未注入且 localStorage 中也为空！");
+        console.warn("⚠️ token 未注入且 sessionStorage 中也为空！");
       } else {
         const currentUrl = window.location.href;
         const connector = currentUrl.includes("?") ? "&" : "?";
@@ -61,17 +61,17 @@ export default function TestResultPage() {
   }, [router.isReady, router.query.testResultId]);
 
   const saveMbtiType = async (mbtiType: string) => {
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
 
     if (!token) {
       const params = new URLSearchParams(window.location.search);
       token = params.get("token") || "";
       if (token) {
-        localStorage.setItem("token", token);
+        sessionStorage.setItem("token", token);
       }
     }
 
-    token = localStorage.getItem("token");
+    token = sessionStorage.getItem("token");
 
     if (!token) {
       toast({

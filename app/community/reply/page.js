@@ -13,7 +13,7 @@ export default function ReplyPage() {
   useEffect(() => {
     const fetchReplies = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const res = await axios.get(`${API}/api/users/me/replies`, {
           headers: { Authorization: `Bearer ${token}` }
         });

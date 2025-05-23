@@ -9,8 +9,8 @@ export default function DashboardMentor() {
   const [isFadingOut, setIsFadingOut] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userStr = localStorage.getItem("user");
+    const token = sessionStorage.getItem("token");
+    const userStr = sessionStorage.getItem("user");
 
     if (!token || !userStr) {
       router.replace("/login");

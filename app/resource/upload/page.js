@@ -28,7 +28,7 @@ export default function UploadResourcePage() {
   ];
 
   useEffect(() => {
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const token = sessionStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       console.warn("⛔ No token found. Redirecting to login...");
       router.push("/login");
@@ -79,7 +79,7 @@ export default function UploadResourcePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token) {
       setMessage("❌ Token missing. Please log in again.");
       router.push("/login");

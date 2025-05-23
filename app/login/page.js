@@ -13,13 +13,20 @@ export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
 
+  
+
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userStr = localStorage.getItem("user");
+    const token = sessionStorage.getItem("token");
+    const userStr = sessionStorage.getItem("user");
     if (token && userStr) {
       router.push("/dashboard");
     }
   }, [router]);
+
+  if (loading) {
+    return null; // ❌ 问题在这！
+  }
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -47,8 +54,8 @@ export default function LoginPage() {
 
       const userData = profileRes.data.user;
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(userData));
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("user", JSON.stringify(userData));
       sessionStorage.setItem("token", token); // 备用写入
       login(userData);
 

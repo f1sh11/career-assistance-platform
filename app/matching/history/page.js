@@ -7,12 +7,12 @@ export default function HistoryPage() {
   const [viewedUsers, setViewedUsers] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token) {
       toast.error("Session expired. Please login again.");
       window.location.href = "/login";
     } else {
-      const stored = JSON.parse(localStorage.getItem("viewedUsers")) || [];
+      const stored = JSON.parse(sessionStorage.getItem("viewedUsers")) || [];
       setViewedUsers(stored);
     }
   }, []);

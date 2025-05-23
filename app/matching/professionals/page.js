@@ -9,7 +9,7 @@ export default function ProfessionalsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token) {
       toast.error("Session expired. Please login again.");
       window.location.href = "/login";

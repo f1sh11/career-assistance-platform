@@ -130,7 +130,7 @@ export default function ResourcePage() {
 
   const fetchRole = () => {
     try {
-      const userStr = localStorage.getItem("user");
+      const userStr = sessionStorage.getItem("user");
       if (!userStr) return;
       const user = JSON.parse(userStr);
       setRole(user.role);
@@ -141,7 +141,7 @@ export default function ResourcePage() {
   };
 
   const handleDelete = async (id) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!confirm("Are you sure you want to delete this resource?")) return;
 
     try {

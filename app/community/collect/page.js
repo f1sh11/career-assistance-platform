@@ -14,7 +14,7 @@ export default function CollectPage() {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const res = await axios.get(`${API}/api/users/me/collections`, {
           headers: { Authorization: `Bearer ${token}` }
         });

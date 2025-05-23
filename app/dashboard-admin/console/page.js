@@ -10,7 +10,7 @@ export default function AdminConsolePage() {
   const router = useRouter();
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
+    const userStr = sessionStorage.getItem("user");
     if (!userStr) return router.replace("/login");
     const parsed = JSON.parse(userStr);
     if (parsed.role !== "admin") return router.replace("/login");

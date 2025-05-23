@@ -6,7 +6,7 @@ export default function DashboardRedirector() {
   const router = useRouter();
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
+    const userData = sessionStorage.getItem("user");
     if (!userData) {
       router.push("/login");
       return;

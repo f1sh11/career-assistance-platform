@@ -9,8 +9,8 @@ export default function TestPage() {
     const token = urlParams.get("token");
 
     if (token) {
-      localStorage.setItem("token", token);
-      console.log("✅ token saved to localStorage:", token);
+      sessionStorage.setItem("token", token);
+      console.log("✅ token saved to sessionStorage:", token);
     } else {
       console.warn("❌ No token found in URL");
     }

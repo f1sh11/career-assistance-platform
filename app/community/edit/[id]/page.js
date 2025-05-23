@@ -14,12 +14,12 @@ export default function EditDraftPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
 
 useEffect(() => {
   const fetchDraft = async () => {
     try {
-      const localToken = localStorage.getItem("token"); 
+      const localToken = sessionStorage.getItem("token"); 
       const res = await axios.get(`${API}/api/posts/${id}`, {
         headers: { Authorization: `Bearer ${localToken}` },
       });

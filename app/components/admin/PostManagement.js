@@ -11,7 +11,7 @@ export default function AdminPostManagementPage() {
 
   const fetchPosts = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const res = await axios.get("http://localhost:5000/api/posts", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -30,7 +30,7 @@ export default function AdminPostManagementPage() {
       return;
     }
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const res = await axios.get(`http://localhost:5000/api/posts/${postId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -45,7 +45,7 @@ export default function AdminPostManagementPage() {
     const confirmed = window.confirm("Are you sure you want to delete this post?");
     if (!confirmed) return;
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       await axios.delete(`http://localhost:5000/api/posts/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
