@@ -26,11 +26,13 @@ export default function RegisterPage() {
       setError('All fields are required');
       return;
     }
-
-    const payload =
-      role === 'student'
-        ? { studentId: identifier, password, role }
-        : { email: identifier, password, role };
+    
+    const normalizedRole = role.toLowerCase();
+    const payload = {
+      identifier,
+      password,
+      role: normalizedRole
+    };
 
     try {
       setIsLoading(true);
