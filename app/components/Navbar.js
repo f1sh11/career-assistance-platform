@@ -97,10 +97,13 @@ export default function Navbar() {
                             key={index}
                             onClick={() => {
                               if (isLogout) {
+                                setDropdownOpen(false);
                                 logout();
                                 localStorage.removeItem("token");
                                 localStorage.removeItem("user");
-                                router.push("/login");
+                                router.push("/login").then(() => {
+                                  window.location.reload(); // ✅ 完整清理所有状态
+                                });
                               } else {
                                 handleMenuClick(item.route);
                               }
