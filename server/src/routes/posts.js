@@ -55,4 +55,5 @@ router.delete('/drafts/:id', authenticateToken, deleteDraft);
 router.put('/drafts/:id/publish', authenticateToken, publishDraft);  
 router.get('/me/drafts', authenticateToken, getMyDrafts);
 router.delete("/:id", authenticateToken, authorize("admin"), deletePostByAdmin);
+router.get('/drafts', authenticateToken, getMyDrafts);
 export default router;

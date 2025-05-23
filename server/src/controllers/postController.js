@@ -157,17 +157,29 @@ export const toggleCollect = async (req, res) => {
 
 // ✅ 获取我的草稿
 export const getMyDrafts = async (req, res) => {
+  console.log("📌 getMyDrafts called. req.user =", req.user);
+
   try {
+    if (!req.user?.id) {
+      console.warn("⛔ req.user.id missing");
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const userId = req.user.id; // 不再用 ObjectId 构造，Mongo 会自动识别
     const drafts = await Post.find({
-      authorId: new mongoose.Types.ObjectId(req.user.id),
+      authorId: userId,
       $or: [{ isDraft: true }, { status: "draft" }]
     }).sort({ updatedAt: -1 });
 
-    res.json(drafts);
+    console.log("✅ drafts.length =", drafts.length);
+    res.status(200).json(drafts);
   } catch (err) {
+    console.error("❌ getMyDrafts failed:", err.message);
     res.status(500).json({ error: "Failed to fetch drafts" });
   }
 };
+
+
 
 // ✅ 删除草稿
 export const deleteDraft = async (req, res) => {
