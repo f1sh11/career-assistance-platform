@@ -8,53 +8,42 @@ import { toast } from "react-hot-toast";
 export default function MatchingPage() {
   const router = useRouter();
   const [isMatching, setIsMatching] = useState(false);
+  const [role, setRole] = useState(null);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    toast.error("Session expired. Please login again.");
-    router.push("/login");
-    return;
-  }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Session expired. Please login again.");
+      router.push("/login");
+      return;
+    }
 
-  fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/users/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data?.user?.role === "mentor") {
-        router.replace("/chat");
-      }
+    fetch(`${API_URL}/api/users/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     })
-    .catch(() => toast.error("Failed to verify user role"));
-}, []);
+      .then((res) => res.json())
+      .then((data) => {
+        setRole(data?.user?.role || "student");
+      })
+      .catch(() => toast.error("Failed to verify user role"));
+  }, []);
 
-
-
-  const roles = [
-    {
-      label: "Mentors",
-      route: "/matching/mentors",
-      icon: "🧑‍🏫",
-    },
-    {
-      label: "Alumni",
-      route: "/matching/alumni",
-      icon: "🎓",
-    },
-    {
-      label: "Professionals",
-      route: "/matching/professionals",
-      icon: "💼",
-    },
-    {
-      label: "Browsing History",
-      route: "/matching/history",
-      icon: "🕒",
-    },
+  const studentCards = [
+    { label: "Mentors", route: "/matching/mentors", icon: "🧑‍🏫" },
+    { label: "Alumni", route: "/matching/alumni", icon: "🎓" },
+    { label: "Professionals", route: "/matching/professionals", icon: "💼" },
+    { label: "Browsing History", route: "/matching/history", icon: "🕒" },
   ];
+
+  const mentorCards = [
+    { label: "Student Requests", route: "/matching/requests", icon: "📬" },
+    { label: "Browsing History", route: "/matching/history", icon: "🕒" },
+  ];
+
+  const displayedCards = role === "student" ? studentCards : mentorCards;
 
   return (
     <div className="min-h-screen bg-gray-100 pt-[70px]">
@@ -77,31 +66,33 @@ export default function MatchingPage() {
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Who would you like to connect with?
           </h1>
-          <p className="text-lg font-light">Choose an identity below to explore</p>
+          <p className="text-lg font-light">Choose an option below to explore</p>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto py-16 px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
-        {roles.map((item, index) => (
-          <button
-            key={index}
-            onClick={() => {
-              if (item.label === "Mentors") {
-                setIsMatching(true);
-                setTimeout(() => {
-                  router.push(item.route);
-                }, 1500);
-              } else {
-                router.push(item.route);
-              }
-            }}
-            className="w-full h-48 bg-white bg-opacity-90 rounded-xl shadow-lg flex flex-col justify-center items-center hover:bg-yellow-400 hover:text-black transition text-xl font-light text-black"
-          >
-            <div className="text-4xl mb-2">{item.icon}</div>
-            {item.label}
-          </button>
-        ))}
-      </div>
+      <div className="max-w-4xl mx-auto py-16 px-6 flex flex-wrap justify-center gap-10">
+  {displayedCards.map((item, index) => (
+    <button
+      key={index}
+      onClick={() => {
+        if (item.label === "Mentors") {
+          setIsMatching(true);
+          setTimeout(() => {
+            router.push(item.route);
+          }, 1500);
+        } else {
+          router.push(item.route);
+        }
+      }}
+      className="w-64 h-48 bg-white bg-opacity-90 rounded-xl shadow-lg flex flex-col justify-center items-center hover:bg-yellow-400 hover:text-black transition text-xl font-light text-black"
+    >
+      <div className="text-4xl mb-2">{item.icon}</div>
+      {item.label}
+    </button>
+  ))}
+</div>
+
     </div>
   );
 }
+
