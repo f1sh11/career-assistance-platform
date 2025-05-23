@@ -27,10 +27,12 @@ export function PostCard({ post, index, lastIndex, keyword }) {
         <div className="bg-white/90 rounded-lg shadow-md p-6 mb-6 hover:shadow-xl transition cursor-pointer">
           <div className="flex items-center gap-2 mb-2">
 <img
-  src={post.isAnonymous ? "/default-avatar.png" : post.authorAvatarUrl || "/default-avatar.png"}
+  src={post.isAnonymous ? "/default-avatar.png" : post.authorAvatarUrl}
+  onError={(e) => { e.currentTarget.src = "/default-avatar.png"; }}
   alt="avatar"
   className="w-8 h-8 rounded-full"
 />
+
 <span className="text-sm text-gray-700">
   {post.isAnonymous ? "Anonymous User" : post.authorName || "Unnamed"}
 </span>

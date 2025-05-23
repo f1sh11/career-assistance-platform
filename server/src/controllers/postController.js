@@ -8,12 +8,18 @@ function getAuthorInfo(post) {
   if (post.isAnonymous) {
     return {
       authorName: "Anonymous User",
-      authorAvatarUrl: "/default-avatar.png"
+      authorAvatarUrl: "/default-avatar.png"  // 留前端处理，不加 API
     };
   }
+
+  const rawAvatar = post.authorAvatarUrl || post.authorId?.profile?.avatarUrl || "";
+  const fullAvatarUrl = rawAvatar.startsWith("/uploads/")
+    ? `${API}${rawAvatar}`
+    : rawAvatar;
+
   return {
     authorName: post.authorName || post.authorId?.identifier || "Unnamed",
-    authorAvatarUrl: `${API}${post.authorAvatarUrl || post.authorId?.profile?.avatarUrl || ""}`
+    authorAvatarUrl: fullAvatarUrl || "/default-avatar.png"
   };
 }
 
