@@ -1,44 +1,103 @@
+// app/matching/history/page.js
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 export default function HistoryPage() {
-  const [viewedUsers, setViewedUsers] = useState([]);
+  const [role, setRole] = useState(null);
+  const [items, setItems] = useState([]);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const router = useRouter();
+
+  const getToken = () => sessionStorage.getItem("token") || localStorage.getItem("token");
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
+    const token = getToken();
     if (!token) {
-      toast.error("Session expired. Please login again.");
-      window.location.href = "/login";
-    } else {
-      const stored = JSON.parse(sessionStorage.getItem("viewedUsers")) || [];
-      setViewedUsers(stored);
+      toast.error("Please login again.");
+      router.push("/login");
+      return;
     }
+
+    // 获取用户角色 + 加载对应请求数据
+    const loadHistory = async () => {
+      try {
+        const resUser = await fetch(`${API_URL}/api/users/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const dataUser = await resUser.json();
+        const userRole = dataUser.user?.role;
+        setRole(userRole);
+
+        const historyUrl = userRole === "student"
+          ? `${API_URL}/api/matching/requests/sent`
+          : `${API_URL}/api/matching/requests`;
+
+        const resReq = await fetch(historyUrl, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const dataReq = await resReq.json();
+        setItems(dataReq.requests || []);
+      } catch {
+        toast.error("Failed to load request history");
+      }
+    };
+
+    loadHistory();
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-[100px] px-6 py-12">
-      <h1 className="text-3xl font-semibold mb-6 text-center text-black">Browsing History</h1>
+    <div className="min-h-screen bg-gray-100 pt-[100px] px-6 py-12 text-black">
+      <h1 className="text-3xl font-semibold mb-6 text-center">Matching Request History</h1>
+      <div className="max-w-3xl mx-auto space-y-4">
+        {items.length === 0 && (
+          <p className="text-center text-gray-500">No request history found.</p>
+        )}
+        {items.map((r, idx) => {
+          const isStudent = role === "student";
+          const profile = isStudent ? r.recipient.profile : r.requester.profile;
+          const id = isStudent ? r.recipient._id : r.requester._id;
 
-      {viewedUsers.length === 0 ? (
-        <p className="text-center text-gray-500">You haven't viewed any profiles yet.</p>
-      ) : (
-        <div className="bg-white rounded shadow p-6 space-y-4 max-w-3xl mx-auto">
-          {viewedUsers.map((name, index) => (
-            <div
-              key={index}
-              className="flex justify-between items-center border p-4 rounded-md"
-            >
+          const statusColor = {
+            pending: "text-yellow-600",
+            accepted: "text-green-600",
+            rejected: "text-red-500"
+          }[r.status];
+
+          return (
+            <div key={idx} className="flex justify-between items-center border bg-white p-4 rounded-md shadow">
               <div className="flex items-center space-x-4">
-                <div className="w-10 h-10 rounded-full bg-gray-300" />
-                <p className="text-black">{name}</p>
+                <img
+                  src={`${API_URL}${profile.avatarUrl || "/default-avatar.png"}`}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <p className="font-semibold">{profile.name}</p>
+                  <p className="text-sm text-gray-500">{r.message || profile.role}</p>
+                </div>
               </div>
-              <span className="text-sm text-gray-500">Viewed</span>
+              <div className="text-right">
+                {r.status === "accepted" && (
+                  <button
+                    onClick={() => router.push(`/chat?target=${id}`)}
+                    className="px-4 py-2 bg-green-600 text-white rounded"
+                  >
+                    Connect
+                  </button>
+                )}
+                {r.status !== "accepted" && (
+                  <span className={`font-medium ${statusColor}`}>
+                    {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                  </span>
+                )}
+              </div>
             </div>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 }
+

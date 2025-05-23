@@ -234,14 +234,17 @@ export const getReceivedRequests = async (req, res) => {
   try {
     const requests = await Request.find({
       recipient: req.user._id,
-      status: 'pending'
-    }).populate('requester', 'profile').sort({ createdAt: -1 });
+      status: { $in: ['pending', 'accepted', 'rejected'] }
+    })
+      .populate('requester', 'profile')
+      .sort({ createdAt: -1 });
 
     res.status(200).json({ requests });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch requests', error: error.message });
   }
 };
+
 
 export const acceptRequest = async (req, res) => {
   try {
@@ -297,4 +300,22 @@ export const rejectRequest = async (req, res) => {
     res.status(500).json({ message: 'Failed to reject request', error: error.message });
   }
 };
+
+export const getSentRequests = async (req, res) => {
+  try {
+    const requests = await Request.find({
+      requester: req.user._id
+    })
+      .populate("recipient", "role profile")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ requests });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch sent requests", error: error.message });
+  }
+};
+
+
+
+
 
