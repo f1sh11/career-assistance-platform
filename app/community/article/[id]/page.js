@@ -12,7 +12,7 @@ import CommunitySidebar from "../../../components/CommunitySidebar";
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function ArticlePage({ params }) {
-const { id: articleId } = use(params);
+const { id: articleId } = params;
 
   const [post, setPost] = useState(null);
   const [likes, setLikes] = useState(0);

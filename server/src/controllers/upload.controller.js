@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import User from '../models/user.model.js';
 import { writeLog, writeError } from '../utils/logHelper.js';
+import crypto from "crypto";
 
 // 确保 uploads 文件夹存在
 const uploadPath = path.resolve('uploads');
@@ -18,7 +19,8 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
-    const filename = `avatar-${Date.now()}${ext}`;
+    const safeName = crypto.randomBytes(8).toString("hex");
+    const filename = `avatar-${safeName}${ext}`;
     cb(null, filename);
   }
 });

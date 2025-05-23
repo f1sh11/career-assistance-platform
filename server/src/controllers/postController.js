@@ -3,16 +3,26 @@ import mongoose from "mongoose";
 
 const API = process.env.API_URL || "http://localhost:5000";
 
-// 创建帖子
+// 🔧 提取作者信息封装函数
+function getAuthorInfo(post) {
+  if (post.isAnonymous) {
+    return {
+      authorName: "Anonymous User",
+      authorAvatarUrl: "/default-avatar.png"
+    };
+  }
+  return {
+    authorName: post.authorName || post.authorId?.identifier || "Unnamed",
+    authorAvatarUrl: `${API}${post.authorAvatarUrl || post.authorId?.profile?.avatarUrl || ""}`
+  };
+}
+
+// ✅ 创建帖子
 export const createPost = async (req, res) => {
   try {
     const { title, content, isAnonymous, isChat, isDraft } = req.body;
     const user = req.user;
-
-    if (!user) {
-      console.error("Missing user in request");
-      return res.status(401).json({ error: "Unauthorized - user not found" });
-    }
+    if (!user) return res.status(401).json({ error: "Unauthorized" });
 
     const name = user.profile?.name || user.identifier || "Unnamed";
     const avatar = user.profile?.avatarUrl ? `${API}${user.profile.avatarUrl}` : "/default-avatar.png";
@@ -29,17 +39,13 @@ export const createPost = async (req, res) => {
       status: isDraft ? "draft" : "approved"
     });
 
-    console.log("Post created:", post._id, isDraft ? "(draft)" : "(published)");
-
     res.status(201).json(post);
   } catch (err) {
-    console.error("Error in createPost:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
-
-// 获取分页帖子列表
+// ✅ 获取帖子分页列表
 export const getPosts = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 15;
@@ -49,8 +55,8 @@ export const getPosts = async (req, res) => {
   try {
     const filter = {
       status: 'approved',
-      isChat: { $ne: true }, 
-      isDraft: { $ne: true }, 
+      isChat: { $ne: true },
+      isDraft: { $ne: true },
       ...(search && {
         $or: [
           { title: { $regex: search, $options: 'i' } },
@@ -60,23 +66,16 @@ export const getPosts = async (req, res) => {
     };
 
     const total = await Post.countDocuments(filter);
-
     const posts = await Post.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .populate("authorId", "identifier profile.avatarUrl");
 
-    const enrichedPosts = posts.map(post => {
-  const base = post.toObject();
-
-  return {
-    ...base,
-    authorName: base.authorName || (post.isAnonymous ? null : post.authorId?.identifier),
-    authorAvatarUrl: base.authorAvatarUrl || (post.isAnonymous ? null : `${API}${post.authorId?.profile?.avatarUrl || ""}`)
-  };
-});
-
+    const enrichedPosts = posts.map(post => ({
+      ...post.toObject(),
+      ...getAuthorInfo(post)
+    }));
 
     res.json({
       posts: enrichedPosts,
@@ -89,14 +88,11 @@ export const getPosts = async (req, res) => {
   }
 };
 
-// 获取单篇帖子详情
+// ✅ 获取单篇帖子
 export const getPostById = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id).populate("authorId", "identifier profile.avatarUrl");
-
-    if (!post) {
-      return res.status(404).json({ error: "Post not found" });
-    }
+    if (!post) return res.status(404).json({ error: "Post not found" });
 
     const isAuthor = req.user && String(post.authorId._id || post.authorId) === req.user.id;
 
@@ -105,24 +101,19 @@ export const getPostById = async (req, res) => {
     }
 
     if (post.status === "approved") {
-      const enrichedPost = {
+      return res.json({
         ...post.toObject(),
-        authorName: post.isAnonymous ? null : post.authorId?.identifier,
-        authorAvatarUrl: post.isAnonymous ? null : `${API}${post.authorId?.profile?.avatarUrl || ""}`
-      };
-      return res.json(enrichedPost);
+        ...getAuthorInfo(post)
+      });
     }
 
     return res.status(404).json({ error: "Post not available" });
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-
-
-// 点赞功能
+// ✅ 点赞功能
 export const likePost = async (req, res) => {
   const userId = req.user.id;
   try {
@@ -140,7 +131,7 @@ export const likePost = async (req, res) => {
   }
 };
 
-// 收藏功能
+// ✅ 收藏功能
 export const toggleCollect = async (req, res) => {
   const userId = req.user.id;
   try {
@@ -158,67 +149,48 @@ export const toggleCollect = async (req, res) => {
   }
 };
 
-
-
+// ✅ 获取我的草稿
 export const getMyDrafts = async (req, res) => {
   try {
-    const userId = req.user.id;
-    console.log("🎯 Fetching drafts for user:", userId);
-
     const drafts = await Post.find({
-      authorId: new mongoose.Types.ObjectId(userId),
-      $or: [
-        { isDraft: true },
-        { status: "draft" }  
-      ]
+      authorId: new mongoose.Types.ObjectId(req.user.id),
+      $or: [{ isDraft: true }, { status: "draft" }]
     }).sort({ updatedAt: -1 });
 
-    console.log("📝 Found drafts:", drafts.length);
     res.json(drafts);
   } catch (err) {
-    console.error("❌ Failed to fetch drafts:", err);
     res.status(500).json({ error: "Failed to fetch drafts" });
   }
 };
 
-
-// DELETE /api/posts/drafts/:id
+// ✅ 删除草稿
 export const deleteDraft = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const postId = req.params.id;
-
-    const draft = await Post.findOne({
-      _id: postId,
-      authorId: userId,
-      $or: [
-        { isDraft: true },
-        { status: "draft" }
-      ]
+    const post = await Post.findOne({
+      _id: req.params.id,
+      authorId: req.user.id,
+      $or: [{ isDraft: true }, { status: "draft" }]
     });
 
-    if (!draft) {
-      return res.status(404).json({ message: "Draft not found or access denied" });
-    }
+    if (!post) return res.status(404).json({ message: "Draft not found or access denied" });
 
-    await Post.findByIdAndDelete(postId);
+    await Post.findByIdAndDelete(req.params.id);
     res.json({ message: "Draft deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: "Failed to delete draft" });
   }
 };
 
-
-// PUT /api/posts/drafts/:id/publish
+// ✅ 发布草稿
 export const publishDraft = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const postId = req.params.id;
+    const draft = await Post.findOne({
+      _id: req.params.id,
+      authorId: req.user.id,
+      isDraft: true
+    });
 
-    const draft = await Post.findOne({ _id: postId, authorId: userId, isDraft: true });
-    if (!draft) {
-      return res.status(404).json({ message: "Draft not found or access denied" });
-    }
+    if (!draft) return res.status(404).json({ message: "Draft not found or access denied" });
 
     draft.isDraft = false;
     draft.status = "approved";
@@ -230,44 +202,36 @@ export const publishDraft = async (req, res) => {
   }
 };
 
-// PUT /api/posts/:id
+// ✅ 修改帖子
 export const updatePost = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const { id } = req.params;
-    const { title, content, isDraft } = req.body;
-
-    const post = await Post.findById(id);
-    if (!post || String(post.authorId) !== userId) {
+    const post = await Post.findById(req.params.id);
+    if (!post || String(post.authorId) !== req.user.id) {
       return res.status(403).json({ error: "Access denied or post not found" });
     }
 
+    const { title, content, isDraft } = req.body;
     post.title = title || post.title;
     post.content = content || post.content;
     post.isDraft = isDraft;
     post.status = isDraft ? "draft" : "approved";
 
     await post.save();
-
     res.json({ message: "Post updated", post });
   } catch (err) {
     res.status(500).json({ error: "Failed to update post" });
   }
 };
 
+// ✅ 管理员删除帖子
 export const deletePostByAdmin = async (req, res) => {
   try {
-    const postId = req.params.id;
-    const post = await Post.findById(postId);
+    const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
-    await Post.findByIdAndDelete(postId);
+    await Post.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "Post deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: "Failed to delete post", error: err.message });
   }
 };
-
-
-
-
