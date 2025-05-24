@@ -63,8 +63,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
-  setHeaders: (res, path) => {
+app.use('/uploads', express.static(path.resolve('uploads'), {
+  setHeaders: (res) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   }
 }));
@@ -121,4 +121,5 @@ io.on('connection', (socket) => {
 server.listen(PORT, () => {
   console.log(`Backend + WebSocket running on port ${PORT}`);
 });
+
 
