@@ -185,9 +185,13 @@ export default function ResourcePage() {
             <div
               key={cat}
               onClick={() => {
-                setCategory(cat);
-                setCurrentPage(1);
-                setShowAll(false);
+                if (cat === "Mbti Tests") {
+                  router.push("/resource/mbti"); // ✅ 跳转到 MBTI 页面
+                } else {
+                  setCategory(cat);
+                  setCurrentPage(1);
+                  setShowAll(false);
+                }
               }}
               className={`text-lg font-light px-4 py-3 rounded-md transition cursor-pointer ${
                 category === cat ? "bg-yellow-400 text-black" : "bg-gray-800 hover:bg-yellow-300 hover:text-black"
@@ -197,6 +201,7 @@ export default function ResourcePage() {
             </div>
           ))}
         </aside>
+
 
         {/* 内容主区域 */}
         <div className="ml-64 flex-1 pr-8 py-20 relative">
