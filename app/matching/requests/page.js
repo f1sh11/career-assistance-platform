@@ -1,40 +1,52 @@
-// app/matching/requests/page.js
 "use client";
 
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function RequestsPage() {
   const [requests, setRequests] = useState([]);
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const router = useRouter();
+
+  const getToken = () => sessionStorage.getItem("token") || localStorage.getItem("token");
 
   const fetchRequests = async () => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) return;
+
     const res = await fetch(`${API_URL}/api/matching/requests`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
+    console.log("Received Requests:", data);
     setRequests(data.requests || []);
   };
 
-  useEffect(() => {
-    fetchRequests();
-  }, []);
-
-  const handleAction = async (id, action) => {
-    const token = localStorage.getItem("token");
+  const handleAction = async (id, action, targetUserId) => {
+    const token = getToken();
     if (!token) return;
 
     const res = await fetch(`${API_URL}/api/matching/request/${id}/${action}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` }
     });
+
     const data = await res.json();
 
     if (res.ok) {
       toast.success(action === "accept" ? "Request accepted" : "Request rejected");
-      fetchRequests();
+
+      if (action === "accept" && data.postId && targetUserId) {
+        const goToChat = confirm("Request accepted. Do you want to start chatting now?");
+        if (goToChat) {
+          router.push(`/chat?post=${data.postId}&target=${targetUserId}`);
+        } else {
+          router.push("/matching/history");
+        }
+      } else {
+        fetchRequests();
+      }
     } else {
       toast.error(data.message || "Action failed");
     }
@@ -62,7 +74,7 @@ export default function RequestsPage() {
             <div className="flex space-x-2">
               <button
                 className="px-4 py-2 bg-green-600 text-white rounded"
-                onClick={() => handleAction(r._id, "accept")}
+                onClick={() => handleAction(r._id, "accept", r.requester._id)}
               >
                 Accept
               </button>
@@ -79,3 +91,5 @@ export default function RequestsPage() {
     </div>
   );
 }
+
+
