@@ -74,7 +74,7 @@ export default function RequestsPage() {
             <div className="flex space-x-2">
               <button
                 className="px-4 py-2 bg-green-600 text-white rounded"
-                onClick={() => handleAction(r._id, "accept", r.requester._id)}
+                onClick={() => handleAction(r._id, "accept", r.requester?._id || "")}
               >
                 Accept
               </button>
