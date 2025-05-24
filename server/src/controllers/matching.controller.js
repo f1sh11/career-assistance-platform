@@ -316,6 +316,69 @@ export const getSentRequests = async (req, res) => {
 };
 
 
+export const checkRequestStatus = async (req, res) => {
+  const { recipientId } = req.query;
+  if (!recipientId) return res.status(400).json({ message: 'Missing recipient ID' });
+
+  const [u1, u2] = [req.user._id.toString(), recipientId.toString()].sort();
+
+  const connection = await Connection.findOne({
+    user1: u1,
+    user2: u2
+  });
+
+  if (connection) {
+    return res.status(200).json({ status: 'connected' });
+  }
+
+  const pending = await Request.findOne({
+    requester: req.user._id,
+    recipient: recipientId,
+    status: 'pending'
+  });
+
+  if (pending) {
+    return res.status(200).json({ status: 'pending' });
+  }
+
+  const allRequests = await Request.find({
+    requester: req.user._id,
+    recipient: recipientId
+  });
+
+  if (allRequests.length >= 3) {
+    return res.status(200).json({ status: 'limit' });
+  }
+
+  const rejected = allRequests.find(r => r.status === 'rejected');
+  if (rejected) {
+    return res.status(200).json({ status: 'rejected' });
+  }
+
+  return res.status(200).json({ status: 'ok' });
+};
+
+
+export const cancelRequest = async (req, res) => {
+  try {
+    const request = await Request.findById(req.params.id);
+    if (!request) return res.status(404).json({ message: 'Request not found' });
+    if (request.requester.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Unauthorized' });
+    if (request.status !== "pending") return res.status(400).json({ message: 'Only pending requests can be cancelled' });
+
+    request.status = "cancelled";
+    await request.save();
+
+    res.status(200).json({ message: "Request cancelled" });
+  } catch (error) {
+    res.status(500).json({ message: "Cancel failed", error: error.message });
+  }
+};
+
+
+
+
+
 
 
 
