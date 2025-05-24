@@ -25,6 +25,10 @@ export default function RequestsPage() {
   };
 
   const handleAction = async (id, action, targetUserId) => {
+    const confirmMsg = action === "accept" ? "Are you sure you want to accept this request?" : "Are you sure you want to reject this request?";
+    const confirmed = window.confirm(confirmMsg);
+    if (!confirmed) return;
+
     const token = getToken();
     if (!token) return;
 
@@ -38,15 +42,14 @@ export default function RequestsPage() {
     if (res.ok) {
       toast.success(action === "accept" ? "Request accepted" : "Request rejected");
 
+      // ✅ 即时从前端移除该请求
+      setRequests(prev => prev.filter(r => r._id !== id));
+
       if (action === "accept" && data.postId && targetUserId) {
         const goToChat = confirm("Request accepted. Do you want to start chatting now?");
         if (goToChat) {
           router.push(`/chat?post=${data.postId}&target=${targetUserId}`);
-        } else {
-          router.push("/matching/history");
         }
-      } else {
-        fetchRequests();
       }
     } else {
       toast.error(data.message || "Action failed");
@@ -109,5 +112,6 @@ export default function RequestsPage() {
     </div>
   );
 }
+
 
 

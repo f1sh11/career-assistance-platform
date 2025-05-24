@@ -7,19 +7,30 @@ import { usePathname } from "next/navigation";
 
 export default function MatchingSidebar({ showReturn = false }) {
   const pathname = usePathname();
-  const [role, setRole] = useState("student");
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("role");
-    if (stored) setRole(stored);
+    const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+    if (!token) return;
+
+    fetch(`${API_URL}/api/users/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        const userRole = data?.user?.role || "student";
+        setRole(userRole);
+        localStorage.setItem("role", userRole);
+      });
   }, []);
 
   const isActive = (href) => pathname === href;
-
   const linkClass = (href) =>
-    `hover:text-yellow-400 px-4 py-2 rounded ${
-      isActive(href) ? "text-yellow-400 font-semibold" : ""
-    }`;
+    `hover:text-yellow-400 px-4 py-2 rounded ${isActive(href) ? "text-yellow-400 font-semibold" : ""}`;
+
+  if (!role) return null;
 
   return (
     <aside className="w-48 bg-gray-800 text-white fixed top-[10px] left-0 h-screen z-40 flex flex-col pt-24 space-y-6">
@@ -39,3 +50,4 @@ export default function MatchingSidebar({ showReturn = false }) {
     </aside>
   );
 }
+
