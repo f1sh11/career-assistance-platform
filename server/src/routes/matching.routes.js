@@ -11,6 +11,7 @@ import { getReceivedRequests } from '../controllers/matching.controller.js';
 import { acceptRequest, rejectRequest } from '../controllers/matching.controller.js';
 import { getSentRequests } from '../controllers/matching.controller.js';
 import { checkRequestStatus } from '../controllers/matching.controller.js';
+import { cancelRequest } from '../controllers/matching.controller.js';
 
 const router = express.Router();
 
@@ -34,5 +35,7 @@ router.put('/request/:id/reject', authenticateToken, rejectRequest);
 router.get('/requests/sent', authenticateToken, getSentRequests);
 
 router.get('/request/check', authenticateToken, checkRequestStatus);
+
+router.put('/request/:id/cancel', authenticateToken, cancelRequest);
 
 export default router;

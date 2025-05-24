@@ -51,6 +51,23 @@ export default function HistoryPage() {
     loadHistory();
   }, []);
 
+  const handleCancelRequest = async (id) => {
+    const token = getToken();
+    const res = await fetch(`${API_URL}/api/matching/request/${id}/cancel`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (res.ok) {
+      toast.success("Request cancelled");
+      setItems((prev) =>
+        prev.map((item) => (item._id === id ? { ...item, status: "cancelled" } : item))
+      );
+    } else {
+      toast.error(data.message || "Cancel failed");
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100 pt-24 text-black">
       <MatchingSidebar showReturn={true} />
@@ -71,6 +88,7 @@ export default function HistoryPage() {
               pending: "text-yellow-600",
               accepted: "text-green-600",
               rejected: "text-red-500",
+              cancelled: "text-gray-400"
             }[r.status];
 
             let messageToShow = "";
@@ -79,6 +97,8 @@ export default function HistoryPage() {
                 messageToShow = "You are currently waiting for your mentor's response.";
               } else if (r.status === "rejected") {
                 messageToShow = "Mentor has rejected your request.";
+              } else if (r.status === "cancelled") {
+                messageToShow = "You cancelled this request.";
               }
             } else {
               messageToShow = r.message || "You received a request.";
@@ -107,6 +127,15 @@ export default function HistoryPage() {
                     >
                       Connect
                     </button>
+                  ) : isStudent && r.status === "pending" ? (
+                    <button
+                      onClick={() => handleCancelRequest(r._id)}
+                      className="px-4 py-2 bg-red-500 text-white rounded"
+                    >
+                      Cancel
+                    </button>
+                  ) : r.status === "cancelled" && isStudent ? (
+                    <span className="text-sm text-gray-400 font-medium">Cancelled</span>
                   ) : (
                     <span className={`font-medium ${statusColor}`}>
                       {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
@@ -121,6 +150,7 @@ export default function HistoryPage() {
     </div>
   );
 }
+
 
 
 
