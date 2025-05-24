@@ -1,8 +1,10 @@
+// app/chat/page.js
 "use client";
 
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function ChatPage() {
   const [targetUser, setTargetUser] = useState(null);
@@ -10,18 +12,12 @@ export default function ChatPage() {
   const [comments, setComments] = useState([]);
   const [message, setMessage] = useState("");
   const [chatList, setChatList] = useState([]);
-  const [creatingPost, setCreatingPost] = useState(false);
-  const [hasRedirected, setHasRedirected] = useState(false);
-
-
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [showUploadOptions, setShowUploadOptions] = useState(false);
 
   const searchParams = useSearchParams();
   const router = useRouter();
   const targetId = searchParams.get("target");
-  const postId = searchParams.get("post");
   const API_URL = "http://localhost:5000";
   const textareaRef = useRef();
   const scrollRef = useRef();
@@ -45,6 +41,90 @@ export default function ChatPage() {
     }
   };
 
+ const fetchMessages = async () => {
+  if (!targetId || !token) return;
+  try {
+    const res = await fetch(`${API_URL}/api/messages/${targetId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    setComments(data);
+    setTimeout(scrollToBottom, 100);
+  } catch {
+    toast.error("Failed to load messages");
+  }
+};
+
+
+  const sendMessage = async (text = message, fileUrl = "", fileType = "") => {
+    if (!targetId || (!text.trim() && !fileUrl)) return;
+    try {
+      const res = await fetch(`${API_URL}/api/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          receiverId: targetId,
+          text,
+          fileUrl,
+          fileType
+        })
+      });
+
+      if (res.ok) {
+        const newMessage = await res.json();
+        setComments(prev => [...prev, newMessage]);
+        setMessage("");
+        if (textareaRef.current) textareaRef.current.style.height = "auto";
+        setTimeout(scrollToBottom, 0);
+      }
+    } catch {
+      toast.error("Failed to send message");
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const res = await fetch(`${API_URL}/api/upload/chat-file`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await res.json();
+      if (!data.fileUrl) throw new Error("Upload failed");
+
+      await sendMessage("", data.fileUrl, data.fileType);
+      toast.success("File sent!");
+    } catch {
+      toast.error("Failed to upload");
+    } finally {
+      setShowUploadOptions(false);
+      e.target.value = null;
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+const isCurrentUser = (userId) =>
+  userId === currentUser?._id || userId?._id === currentUser?._id;
+
+
+ 
   useEffect(() => {
     if (token) {
       fetch(`${API_URL}/api/users/me`, {
@@ -75,152 +155,45 @@ export default function ChatPage() {
     }
   }, [targetId, token]);
 
-useEffect(() => {
-  if (!postId && !hasRedirected && currentUser && targetUser && token) {
-    const createPost = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/posts`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            title: `Chat between ${currentUser.profile.name} and ${targetUser.profile.name}`,
-            content: "Private conversation.",
-            isAnonymous: true,
-            isChat: true 
-          })
-        });
-
-        const post = await res.json();
-        if (!post?._id) throw new Error("Post creation failed");
-
-        setHasRedirected(true);
-        router.replace(`/chat?post=${post._id}&target=${targetId}`);
-      } catch {
-        toast.error("Failed to create chat post");
-      }
-    };
-
-    createPost();
-  }
-}, [postId, currentUser, targetUser, token, targetId, hasRedirected]);
-
-
-  const fetchComments = async (pageToLoad = 1) => {
-    if (!postId || !token || loading || (pageToLoad !== 1 && !hasMore)) return;
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_URL}/api/comments/${postId}?page=${pageToLoad}&limit=20`);
-      const data = await res.json();
-      if (!Array.isArray(data.comments)) throw new Error("Invalid comments data");
-      if (pageToLoad === 1) {
-        setComments(data.comments);
-      } else {
-        setComments(prev => [...data.comments, ...prev]);
-      }
-      setPage(pageToLoad);
-      setHasMore(pageToLoad < (data.totalPages || 1));
-    } catch {
-      toast.error("Failed to load comments");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (postId && currentUser) {
+    if (targetId && currentUser) {
       setComments([]);
-      setPage(1);
-      setHasMore(true);
-      fetchComments(1);
-      setTimeout(scrollToBottom, 100);
+      fetchMessages();
     }
-  }, [postId, targetId, currentUser]);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.addEventListener("scroll", handleScroll);
-    return () => el.removeEventListener("scroll", handleScroll);
-  }, [page, hasMore, loading]);
-
-  const handleScroll = () => {
-    const el = scrollRef.current;
-    if (el && el.scrollTop < 100 && hasMore && !loading) {
-      fetchComments(page + 1);
-    }
-  };
-
-  const sendMessage = async () => {
-    if (!postId || !message.trim()) return;
-    try {
-      const res = await fetch(`${API_URL}/api/comments/${postId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ text: message })
-      });
-      if (res.ok) {
-        setMessage("");
-        const newComment = await res.json();
-        setComments(prev => [...prev, newComment]);
-        if (textareaRef.current) textareaRef.current.style.height = "auto";
-        setTimeout(scrollToBottom, 0);
-      }
-    } catch {
-      toast.error("Failed to send message");
-    }
-  };
-
-  const deleteMessage = async (commentId) => {
-    try {
-      const res = await fetch(`${API_URL}/api/comments/delete/${commentId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        setComments(prev => prev.filter(c => c._id !== commentId));
-      }
-    } catch {
-      toast.error("Failed to delete message");
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
-
-  const isCurrentUser = (userId) => userId === currentUser?._id || userId?._id === currentUser?._id;
+  }, [targetId, currentUser]);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col pt-[72px]">
-      <div className="flex-1 flex overflow-hidden">
-        <aside className="w-60 bg-black text-white flex flex-col">
-          <div className="bg-blue-500 px-4 py-4 font-semibold">Private Chats</div>
-          {chatList.map((item, idx) => (
-            <button
-              key={idx}
-              className={`flex items-center px-4 py-2 hover:bg-gray-800 ${item.user._id === targetId ? "bg-gray-800" : ""}`}
-              onClick={() => {
-                if (targetId !== item.user._id) {
-                  router.push(`/chat?post=${item.postId}&target=${item.user._id}`);
-                }
-              }}
-            >
-              <img
-                src={`${API_URL}${item.user.profile.avatarUrl || "/default-avatar.png"}`}
-                className="w-8 h-8 rounded-full object-cover mr-3"
-              />
-              <span className="text-sm">{item.user.profile.name}</span>
-            </button>
-          ))}
+    <div className="min-h-screen bg-gray-100 flex flex-col pt-[72px] relative">
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className={`fixed top-[100px] ${collapsed ? 'left-[8px]' : 'left-[250px]'} z-50 bg-gray-800 text-white p-2 rounded-full shadow hover:bg-gray-700 transition`}
+      >
+        {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+      </button>
+
+      <div className="flex flex-1">
+        <aside className={`bg-black text-white transition-all duration-300 ${collapsed ? 'w-0' : 'w-60'}`}>
+          {!collapsed && <div className="bg-blue-500 px-4 py-4 font-semibold"></div>}
+
+          <div className={`${collapsed ? 'hidden' : 'flex flex-col'}`}>
+            {chatList.map((item, idx) => (
+              <button
+                key={idx}
+                className={`flex items-center px-4 py-2 hover:bg-gray-800 ${item.user._id === targetId ? "bg-gray-800" : ""}`}
+                onClick={() => {
+                  if (targetId !== item.user._id) {
+                    router.push(`/chat?target=${item.user._id}`);
+                  }
+                }}
+              >
+                <img
+                  src={`${API_URL}${item.user.profile.avatarUrl || "/default-avatar.png"}`}
+                  className="w-8 h-8 rounded-full object-cover mr-3"
+                />
+                <span className="text-sm">{item.user.profile.name}</span>
+              </button>
+            ))}
+          </div>
         </aside>
 
         <main className="flex-1 flex flex-col overflow-hidden">
@@ -229,18 +202,12 @@ useEffect(() => {
             ref={scrollRef}
             style={{ minHeight: 0, maxHeight: "calc(100vh - 160px)" }}
           >
-            {targetUser?.profile?.name && (
-              <div className="text-black font-semibold mb-4">
-                Chatting with {targetUser.profile.name}
-              </div>
-            )}
-
             {comments.map((c, idx) => (
               <div
                 key={idx}
-                className={`flex items-start mb-4 ${isCurrentUser(c.userId) ? "justify-end" : ""}`}
+                className={`flex items-start mb-4 ${isCurrentUser(c.senderId) ? "justify-end" : ""}`}
               >
-                {!isCurrentUser(c.userId) && (
+                {!isCurrentUser(c.senderId) && (
                   <img
                     src={`${API_URL}${targetUser?.profile.avatarUrl || "/default-avatar.png"}`}
                     className="w-10 h-10 rounded-full object-cover mr-3"
@@ -248,21 +215,21 @@ useEffect(() => {
                 )}
                 <div className="max-w-xs group">
                   <div className="bg-black text-white px-4 py-2 rounded-lg relative">
-                    <p>{c.text}</p>
+                    {c.fileUrl ? (
+                      c.fileType?.startsWith("image/") ? (
+                        <img src={`${API_URL}${c.fileUrl}`} className="max-w-[240px] max-h-[160px] rounded" />
+                      ) : (
+                        <a href={`${API_URL}${c.fileUrl}`} download className="text-blue-400 underline hover:text-blue-600">📎 Download File</a>
+                      )
+                    ) : (
+                      <p>{c.text}</p>
+                    )}
                     <span className="text-xs text-gray-300 block mt-1">
                       {formatTime(c.createdAt)}
                     </span>
-                    {isCurrentUser(c.userId) && (
-                      <button
-                        onClick={() => deleteMessage(c._id)}
-                        className="absolute top-1 right-1 text-xs text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition"
-                      >
-                        ×
-                      </button>
-                    )}
                   </div>
                 </div>
-                {isCurrentUser(c.userId) && (
+                {isCurrentUser(c.senderId) && (
                   <img
                     src={`${API_URL}${currentUser?.profile.avatarUrl || "/default-avatar.png"}`}
                     className="w-10 h-10 rounded-full object-cover ml-3"
@@ -286,12 +253,38 @@ useEffect(() => {
                 e.target.style.height = `${Math.min(e.target.scrollHeight, window.innerHeight / 3)}px`;
               }}
             />
-            <button className="px-6 py-2 bg-black text-white rounded" onClick={sendMessage}>
+            <button className="px-6 py-2 bg-black text-white rounded" onClick={() => sendMessage()}>
               Send
             </button>
           </div>
         </main>
       </div>
+
+      <div className="fixed bottom-24 right-4 z-50">
+        <div className="relative">
+          <button
+            onClick={() => setShowUploadOptions(!showUploadOptions)}
+            className="w-12 h-12 rounded-full bg-blue-600 text-white text-2xl shadow-lg hover:bg-blue-700 transition"
+          >
+            +
+          </button>
+
+          {showUploadOptions && (
+            <div className="absolute bottom-14 right-0 bg-white shadow-md rounded p-2 space-y-2">
+              <label className="block cursor-pointer text-sm text-black hover:text-blue-600">
+                Upload File
+                <input
+                  type="file"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
+
+
