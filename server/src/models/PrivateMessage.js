@@ -8,10 +8,11 @@ const privateMessageSchema = new mongoose.Schema({
   fileUrl: { type: String, default: "" },
   fileType: { type: String, default: "" },
   read: { type: Boolean, default: false },
+  isWithdrawn: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 
 const PrivateMessage = mongoose.model("PrivateMessage", privateMessageSchema);
-
 export default PrivateMessage;
+
 

@@ -92,3 +92,29 @@ export const getChatList = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch chat list" });
   }
 };
+
+export const withdrawMessage = async (req, res) => {
+  try {
+    const message = await PrivateMessage.findById(req.params.id);
+    if (!message) return res.status(404).json({ error: "Message not found" });
+    if (!message.senderId.equals(req.user._id)) return res.status(403).json({ error: "Unauthorized" });
+
+    const now = Date.now();
+    const sentTime = new Date(message.createdAt).getTime();
+    if (now - sentTime > 180000) {
+      return res.status(400).json({ error: "You can only withdraw messages within 3 minutes" });
+    }
+
+    message.isWithdrawn = true;
+    message.text = "";
+    message.fileUrl = "";
+    message.fileType = "";
+    await message.save();
+
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ error: "Failed to withdraw message" });
+  }
+};
+
+

@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import ContactSidebar from "../components/ContactSidebar";
 
 export default function ChatPage() {
   const [targetUser, setTargetUser] = useState(null);
@@ -21,7 +22,6 @@ export default function ChatPage() {
   const API_URL = "http://localhost:5000";
   const textareaRef = useRef();
   const scrollRef = useRef();
-
   const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
 
   const formatTime = (timestamp) => {
@@ -41,20 +41,19 @@ export default function ChatPage() {
     }
   };
 
- const fetchMessages = async () => {
-  if (!targetId || !token) return;
-  try {
-    const res = await fetch(`${API_URL}/api/messages/${targetId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await res.json();
-    setComments(data);
-    setTimeout(scrollToBottom, 100);
-  } catch {
-    toast.error("Failed to load messages");
-  }
-};
-
+  const fetchMessages = async () => {
+    if (!targetId || !token) return;
+    try {
+      const res = await fetch(`${API_URL}/api/messages/${targetId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setComments(data);
+      setTimeout(scrollToBottom, 100);
+    } catch {
+      toast.error("Failed to load messages");
+    }
+  };
 
   const sendMessage = async (text = message, fileUrl = "", fileType = "") => {
     if (!targetId || (!text.trim() && !fileUrl)) return;
@@ -72,7 +71,6 @@ export default function ChatPage() {
           fileType
         })
       });
-
       if (res.ok) {
         const newMessage = await res.json();
         setComments(prev => [...prev, newMessage]);
@@ -88,10 +86,8 @@ export default function ChatPage() {
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const formData = new FormData();
     formData.append("avatar", file);
-
     try {
       const res = await fetch(`${API_URL}/api/upload/chat-file`, {
         method: "POST",
@@ -100,10 +96,8 @@ export default function ChatPage() {
         },
         body: formData
       });
-
       const data = await res.json();
       if (!data.fileUrl) throw new Error("Upload failed");
-
       await sendMessage("", data.fileUrl, data.fileType);
       toast.success("File sent!");
     } catch {
@@ -120,11 +114,36 @@ export default function ChatPage() {
       sendMessage();
     }
   };
-const isCurrentUser = (userId) =>
-  userId === currentUser?._id || userId?._id === currentUser?._id;
+
+  const isCurrentUser = (userId) =>
+    userId === currentUser?._id || userId?._id === currentUser?._id;
+
+const handleWithdraw = async (id) => {
+  try {
+    const res = await fetch(`${API_URL}/api/messages/withdraw/${id}`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.status === 400) {
+      const data = await res.json();
+      toast.error(data.error || "Too late to withdraw");
+      return;
+    }
+    if (res.ok) {
+      setComments(prev =>
+        prev.map(msg => msg._id === id
+          ? { ...msg, isWithdrawn: true, text: "", fileUrl: "", fileType: "" }
+          : msg
+        )
+      );
+      toast.success("Message withdrawn");
+    }
+  } catch {
+    toast.error("Failed to withdraw");
+  }
+};
 
 
- 
   useEffect(() => {
     if (token) {
       fetch(`${API_URL}/api/users/me`, {
@@ -172,29 +191,12 @@ const isCurrentUser = (userId) =>
       </button>
 
       <div className="flex flex-1">
-        <aside className={`bg-black text-white transition-all duration-300 ${collapsed ? 'w-0' : 'w-60'}`}>
-          {!collapsed && <div className="bg-blue-500 px-4 py-4 font-semibold"></div>}
-
-          <div className={`${collapsed ? 'hidden' : 'flex flex-col'}`}>
-            {chatList.map((item, idx) => (
-              <button
-                key={idx}
-                className={`flex items-center px-4 py-2 hover:bg-gray-800 ${item.user._id === targetId ? "bg-gray-800" : ""}`}
-                onClick={() => {
-                  if (targetId !== item.user._id) {
-                    router.push(`/chat?target=${item.user._id}`);
-                  }
-                }}
-              >
-                <img
-                  src={`${API_URL}${item.user.profile.avatarUrl || "/default-avatar.png"}`}
-                  className="w-8 h-8 rounded-full object-cover mr-3"
-                />
-                <span className="text-sm">{item.user.profile.name}</span>
-              </button>
-            ))}
-          </div>
-        </aside>
+        <ContactSidebar
+          chatList={chatList}
+          targetId={targetId}
+          onSelect={(id) => router.push(`/chat?target=${id}`)}
+          collapsed={collapsed}
+        />
 
         <main className="flex-1 flex flex-col overflow-hidden">
           <div
@@ -214,15 +216,42 @@ const isCurrentUser = (userId) =>
                   />
                 )}
                 <div className="max-w-xs group">
-                  <div className="bg-black text-white px-4 py-2 rounded-lg relative">
-                    {c.fileUrl ? (
-                      c.fileType?.startsWith("image/") ? (
-                        <img src={`${API_URL}${c.fileUrl}`} className="max-w-[240px] max-h-[160px] rounded" />
-                      ) : (
-                        <a href={`${API_URL}${c.fileUrl}`} download className="text-blue-400 underline hover:text-blue-600">📎 Download File</a>
-                      )
+                  <div
+                    className="bg-black text-white px-4 py-2 rounded-lg relative"
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      if (isCurrentUser(c.senderId) && !c.isWithdrawn) {
+                        if (window.confirm("Withdraw this message?")) {
+                          handleWithdraw(c._id);
+                        }
+                      }
+                    }}
+                    onTouchStart={(e) => {
+                      if (!isCurrentUser(c.senderId) || c.isWithdrawn) return;
+                      const timeoutId = setTimeout(() => {
+                        if (window.confirm("Withdraw this message?")) {
+                          handleWithdraw(c._id);
+                        }
+                      }, 600);
+                      const cancel = () => clearTimeout(timeoutId);
+                      e.target.addEventListener("touchend", cancel, { once: true });
+                      e.target.addEventListener("touchmove", cancel, { once: true });
+                    }}
+                  >
+                    {c.isWithdrawn ? (
+                      <p className="italic text-gray-400">This message was withdrawn</p>
                     ) : (
-                      <p>{c.text}</p>
+                      <>
+                        {c.fileUrl ? (
+                          c.fileType?.startsWith("image/") ? (
+                            <img src={`${API_URL}${c.fileUrl}`} className="max-w-[240px] max-h-[160px] rounded" />
+                          ) : (
+                            <a href={`${API_URL}${c.fileUrl}`} download className="text-blue-400 underline hover:text-blue-600">📎 Download File</a>
+                          )
+                        ) : (
+                          <p>{c.text}</p>
+                        )}
+                      </>
                     )}
                     <span className="text-xs text-gray-300 block mt-1">
                       {formatTime(c.createdAt)}
@@ -286,5 +315,7 @@ const isCurrentUser = (userId) =>
     </div>
   );
 }
+
+
 
 

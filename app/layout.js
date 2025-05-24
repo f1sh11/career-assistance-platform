@@ -25,8 +25,14 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} bg-white text-black`}>
-        <Toaster position="top-center" reverseOrder={false} />
-        <AutoLogout /> {/* ✅ 插入这里 */}
+        <Toaster
+          position="top-center"
+          reverseOrder={false}
+          toastOptions={{
+            style: { marginTop: "80px" }
+          }}
+        />
+        <AutoLogout />
         <AuthProvider>
           <Navbar />
           <main className="flex-1 overflow-hidden">
@@ -38,4 +44,5 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+
 
