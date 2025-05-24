@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import MatchingSidebar from "../components/MatchingSidebar";
+import MatchingSidebar from "../../components/MatchingSidebar";
 
 export default function RequestsPage() {
   const [requests, setRequests] = useState([]);

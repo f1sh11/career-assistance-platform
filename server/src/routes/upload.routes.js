@@ -5,7 +5,19 @@ import { authenticateToken } from '../middleware/auth.middleware.js'; // ✅ 修
 
 const router = express.Router();
 
-// ✅ 加上认证中间件，确保 req.user 可用
 router.post('/upload-avatar', authenticateToken, uploadAvatarMiddleware, uploadAvatar);
+
+// POST /api/upload/chat-file
+router.post(
+  '/chat-file',
+  authenticateToken,
+  uploadAvatarMiddleware,
+  (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const fileUrl = `/uploads/${req.file.filename}`;
+    const fileType = req.file.mimetype;
+    res.json({ fileUrl, fileType });
+  }
+);
 
 export default router;
