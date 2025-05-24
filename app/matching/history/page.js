@@ -33,12 +33,7 @@ export default function HistoryPage() {
         setRole(userRole);
         localStorage.setItem("role", userRole);
 
-        const historyUrl =
-          userRole === "student"
-            ? `${API_URL}/api/matching/requests/sent`
-            : `${API_URL}/api/matching/requests`;
-
-        const resReq = await fetch(historyUrl, {
+        const resReq = await fetch(`${API_URL}/api/matching/history`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const dataReq = await resReq.json();
@@ -61,7 +56,9 @@ export default function HistoryPage() {
     if (res.ok) {
       toast.success("Request cancelled");
       setItems((prev) =>
-        prev.map((item) => (item._id === id ? { ...item, status: "cancelled" } : item))
+        prev.map((item) =>
+          item._id === id ? { ...item, status: "cancelled" } : item
+        )
       );
     } else {
       toast.error(data.message || "Cancel failed");
@@ -150,6 +147,7 @@ export default function HistoryPage() {
     </div>
   );
 }
+
 
 
 
