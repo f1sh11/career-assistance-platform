@@ -3,11 +3,7 @@
 import { useState } from "react";
 import {
   FaLock,
-  FaShieldAlt,
-  FaClock,
-  FaMobileAlt,
-  FaEnvelope,
-  FaStar
+  FaClock
 } from "react-icons/fa";
 
 export default function SecurityPage() {
@@ -55,9 +51,7 @@ export default function SecurityPage() {
             <h2 className="text-lg font-semibold text-blue-900 mb-4">Security Settings</h2>
             <ul className="space-y-2 text-sm">
               <li className="text-blue-700 font-medium">Change Password</li>
-              <li className="text-gray-600 hover:text-blue-700 cursor-pointer">Protection Overview</li>
               <li className="text-gray-600 hover:text-blue-700 cursor-pointer">Recent Logins</li>
-              <li className="text-gray-600 hover:text-blue-700 cursor-pointer">Security Score</li>
             </ul>
           </div>
         </div>
@@ -98,36 +92,6 @@ export default function SecurityPage() {
             </button>
           </div>
 
-          {/* Protection Overview */}
-          <div className="bg-white border border-gray-200 shadow-md rounded-xl p-6">
-            <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4">
-              <FaShieldAlt className="text-green-600" /> Protection Overview
-            </h2>
-            <ul className="text-sm space-y-3">
-              <li className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FaShieldAlt className="text-gray-400" />
-                  <span className="font-medium">Two-factor Authentication</span>
-                </div>
-                <span className="bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full">Enabled</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FaEnvelope className="text-gray-400" />
-                  <span className="font-medium">Email Verified</span>
-                </div>
-                <span className="bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full">Yes</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FaMobileAlt className="text-gray-400" />
-                  <span className="font-medium">Linked Phone</span>
-                </div>
-                <span className="bg-gray-100 text-gray-700 text-xs font-medium px-2 py-1 rounded-full">+65 •••• •••8</span>
-              </li>
-            </ul>
-          </div>
-
           {/* Login History */}
           <div className="bg-white border border-gray-200 shadow-md rounded-xl p-6">
             <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4">
@@ -147,17 +111,6 @@ export default function SecurityPage() {
                 <span className="text-blue-500 font-medium">📱</span>
               </div>
             </div>
-          </div>
-
-          {/* Security Score */}
-          <div className="bg-white border border-gray-200 shadow-md rounded-xl p-6">
-            <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4">
-              <FaStar className="text-purple-600" /> Security Score
-            </h2>
-            <div className="w-full bg-gray-100 rounded-full h-4 mb-2">
-              <div className="bg-green-500 h-4 rounded-full" style={{ width: '84%' }}></div>
-            </div>
-            <p className="text-sm text-gray-700">Your security score is <span className="font-semibold text-green-600">84</span> out of 100. Great job! Consider enabling biometric login to improve further.</p>
           </div>
         </div>
       </div>
