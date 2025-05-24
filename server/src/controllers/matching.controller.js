@@ -236,7 +236,7 @@ export const getReceivedRequests = async (req, res) => {
       recipient: req.user._id,
       status: { $in: ['pending', 'accepted', 'rejected'] }
     })
-      .populate('requester', 'profile')
+      .populate('requester', '_id profile')
       .sort({ createdAt: -1 });
 
     res.status(200).json({ requests });
