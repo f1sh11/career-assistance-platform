@@ -39,7 +39,7 @@ export default function AccountOverviewPage() {
         title: "Connections",
         icon: <FaUserFriends className="text-pink-500 w-7 h-7" />,
         description: "You are connected with 5 mentors/alumni.",
-        link: "/chat"
+        link: "/matching/history"
       }
     ]);
   }, []);
