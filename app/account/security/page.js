@@ -1,8 +1,51 @@
 "use client";
 
-import { FaLock, FaShieldAlt, FaClock, FaMobileAlt, FaEnvelope, FaStar } from "react-icons/fa";
+import { useState } from "react";
+import {
+  FaLock,
+  FaShieldAlt,
+  FaClock,
+  FaMobileAlt,
+  FaEnvelope,
+  FaStar
+} from "react-icons/fa";
 
 export default function SecurityPage() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+  const handleChangePassword = async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return alert("Please log in");
+
+    try {
+      const res = await fetch(`${API_URL}/api/users/me/password`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+          confirmPassword
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      alert("Password changed successfully");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      alert(err.message || "Failed to change password");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f9fbfc] py-20 px-6 text-gray-900 font-sans">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -26,10 +69,31 @@ export default function SecurityPage() {
             <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
               <FaLock className="text-blue-600" /> Change Password
             </h2>
-            <input type="password" placeholder="Current Password" className="w-full p-3 border rounded bg-gray-50" />
-            <input type="password" placeholder="New Password" className="w-full p-3 border rounded bg-gray-50" />
-            <input type="password" placeholder="Confirm New Password" className="w-full p-3 border rounded bg-gray-50" />
-            <button className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-semibold transition">
+            <input
+              type="password"
+              placeholder="Current Password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="w-full p-3 border rounded bg-gray-50"
+            />
+            <input
+              type="password"
+              placeholder="New Password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full p-3 border rounded bg-gray-50"
+            />
+            <input
+              type="password"
+              placeholder="Confirm New Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full p-3 border rounded bg-gray-50"
+            />
+            <button
+              onClick={handleChangePassword}
+              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-semibold transition"
+            >
               Save Password
             </button>
           </div>

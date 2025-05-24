@@ -21,6 +21,10 @@ import { getMyDrafts } from '../controllers/postController.js'; // ✅ 草稿接
 
 const router = express.Router(); // ✅ 初始化 router 必须在最上面
 
+import { changePassword } from '../controllers/user.controller.js';
+
+router.put('/me/password', authenticateToken, changePassword);
+
 // ✅ 用户草稿箱接口
 router.get('/me/drafts', authenticateToken, getMyDrafts);
 
