@@ -1,8 +1,62 @@
 "use client";
 
-import { FaLock, FaShieldAlt, FaClock, FaMobileAlt, FaEnvelope, FaStar } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import {
+  FaLock,
+  FaShieldAlt,
+  FaClock,
+  FaMobileAlt,
+  FaEnvelope,
+  FaStar
+} from "react-icons/fa";
 
 export default function SecurityPage() {
+  const [current, setCurrent] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [loginHistory, setLoginHistory] = useState([]);
+  const [message, setMessage] = useState("");
+  const [showAll, setShowAll] = useState(false);
+
+const fetchLogins = async () => {
+  const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/security/logins`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const data = await res.json();
+  const sorted = (data.loginHistory || []).sort((a, b) => new Date(b.date) - new Date(a.date));
+  setLoginHistory(sorted);
+};
+
+
+  const handlePasswordChange = async () => {
+    if (newPw !== confirmPw) {
+      return setMessage("❌ New passwords do not match.");
+    }
+    const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/security/change-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ currentPassword: current, newPassword: newPw })
+    });
+    const result = await res.json();
+    if (res.ok) {
+      setMessage("✅ Password changed successfully.");
+      setCurrent(""); setNewPw(""); setConfirmPw("");
+    } else {
+      setMessage("❌ " + result.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogins();
+  }, []);
+
+  const visibleLogins = showAll ? loginHistory : loginHistory.slice(0, 1);
+
   return (
     <div className="min-h-screen bg-[#f9fbfc] py-20 px-6 text-gray-900 font-sans">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -26,12 +80,16 @@ export default function SecurityPage() {
             <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
               <FaLock className="text-blue-600" /> Change Password
             </h2>
-            <input type="password" placeholder="Current Password" className="w-full p-3 border rounded bg-gray-50" />
-            <input type="password" placeholder="New Password" className="w-full p-3 border rounded bg-gray-50" />
-            <input type="password" placeholder="Confirm New Password" className="w-full p-3 border rounded bg-gray-50" />
-            <button className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-semibold transition">
+            <input type="password" placeholder="Current Password" value={current} onChange={(e) => setCurrent(e.target.value)} className="w-full p-3 border rounded bg-gray-50" />
+            <input type="password" placeholder="New Password" value={newPw} onChange={(e) => setNewPw(e.target.value)} className="w-full p-3 border rounded bg-gray-50" />
+            <input type="password" placeholder="Confirm New Password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} className="w-full p-3 border rounded bg-gray-50" />
+            <button
+              onClick={handlePasswordChange}
+              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-semibold transition"
+            >
               Save Password
             </button>
+            {message && <p className="text-sm text-red-600 mt-1">{message}</p>}
           </div>
 
           {/* Protection Overview */}
@@ -70,18 +128,42 @@ export default function SecurityPage() {
               <FaClock className="text-yellow-600" /> Recent Logins
             </h2>
             <div className="space-y-2 text-sm">
-              <div className="bg-gray-50 px-4 py-2 rounded border flex justify-between items-center">
-                April 10, 2025 – 13:00 – Singapore IP
-                <span className="text-green-600 font-medium">✅</span>
-              </div>
-              <div className="bg-gray-50 px-4 py-2 rounded border flex justify-between items-center">
-                April 9, 2025 – 22:30 – VPN Detected
-                <span className="text-red-500 font-medium">⚠️</span>
-              </div>
-              <div className="bg-gray-50 px-4 py-2 rounded border flex justify-between items-center">
-                April 8, 2025 – 09:15 – Mobile Login
-                <span className="text-blue-500 font-medium">📱</span>
-              </div>
+              {loginHistory.length === 0 && (
+                <div className="text-gray-400 text-sm italic">No login records found.</div>
+              )}
+
+              {visibleLogins.map((entry, i) => (
+                <div
+                  key={i}
+                  className="bg-white px-4 py-3 rounded-lg border border-gray-200 shadow-sm flex flex-col md:flex-row md:justify-between"
+                >
+                  <div className="space-y-1">
+                    <div className="text-gray-800 font-medium">
+                      {new Date(entry.date).toLocaleString()}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      IP: {entry.ip || "Unknown"} | Location: {entry.location || "Unknown"}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Device: {(entry.device || "Unknown").slice(0, 80)}
+                    </div>
+                  </div>
+                  <div className="text-green-600 font-semibold text-sm mt-2 md:mt-0 self-end md:self-center">
+                    {entry.status}
+                  </div>
+                </div>
+              ))}
+
+              {loginHistory.length > 1 && (
+                <div className="text-center mt-3">
+                  <button
+                    onClick={() => setShowAll(!showAll)}
+                    className="text-blue-600 text-sm hover:underline"
+                  >
+                    {showAll ? "Show less" : `Show ${loginHistory.length - 1} more`}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

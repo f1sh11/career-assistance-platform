@@ -81,6 +81,25 @@ export const login = async (req, res) => {
       expiresIn: '7d',
     });
 
+    // ✅ 登录历史记录 + 修复 identifier 缺失
+    const agent = req.headers["user-agent"] || "unknown";
+    const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+
+    if (!user.identifier) {
+      user.identifier = user.email || user.studentId || "unknown";
+    }
+
+    user.loginHistory = user.loginHistory || [];
+    user.loginHistory.push({
+      date: new Date(),
+      ip: ip || "unknown",
+      device: agent || "unknown",
+      location: "Singapore",
+      status: "success"
+    });
+
+    await user.save();
+
     res.status(200).json({
       message: 'Login successful',
       token,
@@ -95,7 +114,7 @@ export const login = async (req, res) => {
   }
 };
 
-// 重置密码（无需 token）
+// 重置密码
 export const resetPassword = async (req, res) => {
   const { identifier, newPassword } = req.body;
 
@@ -113,7 +132,7 @@ export const resetPassword = async (req, res) => {
     }
 
     user.password = newPassword;
-    await user.save(); 
+    await user.save();
 
     res.status(200).json({ message: 'Password has been reset successfully.' });
   } catch (err) {

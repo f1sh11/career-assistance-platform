@@ -1,44 +1,55 @@
 "use client";
-import React, { useState } from "react";
-import { MessageCircle, User, Search, ArrowUpRight, ChevronDown, Calendar, Filter } from "lucide-react";
+
+import React, { useEffect, useState } from "react";
+import {
+  MessageCircle,
+  User,
+  Search,
+  ArrowUpRight,
+  ChevronDown,
+  Calendar
+} from "lucide-react";
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-const activityData = [
-  {
-    id: 1,
-    icon: <MessageCircle className="text-blue-500" size={20} />, 
-    message: "You commented on the post \"AI in Education\".",
-    timestamp: "3 mins ago",
-    date: "2024-05-06"
-  },
-  {
-    id: 2,
-    icon: <User className="text-green-500" size={20} />, 
-    message: "You applied for mentor Alice Wong.",
-    timestamp: "Yesterday",
-    date: "2024-05-05"
-  },
-  {
-    id: 3,
-    icon: <User className="text-gray-500" size={20} />,
-    message: "You viewed John Tan’s profile.",
-    timestamp: "3 days ago",
-    date: "2024-05-03"
-  }
-];
-
 export default function ActivityPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
+  const [activities, setActivities] = useState([]);
 
-  const filteredData = activityData.filter((item) => {
-    const matchesSearch = item.message.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDate = filterDate ? item.date === filterDate : true;
-    return matchesSearch && matchesDate;
-  });
+  const fetchActivities = async () => {
+    const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+    const params = new URLSearchParams();
+    if (searchTerm) params.append("search", searchTerm);
+    if (filterDate) params.append("date", filterDate);
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/activities?${params.toString()}`,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+    const data = await res.json();
+    setActivities(data.activities || []);
+  };
+
+  useEffect(() => {
+    fetchActivities();
+  }, [searchTerm, filterDate]);
+
+  const getIcon = (type) => {
+    switch (type) {
+      case "comment":
+        return <MessageCircle className="text-blue-500" size={20} />;
+      case "request":
+        return <User className="text-green-500" size={20} />;
+      case "view":
+      default:
+        return <User className="text-gray-500" size={20} />;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white px-4 pt-24 pb-32">
@@ -76,20 +87,22 @@ export default function ActivityPage() {
         </div>
 
         <div className="space-y-3 animate-fade-in">
-          {filteredData.map((item) => (
+          {activities.map((item) => (
             <div
-              key={item.id}
+              key={item._id}
               className="flex items-center justify-between bg-white shadow-md hover:shadow-lg transition-shadow px-5 py-4 rounded-xl border border-gray-200 group"
             >
               <div className="flex items-center gap-4">
                 <div className="p-2 rounded-full bg-gray-100 group-hover:bg-blue-50 transition-all">
-                  {item.icon}
+                  {getIcon(item.type)}
                 </div>
                 <div>
                   <p className="text-sm text-gray-800 group-hover:text-blue-600 font-medium">
                     {item.message}
                   </p>
-                  <span className="text-xs text-gray-400">{item.timestamp}</span>
+                  <span className="text-xs text-gray-400">
+                    {new Date(item.createdAt).toLocaleString()}
+                  </span>
                 </div>
               </div>
               <ArrowUpRight
@@ -99,13 +112,16 @@ export default function ActivityPage() {
             </div>
           ))}
 
-          {filteredData.length === 0 && (
+          {activities.length === 0 && (
             <p className="text-center text-gray-400 py-12 animate-fade-in">No activity found.</p>
           )}
         </div>
 
         <div className="mt-12 text-center">
-          <button className="text-sm text-blue-600 hover:underline flex items-center gap-1 mx-auto animate-pulse">
+          <button
+            onClick={fetchActivities}
+            className="text-sm text-blue-600 hover:underline flex items-center gap-1 mx-auto animate-pulse"
+          >
             Load more activity <ChevronDown size={16} />
           </button>
         </div>

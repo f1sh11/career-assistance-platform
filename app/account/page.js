@@ -3,46 +3,80 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FaBell, FaShieldAlt, FaClock, FaUserFriends } from "react-icons/fa";
-import { notificationData } from "../data/notifications"; // ✅ 相对路径正确
+import {
+  FaBell,
+  FaShieldAlt,
+  FaClock,
+  FaUserFriends
+} from "react-icons/fa";
 
 export default function AccountOverviewPage() {
   const [username, setUsername] = useState("User");
-  const [cards, setCards] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [loginHistory, setLoginHistory] = useState([]);
+  const [connections, setConnections] = useState([]);
   const router = useRouter();
 
+  const API = process.env.NEXT_PUBLIC_API_URL;
+
   useEffect(() => {
+    const token = sessionStorage.getItem("token") || localStorage.getItem("token");
     const storedUsername = sessionStorage.getItem("username");
     if (storedUsername) setUsername(storedUsername);
 
-    // 设置卡片内容（避免 SSR 与客户端不一致）
-    setCards([
-      {
-        title: "Notifications",
-        icon: <FaBell className="text-yellow-500 w-7 h-7" />,
-        description: `You have ${notificationData.length} unread notifications.`,
-        link: "/account/notifications"
-      },
-      {
-        title: "Security",
-        icon: <FaShieldAlt className="text-green-500 w-7 h-7" />,
-        description: "Your account is secured with 2FA.",
-        link: "/account/security"
-      },
-      {
-        title: "Last Login",
-        icon: <FaClock className="text-blue-500 w-7 h-7" />,
-        description: "April 20, 2025, 21:34",
-        link: "/account/security#logins"
-      },
-      {
-        title: "Connections",
-        icon: <FaUserFriends className="text-pink-500 w-7 h-7" />,
-        description: "You are connected with 5 mentors/alumni.",
-        link: "/chat"
-      }
-    ]);
+    // 获取通知
+    fetch(`${API}/api/notifications`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => setNotifications(data.notifications || []));
+
+    // 获取登录历史
+    fetch(`${API}/api/security/logins`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        const sorted = (data.loginHistory || []).sort((a, b) => new Date(b.date) - new Date(a.date));
+        setLoginHistory(sorted);
+      });
+
+    // 获取连接
+    fetch(`${API}/api/matching/connections`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => setConnections(data.connections || []));
   }, []);
+
+  const cards = [
+    {
+      title: "Notifications",
+      icon: <FaBell className="text-yellow-500 w-7 h-7" />,
+      description: `You have ${notifications.length} unread notification${notifications.length !== 1 ? "s" : ""}.`,
+      link: "/account/notifications"
+    },
+    {
+      title: "Security",
+      icon: <FaShieldAlt className="text-green-500 w-7 h-7" />,
+      description: "Your account is secured with 2FA.",
+      link: "/account/security"
+    },
+    {
+      title: "Last Login",
+      icon: <FaClock className="text-blue-500 w-7 h-7" />,
+      description: loginHistory[0]
+        ? new Date(loginHistory[0].date).toLocaleString()
+        : "No recent login",
+      link: "/account/security#logins"
+    },
+    {
+      title: "Connections",
+      icon: <FaUserFriends className="text-pink-500 w-7 h-7" />,
+      description: `You are connected with ${connections.length} mentor${connections.length !== 1 ? "s" : ""} / alumni.`,
+      link: "/chat"
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white font-inter text-gray-900">

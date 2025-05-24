@@ -16,6 +16,9 @@ import postRoutes from './src/routes/posts.js';
 import commentRoutes from './src/routes/comments.js';
 import resourceRoutes from './src/routes/resource.routes.js'; 
 import chatRoutes from "./src/routes/chat.routes.js";
+import notificationRoutes from "./src/routes/notification.routes.js";
+import activityRoutes from "./src/routes/activity.routes.js";
+import securityRoutes from "./src/routes/security.routes.js";
 
 import connectDB from './src/config/db.js';
 import logger from './src/utils/logger.js';
@@ -90,6 +93,9 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/resources', resourceRoutes); // ✅ 注册资源模块路由
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/activities", activityRoutes);
+app.use("/api/security", securityRoutes);
 
 // ✅ 健康检查
 app.get('/api/status', (req, res) => {

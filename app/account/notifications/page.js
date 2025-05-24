@@ -1,36 +1,40 @@
 "use client";
 
 import NotificationCard from "../../components/NotificationCard";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "New mentor matched!",
-      message: "You have been matched with Alice Wong.",
-      time: "2 mins ago",
-      dateGroup: "Today"
-    },
-    {
-      id: 2,
-      title: "System Maintenance",
-      message: "Scheduled maintenance on May 1st from 2am to 4am.",
-      time: "1 day ago",
-      dateGroup: "This Week"
-    },
-    {
-      id: 3,
-      title: "New Job Postings",
-      message: "3 new internship positions posted today.",
-      time: "3 days ago",
-      dateGroup: "This Week"
-    }
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
-  const handleMarkRead = (id) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-    console.log(`Marked notification ${id} as read`);
+  const fetchNotifications = async () => {
+    const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    setNotifications(data.notifications || []);
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const handleMarkRead = async (id) => {
+    const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setNotifications((prev) => prev.filter((n) => n._id !== id));
+  };
+
+  const handleClearAll = async () => {
+    const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setNotifications([]);
   };
 
   const groupBy = (array, key) => {
@@ -40,7 +44,18 @@ export default function NotificationsPage() {
     }, {});
   };
 
-  const groupedNotifications = groupBy(notifications, "dateGroup");
+  const groupedNotifications = groupBy(
+    notifications.map((n) => {
+      const date = new Date(n.createdAt);
+      const today = new Date().toDateString();
+      const itemDate = date.toDateString();
+      return {
+        ...n,
+        dateGroup: itemDate === today ? "Today" : "Earlier"
+      };
+    }),
+    "dateGroup"
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 text-black dark:text-white py-24 px-6">
@@ -49,7 +64,7 @@ export default function NotificationsPage() {
           <h1 className="text-5xl font-extrabold text-gray-800 dark:text-white mb-2">Notifications</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Stay updated with the latest alerts and messages.</p>
           <button
-            onClick={() => setNotifications([])}
+            onClick={handleClearAll}
             className="mt-4 inline-block text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
             Mark all as read
@@ -63,11 +78,11 @@ export default function NotificationsPage() {
             </h2>
             {groupedNotifications[group].map((n) => (
               <NotificationCard
-                key={n.id}
+                key={n._id}
                 title={n.title}
                 message={n.message}
-                time={n.time}
-                onMarkRead={() => handleMarkRead(n.id)}
+                time={new Date(n.createdAt).toLocaleTimeString()}
+                onMarkRead={() => handleMarkRead(n._id)}
               />
             ))}
           </div>

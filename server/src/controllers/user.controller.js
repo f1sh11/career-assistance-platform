@@ -32,45 +32,51 @@ export const updateProfile = async (req, res) => {
   try {
     const {
       name, phone, email, address, major,
-      interests, skills, dreamJob, introduction, avatarUrl
+      interests, skills, dreamJob, introduction,
+      avatarUrl, preferences
     } = req.body;
 
     const user = await User.findById(req.user._id);
-
     if (!user) {
       return res.status(404).json({ message: 'User does not exist' });
     }
 
     user.profile = {
       ...user.profile,
-      name: name || user.profile.name,
-      phone: phone || user.profile.phone,
-      email: email || user.profile.email,
-      address: address || user.profile.address,
-      major: major || user.profile.major,
-      interests: interests || user.profile.interests,
-      skills: skills || user.profile.skills,
-      dreamJob: dreamJob || user.profile.dreamJob,
-      introduction: introduction || user.profile.introduction,
-      avatarUrl: avatarUrl || user.profile.avatarUrl
+      name: name ?? user.profile.name,
+      phone: phone ?? user.profile.phone,
+      email: email ?? user.profile.email,
+      address: address ?? user.profile.address,
+      major: major ?? user.profile.major,
+      interests: interests ?? user.profile.interests,
+      skills: skills ?? user.profile.skills,
+      dreamJob: dreamJob ?? user.profile.dreamJob,
+      introduction: introduction ?? user.profile.introduction,
+      avatarUrl: avatarUrl ?? user.profile.avatarUrl
     };
+
+    if (preferences && typeof preferences === "object") {
+      user.preferences = {
+        ...user.preferences,
+        darkMode: preferences.darkMode ?? user.preferences?.darkMode ?? false,
+        language: preferences.language ?? user.preferences?.language ?? "en",
+        emailNotifications: preferences.emailNotifications ?? user.preferences?.emailNotifications ?? true,
+        platformAlerts: preferences.platformAlerts ?? user.preferences?.platformAlerts ?? true,
+      };
+    }
 
     await user.save();
 
-    writeLog('user', 'User updated profile', {
-      userId: user._id.toString(),
-      url: req.originalUrl
-    });
-
     res.status(200).json({
       message: 'Profile updated successfully',
-      profile: user.profile
+      profile: user.profile,
+      preferences: user.preferences
     });
   } catch (error) {
-    writeError(`Update profile error: ${error.message}`, error.stack);
     res.status(500).json({ message: 'Update profile failed', error: error.message });
   }
 };
+
 
 // Get user list (only for admins)
 export const getUsers = async (req, res) => {

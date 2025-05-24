@@ -48,11 +48,24 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  
+  loginHistory: [
+  {
+    date: { type: Date, default: Date.now },
+    ip: { type: String, default: "unknown" },
+    device: { type: String, default: "unknown" },
+    location: { type: String, default: "unknown" },
+    status: { type: String, default: "success" }
+  }
+],
+
   lastLogin: {
     type: Date,
     default: null
   }
+  
 }, { timestamps: true });
+
 
 // Encrypt passwords before saving
 userSchema.pre('save', async function (next) {
