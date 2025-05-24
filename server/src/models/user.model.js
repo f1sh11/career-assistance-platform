@@ -9,13 +9,13 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true,
     unique: true,
-    sparse: true // 因为 student 不一定有 email
+    sparse: true
   },
   studentId: {
     type: String,
     trim: true,
     unique: true,
-    sparse: true, // 因为 mentor/industry 不一定有 studentId
+    sparse: true,
     match: [/^\d{8}$/, 'Student ID must be exactly 8 digits']
   },
   password: {
@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema({
     introduction: { type: String, maxlength: 100, default: '' },
     avatarUrl: { type: String, default: '' },
     mbtiType: { type: String, maxlength: 4, default: "" }
+  },
+  notificationSettings: {
+    emailNotifications: { type: Boolean, default: true },
+    platformAlerts: { type: Boolean, default: true }
   },
   connections: [{
     type: mongoose.Schema.Types.ObjectId,

@@ -1,48 +1,64 @@
 "use client";
 
-import { useState } from "react";
-import { Moon, Bell, Globe, Shield } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Bell, Shield } from "lucide-react";
 
 export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [platformAlerts, setPlatformAlerts] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-  const [language, setLanguage] = useState("en");
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+  // ✅ 初始化加载设置
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return;
+
+    fetch(`${API_URL}/api/users/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        const settings = data.user?.notificationSettings;
+        if (settings) {
+          setEmailNotifications(settings.emailNotifications);
+          setPlatformAlerts(settings.platformAlerts);
+        }
+      });
+  }, []);
+
+  // ✅ 保存按钮功能
+  const handleSaveChanges = async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) return alert("Please log in");
+
+    try {
+      const res = await fetch(`${API_URL}/api/users/me/notifications`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          emailNotifications,
+          platformAlerts
+        })
+      });
+
+      if (!res.ok) throw new Error("Failed to save");
+      alert("Settings saved successfully");
+    } catch (err) {
+      console.error(err);
+      alert("Error saving settings");
+    }
+  };
+
+  // ✅ Reset 按钮功能
+  const handleReset = () => {
+    setEmailNotifications(true);
+    setPlatformAlerts(true);
+  };
 
   const settings = [
-    {
-      group: "Preferences",
-      items: [
-        {
-          title: "Dark Mode",
-          subtitle: "Reduce eye strain in low-light settings.",
-          icon: <Moon className="w-6 h-6 text-indigo-500" />,
-          control: (
-            <input
-              type="checkbox"
-              checked={darkMode}
-              onChange={() => setDarkMode(!darkMode)}
-              className="w-5 h-5 accent-indigo-500"
-            />
-          )
-        },
-        {
-          title: "Language",
-          subtitle: "Choose your interface language.",
-          icon: <Globe className="w-6 h-6 text-yellow-500" />,
-          control: (
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-1 text-sm bg-gray-50"
-            >
-              <option value="en">English</option>
-              <option value="zh">中文</option>
-            </select>
-          )
-        }
-      ]
-    },
     {
       group: "Notifications",
       items: [
@@ -79,23 +95,19 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-24 px-4 sm:px-6 lg:px-8 text-gray-900 font-inter">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="mb-16 text-center">
           <h1 className="text-4xl font-extrabold tracking-tight">⚙️ Settings</h1>
           <p className="text-gray-500 mt-2 text-sm">Manage your preferences and alerts with ease.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          {/* Sidebar */}
           <aside className="md:col-span-1 space-y-4">
             <div className="bg-white rounded-xl shadow p-4 space-y-2 border border-gray-100">
-              <button className="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-50 transition">Preferences</button>
               <button className="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-50 transition">Notifications</button>
               <button className="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-50 transition">Security</button>
             </div>
           </aside>
 
-          {/* Settings Content */}
           <main className="md:col-span-3 space-y-10">
             {settings.map((group, idx) => (
               <section key={idx}>
@@ -121,8 +133,18 @@ export default function SettingsPage() {
             ))}
 
             <div className="pt-8 flex justify-end gap-4">
-              <button className="px-4 py-2 text-sm bg-gray-100 rounded-lg hover:bg-gray-200">Reset</button>
-              <button className="px-4 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-800">Save Changes</button>
+              <button
+                onClick={handleReset}
+                className="px-4 py-2 text-sm bg-gray-100 rounded-lg hover:bg-gray-200"
+              >
+                Reset
+              </button>
+              <button
+                onClick={handleSaveChanges}
+                className="px-4 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-800"
+              >
+                Save Changes
+              </button>
             </div>
           </main>
         </div>

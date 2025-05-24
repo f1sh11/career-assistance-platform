@@ -195,3 +195,33 @@ export const saveMbtiResult = async (req, res) => {
     res.status(500).json({ message: 'Save MBTI type failed', error: error.message });
   }
 };
+
+
+export const updateNotificationSettings = async (req, res) => {
+  try {
+    const { emailNotifications, platformAlerts } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.notificationSettings = {
+      emailNotifications,
+      platformAlerts
+    };
+
+    await user.save();
+
+    writeLog('user', 'Updated notification settings', {
+      userId: user._id.toString(),
+      settings: user.notificationSettings
+    });
+
+    res.status(200).json({
+      message: 'Settings saved successfully',
+      settings: user.notificationSettings
+    });
+  } catch (error) {
+    writeError(`Update notification settings failed: ${error.message}`, error.stack);
+    res.status(500).json({ message: 'Update failed' });
+  }
+};
