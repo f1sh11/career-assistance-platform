@@ -1,3 +1,4 @@
+// app/matching/mentors/page.js
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,6 +8,8 @@ import { toast } from "react-hot-toast";
 export default function MentorsPage() {
   const [users, setUsers] = useState([]);
   const [profileName, setProfileName] = useState("");
+  const [disabledRequestIds, setDisabledRequestIds] = useState([]);
+  const [requestNotes, setRequestNotes] = useState({});
   const router = useRouter();
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -27,7 +30,6 @@ export default function MentorsPage() {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("✅ mentors returned:", data.mentors);
         setUsers(data.mentors || []);
       });
   }, []);
@@ -36,7 +38,48 @@ export default function MentorsPage() {
     const token = sessionStorage.getItem("token") || localStorage.getItem("token");
     if (!token) return;
 
-    const res = await fetch(`${API_URL}/api/matching/request`, {
+    const res = await fetch(`${API_URL}/api/matching/request/check?recipientId=${recipientId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+
+    if (data.status === "connected") {
+      const go = confirm("You have already matched with this mentor. Go to history?");
+      if (go) router.push("/matching/history");
+      return;
+    }
+
+    if (data.status === "pending") {
+      const go = confirm("You have already sent a request and are waiting for a response. Go to history?");
+      if (go) router.push("/matching/history");
+      return;
+    }
+
+    if (data.status === "rejected") {
+      const go = confirm("You have been rejected by this mentor. Do you want to request again?");
+      if (!go) {
+        setDisabledRequestIds((prev) => [...prev, recipientId]);
+        setRequestNotes((prev) => ({
+          ...prev,
+          [recipientId]: "You have been rejected by this mentor. You cannot request again within 24 hours."
+        }));
+        return;
+      }
+      router.push("/matching/history");
+      return;
+    }
+
+    if (data.status === "limit") {
+      alert("You have reached the maximum number of requests to this mentor.");
+      setDisabledRequestIds((prev) => [...prev, recipientId]);
+      setRequestNotes((prev) => ({
+        ...prev,
+        [recipientId]: "You have reached the maximum number of requests to this mentor."
+      }));
+      return;
+    }
+
+    const res2 = await fetch(`${API_URL}/api/matching/request`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -48,12 +91,12 @@ export default function MentorsPage() {
       })
     });
 
-    if (res.ok) {
+    if (res2.ok) {
       toast.success("Waiting for mentor’s response");
       router.push("/matching/history");
     } else {
-      const data = await res.json();
-      toast.error(data.message || "Failed to send request");
+      const err = await res2.json();
+      toast.error(err.message || "Failed to send request");
     }
   };
 
@@ -69,9 +112,17 @@ export default function MentorsPage() {
             />
             <p className="font-semibold">{user.profile.name}</p>
             <p className="text-sm text-gray-500">{user.role}</p>
+            {requestNotes[user._id] && (
+              <p className="text-xs text-red-500 mt-2">{requestNotes[user._id]}</p>
+            )}
             <button
               onClick={() => handleRequest(user._id)}
-              className="mt-4 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+              disabled={disabledRequestIds.includes(user._id)}
+              className={`mt-4 px-4 py-2 rounded text-white ${
+                disabledRequestIds.includes(user._id)
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-yellow-500 hover:bg-yellow-600"
+              }`}
             >
               Request
             </button>
@@ -81,5 +132,6 @@ export default function MentorsPage() {
     </div>
   );
 }
+
 
 

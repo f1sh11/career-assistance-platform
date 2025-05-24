@@ -10,6 +10,7 @@ import { createRequest } from '../controllers/matching.controller.js';
 import { getReceivedRequests } from '../controllers/matching.controller.js';
 import { acceptRequest, rejectRequest } from '../controllers/matching.controller.js';
 import { getSentRequests } from '../controllers/matching.controller.js';
+import { checkRequestStatus } from '../controllers/matching.controller.js';
 
 const router = express.Router();
 
@@ -31,5 +32,7 @@ router.put('/request/:id/accept', authenticateToken, acceptRequest);
 router.put('/request/:id/reject', authenticateToken, rejectRequest);
 
 router.get('/requests/sent', authenticateToken, getSentRequests);
+
+router.get('/request/check', authenticateToken, checkRequestStatus);
 
 export default router;
