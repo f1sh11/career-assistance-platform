@@ -195,3 +195,61 @@ export const saveMbtiResult = async (req, res) => {
     res.status(500).json({ message: 'Save MBTI type failed', error: error.message });
   }
 };
+
+
+export const updateNotificationSettings = async (req, res) => {
+  try {
+    const { emailNotifications, platformAlerts } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.notificationSettings = {
+      emailNotifications,
+      platformAlerts
+    };
+
+    await user.save();
+
+    writeLog('user', 'Updated notification settings', {
+      userId: user._id.toString(),
+      settings: user.notificationSettings
+    });
+
+    res.status(200).json({
+      message: 'Settings saved successfully',
+      settings: user.notificationSettings
+    });
+  } catch (error) {
+    writeError(`Update notification settings failed: ${error.message}`, error.stack);
+    res.status(500).json({ message: 'Update failed' });
+  }
+};
+
+
+// ✅ 修改密码接口
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword)
+      return res.status(400).json({ message: "Missing required fields" });
+
+    if (newPassword !== confirmPassword)
+      return res.status(400).json({ message: "Passwords do not match" });
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) return res.status(401).json({ message: "Incorrect current password" });
+
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (err) {
+    writeError(`Change password error: ${err.message}`, err.stack);
+    res.status(500).json({ message: "Failed to update password" });
+  }
+};
