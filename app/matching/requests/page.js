@@ -11,7 +11,8 @@ export default function RequestsPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const router = useRouter();
 
-  const getToken = () => sessionStorage.getItem("token") || localStorage.getItem("token");
+  const getToken = () =>
+    sessionStorage.getItem("token") || localStorage.getItem("token");
 
   const fetchRequests = async () => {
     const token = getToken();
@@ -24,38 +25,44 @@ export default function RequestsPage() {
     setRequests(data.requests || []);
   };
 
-  const handleAction = async (id, action, targetUserId) => {
-    const token = getToken();
-    if (!token) return;
+const handleAction = async (id, action, targetUserId) => {
+  const confirmMsg = action === "accept"
+    ? "Are you sure you want to accept this request?"
+    : "Are you sure you want to reject this request?";
+  const confirmed = window.confirm(confirmMsg);
+  if (!confirmed) return;
 
-    const res = await fetch(`${API_URL}/api/matching/request/${id}/${action}`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}` }
-    });
+  const token = getToken();
+  if (!token) return;
 
-    const data = await res.json();
+  const res = await fetch(`${API_URL}/api/matching/request/${id}/${action}`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` }
+  });
 
-    if (res.ok) {
-      toast.success(action === "accept" ? "Request accepted" : "Request rejected");
+  const data = await res.json();
 
-      if (action === "accept" && data.postId && targetUserId) {
-        const goToChat = confirm("Request accepted. Do you want to start chatting now?");
-        if (goToChat) {
-          router.push(`/chat?post=${data.postId}&target=${targetUserId}`);
-        } else {
-          router.push("/matching/history");
-        }
-      } else {
-        fetchRequests();
+  if (res.ok) {
+    toast.success(action === "accept" ? "Request accepted" : "Request rejected");
+
+    setRequests(prev => prev.filter(r => String(r._id) !== String(id)));
+
+    if (action === "accept" && data.postId && targetUserId) {
+      const goToChat = confirm("Request accepted. Do you want to start chatting now?");
+      if (goToChat) {
+        router.push(`/chat?post=${data.postId}&target=${targetUserId}`);
       }
-    } else {
-      toast.error(data.message || "Action failed");
     }
-  };
+  } else {
+    toast.error(data.message || "Action failed");
+  }
+};
+
 
   useEffect(() => {
     const token = getToken();
     if (!token) return;
+
     fetch(`${API_URL}/api/users/me`, {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -77,7 +84,10 @@ export default function RequestsPage() {
             <p className="text-center text-gray-500">No pending requests</p>
           )}
           {requests.map((r, idx) => (
-            <div key={idx} className="flex justify-between items-center border bg-white p-4 rounded-md">
+            <div
+              key={idx}
+              className="flex justify-between items-center border bg-white p-4 rounded-md"
+            >
               <div className="flex items-center space-x-4">
                 <img
                   src={`${API_URL}${r.requester.profile.avatarUrl || "/default-avatar.png"}`}
@@ -91,7 +101,9 @@ export default function RequestsPage() {
               <div className="flex space-x-2">
                 <button
                   className="px-4 py-2 bg-green-600 text-white rounded"
-                  onClick={() => handleAction(r._id, "accept", r.requester._id)}
+                  onClick={() =>
+                    handleAction(r._id, "accept", r.requester._id)
+                  }
                 >
                   Accept
                 </button>
@@ -109,5 +121,10 @@ export default function RequestsPage() {
     </div>
   );
 }
+
+
+
+
+
 
 

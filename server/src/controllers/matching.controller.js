@@ -234,7 +234,7 @@ export const getReceivedRequests = async (req, res) => {
   try {
     const requests = await Request.find({
       recipient: req.user._id,
-      status: { $in: ['pending', 'accepted', 'rejected'] }
+      status: 'pending' 
     })
       .populate('requester', '_id profile')
       .sort({ createdAt: -1 });
@@ -244,6 +244,7 @@ export const getReceivedRequests = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch requests', error: error.message });
   }
 };
+
 
 
 export const acceptRequest = async (req, res) => {
@@ -374,6 +375,32 @@ export const cancelRequest = async (req, res) => {
     res.status(500).json({ message: "Cancel failed", error: error.message });
   }
 };
+
+export const getRequestHistory = async (req, res) => {
+  try {
+    const user = req.user;
+    let requests;
+
+    if (user.role === "student") {
+      requests = await Request.find({
+        requester: user._id
+      })
+        .populate("recipient", "_id profile")
+        .sort({ createdAt: -1 });
+    } else {
+      requests = await Request.find({
+        recipient: user._id
+      })
+        .populate("requester", "_id profile")
+        .sort({ createdAt: -1 });
+    }
+
+    res.status(200).json({ requests });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch request history", error: error.message });
+  }
+};
+
 
 
 
