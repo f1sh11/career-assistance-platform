@@ -1,0 +1,58 @@
+{
+  "name": "2hours",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "mbti-personality-test-app-main"
+  ],
+  "resolutions": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "server": "nodemon --watch server server/server.js",
+    "dev:mbti": "yarn workspace mbti-personality-test-app-main dev -p 3001",
+    "dev-all": "concurrently --kill-others-on-fail --names \"FRONT,API,MBTI\" --prefix-colors \"cyan,magenta,green\" --raw \"yarn dev\" \"yarn server\" \"yarn dev:mbti\"",
+    "build": "next build",
+    "start": "next start",
+    "clean-logs": "node clean-logs.js"
+  },
+  "dependencies": {
+    "axios": "^1.5.0",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dompurify": "^3.2.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^7.5.0",
+    "framer-motion": "^12.8.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "lodash.debounce": "^4.0.8",
+    "lucide-react": "^0.507.0",
+    "mongoose": "^8.13.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.2",
+    "next": "^15.2.4",
+    "nodemailer": "^6.10.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hot-toast": "^2.5.2",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "autoprefixer": "^10.4.13",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "detect-port": "^2.1.0",
+    "nodemon": "^3.1.0",
+    "postcss": "^8.4.24",
+    "tailwindcss": "^4"
+  }
+}
