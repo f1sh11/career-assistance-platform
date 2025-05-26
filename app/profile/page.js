@@ -28,7 +28,7 @@ export default function ProfilePage() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [userInfo, setUserInfo] = useState({ username: "", role: "" });
-
+  const isMentorType = ['mentor', 'industry', 'alumni'].includes(userInfo.role);
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
@@ -214,7 +214,6 @@ export default function ProfilePage() {
               "address",
               "interests",
               "skills",
-              "dreamJob"
             ].map((field) => (
               <div key={field}>
                 <label className="block text-sm font-medium mb-1 capitalize">{field.replace(/([A-Z])/g, " $1")}：</label>
@@ -230,6 +229,25 @@ export default function ProfilePage() {
                 )}
               </div>
             ))}
+
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {isMentorType ? "Current Job：" : "Dream Job："}
+              </label>
+              <input
+                name={isMentorType ? "currentJob" : "dreamJob"}
+                type="text"
+                value={isMentorType ? formData.currentJob || "" : formData.dreamJob}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    [isMentorType ? "currentJob" : "dreamJob"]: e.target.value
+                  })
+                }
+                className="w-full border rounded px-3 py-2 bg-gray-50 border-gray-300"
+              />
+            </div>
+
 
             <div>
               <label className="block text-sm font-medium mb-1">Major：</label>

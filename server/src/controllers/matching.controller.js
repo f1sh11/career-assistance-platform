@@ -40,7 +40,7 @@ export const getRecommendations = async (req, res) => {
         .limit(6);
 
       const alumni = await User.find({
-        role: "student",
+        role: "alumni",
         _id: { $ne: _id },
         $or: [
           { "profile.major": { $in: keywords } },
