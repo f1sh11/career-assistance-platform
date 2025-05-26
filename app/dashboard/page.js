@@ -20,6 +20,7 @@ export default function DashboardRedirector() {
       setTimeout(() => {
         if (role === "student") router.push("/dashboard-student");
         else if (role === "mentor") router.push("/dashboard-mentor");
+        else if (role === "alumni") router.push("/dashboard-alumni");
         else if (role === "industry") router.push("/dashboard-industry");
         else if (role === "admin") router.push("/dashboard-admin");
         else router.push("/login");

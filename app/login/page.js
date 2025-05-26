@@ -91,7 +91,7 @@ export default function LoginPage() {
           <option value="student">Student</option>
           <option value="mentor">Mentor</option>
           <option value="alumni">Alumni</option>
-          <option value="industry professional">Industry Professional</option>
+          <option value="industry">Industry Professional</option>
           <option value="admin">Admin</option>
         </select>
    
