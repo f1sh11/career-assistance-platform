@@ -1,0 +1,46 @@
+Install Dependencies
+Make sure you have Yarn installed. Then run:
+yarn install
+
+Start the Project
+
+1. Start the Backend Server
+yarn server
+Runs at: http://localhost:5000
+
+2. Start the Frontend (Main App)
+yarn dev
+Runs at: http://localhost:3000
+
+3. Start the MBTI Sub-App
+yarn dev:mbti
+Runs the MBTI test page in a separate environment.
+
+Test Accounts
+
+Regular User
+Username: 12345678
+Password: 123
+
+username：11111111
+password：123
+🎓 Mentor Accounts (All use password 123)
+
+ji@mentor.com
+luo@mentor.com
+xiao@mentor.com
+
+ji@alumni.com
+luo@alumni.com
+xiao@alumni.com
+
+ji@professor.com
+luo@professor.com
+xiao@professor.com
+🛠️ Admin Account
+
+Admin
+account: admin@example.com
+Password: Admin@123
+
+Feel free to contact the development team(yucheng.ji@student.curtin.edu.au) if you encounter any issues during testing.
