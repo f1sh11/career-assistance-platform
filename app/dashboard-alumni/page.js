@@ -18,7 +18,7 @@ export default function DashboardMentor() {
     }
 
     const userData = JSON.parse(userStr);
-    if (userData.role !== "mentor") {
+    if (userData.role !== "alumni") {
       router.replace("/login");
     } else {
       setUser(userData);
@@ -59,7 +59,7 @@ export default function DashboardMentor() {
       <div className="w-full md:w-1/2 flex items-center justify-center p-10">
         <div className="space-y-10 max-w-xl text-left text-black">
           <h1 className="text-3xl md:text-4xl font-bold">
-            👨‍🏫 Welcome back, Mentor!
+            👨‍🏫 Welcome back, Alumni!
           </h1>
           <p className="text-lg mt-4">
             Here you can accept matching requests and engage with students.

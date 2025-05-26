@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function DashboardIndustry() {
+export default function DashboardMentor() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [isFadingOut, setIsFadingOut] = useState(false);
@@ -29,7 +29,7 @@ export default function DashboardIndustry() {
     setIsFadingOut(true);
     setTimeout(() => {
       router.push("/");
-    }, 500); 
+    }, 500); // 与 transition 时间保持一致
   };
 
   if (!user) {
@@ -46,7 +46,7 @@ export default function DashboardIndustry() {
         isFadingOut ? "opacity-0" : "opacity-100"
       }`}
     >
-      {/* 左图背景 */}
+      {/* Left: Image */}
       <div
         className="w-full md:w-1/2 bg-cover h-64 md:h-auto"
         style={{
@@ -55,14 +55,14 @@ export default function DashboardIndustry() {
         }}
       ></div>
 
-      {/* 右侧内容 */}
+      {/* Right: Text Content */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-10">
         <div className="space-y-10 max-w-xl text-left text-black">
           <h1 className="text-3xl md:text-4xl font-bold">
-            🏢 Welcome back, Industry Professional!
+            👨‍🏫 Welcome back, industry!
           </h1>
           <p className="text-lg mt-4">
-            You may upload helpful career resources and connect with students.
+            Here you can accept matching requests and engage with students.
           </p>
           <div className="text-right">
             <button
@@ -77,5 +77,7 @@ export default function DashboardIndustry() {
     </div>
   );
 }
+
+
 
 
